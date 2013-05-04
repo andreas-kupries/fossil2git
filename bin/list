@@ -1,0 +1,35 @@
+#!/usr/bin/env tclsh
+# Link a fossil repository (url) to a local git repository for mirroring.
+
+package require Tcl 8.5
+package require fileutil
+
+proc main {} {
+    do {*}[cmdline]
+    return
+}
+
+proc cmdline {} {
+    global argv
+    if {[llength $argv] != 1} { usage }
+    return $argv
+}
+
+proc usage {} {
+    global argv0
+    puts stderr "Usage: $argv0 statedir"
+    exit 1
+}
+
+proc do {statedir} {
+    # Keep in sync with setup-local
+    set src $statedir/in
+
+    foreach r [glob -nocomplain -directory $src -tails *.fossil] {
+	puts [file rootname $r]
+    }
+    return
+}
+
+main
+exit
