@@ -8,7 +8,7 @@ repositories on core.tcl.tk and the github tcltk organization.
 Rewritten in Tcl by myself, generalized to arbitrary fossil and git
 repositories (urls).
 
-To set up a mirror go thtoigh the following steps:
+To set up a mirror go through the following steps:
 
   *  Get a local checkout of this repository
 
@@ -32,6 +32,10 @@ To set up a mirror go thtoigh the following steps:
      ```
      fossil2git/bin/setup-export <state> <project> <git-repository-url>
      ```
+
+     Note here that a single project can be given multiple
+     destinations, simply run setup-export several times for the same
+     project, but with a varying destination. The data accumulates.
 
   *  To actuall perform the mirroring you then to regularly run
 
