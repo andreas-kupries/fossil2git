@@ -117,7 +117,7 @@ proc do1 {statedir project remotes} {
     log done
 }
 
-proc now {} { clock format [clock seconds] -format {%Y-%m-%sT%H:%M:%S} }
+proc now {} { clock format [clock seconds] -format {%Y-%m-%dT%H:%M:%S} }
 
 proc getlast {repository} {
     set text [runx fossil timeline -R $repository -t ci -n 1]
@@ -188,7 +188,6 @@ proc pull {project src tmp git first} {
 }
 
 proc push {git remote} {
-
     # Perform garbage collect as required
 
     set count [runx git --bare --git-dir $git count-objects | awk {{print $1}}]
