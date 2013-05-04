@@ -1,6 +1,6 @@
 
 Support scripts to maintain a system for mirroring a set of fossil
-repositories to one or more git repositiories.
+repositories to one or more git repositories.
 
 Original code (bash) by Pat Thoyts, hardwired for the main Tcl/Tk
 repositories on core.tcl.tk and the github tcltk organization.
