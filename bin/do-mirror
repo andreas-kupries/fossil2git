@@ -67,7 +67,7 @@ proc do1 {statedir project remotes} {
     set git    $statedir/out/$project
     set tmp    $statedir/tmp/[user].[pid].[now].$project
     set idfile $git/fossil-import-id
-    set lock   $tmp.lock
+    set lock   $statedir/tmp/$project.lock
 
     file mkdir $tmp
 
@@ -111,6 +111,7 @@ proc do1 {statedir project remotes} {
 	    }
 	}
     } finally {
+	file delete -force $tmp
 	file delete $lock
     }
 
@@ -204,17 +205,17 @@ proc push {git remote} {
 }
 
 proc run {args} {
-    log "run $args"
+    #log "run $args"
     exec 2>@ stderr >@ stdout {*}$args
 }
 
 proc silent {args} {
-    log "silent $args"
+    #log "silent $args"
     exec 2> /dev/null > /dev/null {*}$args
 }
 
 proc runx {args} {
-    log "run $args"
+    #log "run $args"
     exec 2>@ stderr {*}$args
 }
 
