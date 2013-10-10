@@ -71,7 +71,7 @@ proc see {pid artifactid} {
 }
 
 proc touch {pid artifactid} {
-    puts "  Touch $artifactid"
+    #puts "  Touch $artifactid"
     set now [clock seconds]
     DB eval {
 	UPDATE seen
@@ -259,7 +259,7 @@ proc end-element {name} {
 		    variable thetitle
 		    variable alist
 		    puts "  New: $artifact"
-		    puts "  === ($thetitle)"
+		    #puts "  === ($thetitle)"
 		    lappend  alist $artifact $thetitle
 		} else {
 		    variable thepid
