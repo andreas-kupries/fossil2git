@@ -374,7 +374,8 @@ proc generate-mail {url artifact title ticket stamp user fields} {
     # and automatically follows any layout changes/differences of the
     # various repositories.
 
-    lappend lines $url
+    lappend lines ""
+    lappend lines "Repository: $url"
     lappend lines ""
     lappend lines "Change Notification For"
     lappend lines "  \[$title\]"
