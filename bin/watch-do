@@ -95,6 +95,8 @@ proc config {k} {
 # # ## ### ##### ######## ############# ######################
 
 proc do {} {
+    variable mailcounter 0
+
     db
     set num [config num-entries]
 
@@ -109,6 +111,7 @@ proc do {} {
 	do-project $pid $url $src $num
     }
 
+    puts "Generated mails: $mailcounter"
     return
 }
 
@@ -357,6 +360,9 @@ proc send-mail {url sender receivers artifact title ticket stamp user fields} {
 
     mime::finalize $token
     puts "    Sent"
+
+    variable mailcounter
+    incr     mailcounter
     return
 }
 
