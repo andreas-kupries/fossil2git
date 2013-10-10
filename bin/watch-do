@@ -339,6 +339,7 @@ proc send-mail {url sender receivers artifact title ticket stamp user fields} {
     lappend config -header    [list From    $sender]
     lappend config -header    [list Subject $subject]
     lappend config -header    [list X-Fossil-Ticket-Note $project]
+    lappend config -header    [list X-Tool-Origin http://core.tcl.tk/akupries/fossil2git]
     lappend config -debug     [config debug]
     lappend config -usetls    [config tls]
     lappend config -tlspolicy tls-policy
