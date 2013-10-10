@@ -44,39 +44,18 @@ proc db {} {
 
 proc do {} {
     db
-
-    set last {}
-    set found 0
-
-    set found 0
+    # Create missing config table.
     DB eval {
-	SELECT P.pid        AS pid,
-	       P.repository AS url,
-	       P.sendermail AS src
-	FROM project P
-	ORDER BY url
-    } {
-	# pid, url, src
-	incr found
-	puts \n$url
-	puts "From: $src"
-
-	DB eval {
-	    SELECT R.mail AS dst
-	    FROM   project_receiver PR,
-	           receiver R
-	    WHERE PR.pid = :pid
-	    AND   R.rid = PR.rid
-	    ORDER BY dst
-	} {
-	    puts "To:   $dst"
-	}
-    }
-
-    if {!$found} {
-	puts "No watches defined"
-    } else {
-	puts {}
+	CREATE TABLE config (
+	    key   STRING PRIMARY KEY,
+	    value STRING
+	);
+	INSERT INTO config VALUES ('debug',    0 );
+	INSERT INTO config VALUES ('tls',      0 );
+	INSERT INTO config VALUES ('user',     '');
+	INSERT INTO config VALUES ('password', '');
+	INSERT INTO config VALUES ('host',     'localhost');
+	INSERT INTO config VALUES ('port',     25);
     }
     return
 }

@@ -32,16 +32,20 @@ proc dbfile {} {
     return $f
 }
 
+proc db {} {
+    set watch [dbfile]
+    if {![file exists $watch]} {
+	puts "No database"
+	return
+    }
+    sqlite3 DB $watch
+    return
+}
+
 # # ## ### ##### ######## ############# ######################
 
 proc do {url email} {
-    set watch [dbfile]
-    if {![file exists $watch]} {
-	puts "No watches defined (no database)"
-	return
-    }
-
-    sqlite3 DB [dbfile]
+    db
 
     if {![pidof $url pid]} {
 	puts "Unknown repository $url"

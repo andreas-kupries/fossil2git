@@ -1,10 +1,8 @@
 #!/usr/bin/env tclsh
-# Note a fossil repository for tracking of ticket changes.
+# Query and modify global configuration.
 
 package require Tcl 8.5
 package require sqlite3
-
-# # ## ### ##### ######## ############# ######################
 
 proc main {} {
     do {*}[cmdline]
@@ -15,13 +13,13 @@ proc cmdline {} {
     global argv
     if {[llength $argv] != 1} { usage }
 
-    #lassign $argv repository
+    #lassign $argv
     return $argv
 }
 
 proc usage {} {
     global argv0
-    puts stderr "Usage: $argv0 fossil-repository-url"
+    puts stderr "Usage: $argv0 key"
     exit 1
 }
 
@@ -44,35 +42,12 @@ proc db {} {
 
 # # ## ### ##### ######## ############# ######################
 
-proc do {url} {
+proc do {key} {
     db
-
-    if {![pidof $url pid]} {
-	puts "Unknown repository $url"
-	return
+    DB eval {
+	DELETE FROM config WHERE key = :key
     }
-
-    puts $url
-
-    DB transaction {
-	DB eval {
-	    DELETE FROM project_receiver WHERE pid = :pid ;
-	    DELETE FROM project          WHERE pid = :pid ;
-	}
-    }
-
-    puts ...Done
     return
-}
-
-proc pidof {url pv} {
-    set x [DB onecolumn {
-	SELECT pid FROM project WHERE repository = :url
-    }]
-    if {$x eq {}} { return 0 }
-    upvar 1 $pv pid
-    set pid $x
-    return 1
 }
 
 # # ## ### ##### ######## ############# ######################

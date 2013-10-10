@@ -14,3 +14,6 @@ kettle tclapp bin/watch-do
 kettle tclapp bin/watch-list
 kettle tclapp bin/watch-remove
 kettle tclapp bin/watch-setup
+kettle tclapp bin/watch-config-get
+kettle tclapp bin/watch-config-set
+kettle tclapp bin/watch-config-unset

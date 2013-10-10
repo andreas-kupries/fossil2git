@@ -42,6 +42,16 @@ proc dbfile {} {
     return $f
 }
 
+proc db {} {
+    set watch [dbfile]
+    if {![file exists $watch]} {
+	puts "No database"
+	return
+    }
+    sqlite3 DB $watch
+    return
+}
+
 proc seen {artifactid} {
     return [DB onecolumn {
 	SELECT count(*)
@@ -63,27 +73,16 @@ proc config {k} {
     # TODO: Move this information into the ~./.fossil.ewatch state
     #       file, and create tools to show and/or modify it.
 
-    dict get {
-	debug    0
-        tls      0
-	user     {}
-	password {}
-	host     localhost
-	port     25
-    } $k 
+    return [DB onecolumn {
+	SELECT value FROM config WHERE key = :k
+    }]
     # port 465 for tls
 }
 
 # # ## ### ##### ######## ############# ######################
 
 proc do {} {
-    set watch [dbfile]
-    if {![file exists $watch]} {
-	puts "No watches defined (no database)"
-	return
-    }
-
-    sqlite3 DB $watch
+    db
 
     # Iterate over all projects.
     DB eval {

@@ -51,6 +51,9 @@ proc dbsetup {path} {
     # project-receiver (n:m relation storage)
     # - project reference
     # - receiver reference
+    # config
+    # - key
+    # - value
     DB eval {
 	CREATE TABLE project (
 	    pid        INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -71,6 +74,16 @@ proc dbsetup {path} {
 	    pid INTEGER REFERENCES project ( pid ),
 	    hash STRING UNIQUE
 	);
+	CREATE TABLE config (
+	    key   STRING PRIMARY KEY,
+	    value STRING
+	);
+	INSERT INTO config VALUES ('debug',    0 );
+	INSERT INTO config VALUES ('tls',      0 );
+	INSERT INTO config VALUES ('user',     '');
+	INSERT INTO config VALUES ('password', '');
+	INSERT INTO config VALUES ('host',     'localhost');
+	INSERT INTO config VALUES ('port',     25);
     }
     rename DB {}
     return
