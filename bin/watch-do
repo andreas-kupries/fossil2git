@@ -61,8 +61,7 @@ proc seen {artifactid} {
 }
 
 proc see {pid artifactid} {
-    puts "  Seen $artifactid / disabled - DRY"
-    #return ;# TODO; remove, to enable
+    puts "  Seen $artifactid"
     DB eval {
 	INSERT INTO seen VALUES (NULL, :pid, :artifactid)
     }
@@ -131,18 +130,16 @@ proc process-artifact {manifest cmd} {
     # changed fields
     set field {}
     set stamp unknown
+    set user  {}
 
     foreach line [split $manifest \n] {
 	if {[regexp {^J (.*) (.*)$} $line -> fname value]} {
 	    dict set field $fname [dearmor $value]
 	    continue
 	}
-	if {[regexp {^K (.*)$} $line -> ticket]} {
-	    continue
-	}
-	if {[regexp {^D (.*)$} $line -> stamp]} {
-	    continue
-	}
+	if {[regexp {^K (.*)$} $line -> ticket]} continue
+	if {[regexp {^D (.*)$} $line -> stamp]} continue
+	if {[regexp {^U (.*)$} $line -> user]} continue
     }
 
     if {![info exists ticket] || ![dict size $field]} {
@@ -150,7 +147,7 @@ proc process-artifact {manifest cmd} {
 	return
     }
 
-    {*}$cmd $ticket $stamp $field
+    {*}$cmd $ticket $stamp $user $field
     return
 }
 
@@ -282,8 +279,8 @@ proc traverse {name level} {
 
 # # ## ### ##### ######## ############# ######################
 
-proc send-mail {url sender receivers artifact ticket stamp fields} {
-    set corpus  [generate-mail $url $artifact $ticket $stamp $fields]
+proc send-mail {url sender receivers artifact ticket stamp user fields} {
+    set corpus  [generate-mail $url $artifact $ticket $stamp $user $fields]
     set project [lindex [split $url /] end]
 
     set tshort [string range $ticket   0 7]
@@ -310,6 +307,7 @@ proc send-mail {url sender receivers artifact ticket stamp fields} {
 	lappend config -header    [list To      $dst]
 	lappend config -header    [list From    $sender]
 	lappend config -header    [list Subject $subject]
+	lappend config -header    [list X-Fossil-Ticket-Note $project]
 
 	lappend config -debug     [config debug]
 	lappend config -usetls    [config tls]
@@ -337,21 +335,22 @@ proc tls-policy {args} {
     return secure
 }
 
-proc generate-mail {url artifact ticket stamp fields} {
-
+proc generate-mail {url artifact ticket stamp user fields} {
     # NOTE: Mail is currently pure text.
     # Maybe make this a multipart/mixed ? text + html).
-    # We can pull the HTML for the ticket directly from the repository
-    # (see ticket url below) include that.  Easy, and automatically
-    # follows any layout changes/differences we may do to the
-    # repository.
+
+    # We can pull the HTML for the ticket (change) directly from the
+    # repository (see ticket/artifact urls below) include that.  Easy,
+    # and automatically follows any layout changes/differences of the
+    # various repositories.
 
     lappend lines $url
     lappend lines ""
     lappend lines "Change Notification For"
     lappend lines "  Ticket   $url/tktview?name=$ticket"
-    lappend lines "  Artifact $artifact"
+    lappend lines "  Artifact $url/tinfo?name=$artifact"
     lappend lines "  On       $stamp"
+    lappend lines "  By       $user"
     lappend lines ""
 
     struct::matrix M
