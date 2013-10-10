@@ -13,7 +13,7 @@ proc main {} {
 
 proc cmdline {} {
     global argv
-    if {[llength $argv] != 2} { usage }
+    if {[llength $argv] != 0} { usage }
 
     #lassign $argv repository sendermail
     return $argv
@@ -21,7 +21,7 @@ proc cmdline {} {
 
 proc usage {} {
     global argv0
-    puts stderr "Usage: $argv0 fossil-repository-url sender-email"
+    puts stderr "Usage: $argv0"
     exit 1
 }
 
@@ -32,33 +32,18 @@ proc dbfile {} {
     return $f
 }
 
-proc db {} {
-    set watch [dbfile]
-    if {![file exists $watch]} {
-	puts "No database"
-	return
-    }
-    sqlite3 DB $watch
-    return
-}
-
 # # ## ### ##### ######## ############# ######################
 
-proc do {url email} {
-    db
-
-    puts "$url ..."
-    puts "From: $email"
-
-    # Create master repository entry
-    DB transaction {
-	DB eval {
-	    INSERT INTO project
-	    VALUES (NULL, :url, :email)
-	}
+proc do {} {
+    set f [dbfile]
+    if {![file exists $f]} {
+	puts stderr "Database already gone at $f"
+	exit 1
     }
 
-    puts ...Done
+    file delete -- $f
+
+    puts "Database removed at $f"
     return
 }
 
