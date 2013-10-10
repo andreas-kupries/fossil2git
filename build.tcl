@@ -14,6 +14,7 @@ kettle tclapp bin/watch-config-set
 kettle tclapp bin/watch-config-unset
 kettle tclapp bin/watch-destroy
 kettle tclapp bin/watch-do
+kettle tclapp bin/watch-expire
 kettle tclapp bin/watch-final
 kettle tclapp bin/watch-init
 kettle tclapp bin/watch-list

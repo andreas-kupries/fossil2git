@@ -43,8 +43,9 @@ proc dbsetup {path} {
     # - repository-url
     # - sender-email
     # seen-artifacts:
-    # - project-reference
-    # - artifact-hash
+    # - project-reference \ combination is unique
+    # - artifact-hash     / hash might re-occur across different repositories
+    # - timestamp (of last touch by tracker)
     # receiver:
     # - email
     # project-receiver (n:m relation storage)
@@ -69,20 +70,24 @@ proc dbsetup {path} {
 	    UNIQUE (pid, rid )
 	);
 	CREATE TABLE seen (
-	    sid INTEGER PRIMARY KEY AUTOINCREMENT,
-	    pid INTEGER REFERENCES project ( pid ),
-	    hash STRING UNIQUE
+	    sid   INTEGER PRIMARY KEY AUTOINCREMENT,
+	    pid   INTEGER REFERENCES project ( pid ),
+	    hash  STRING,
+	    atime INTEGER
+	    UNIQUE ( pid, hash )
 	);
 	CREATE TABLE config (
 	    key   STRING PRIMARY KEY,
 	    value STRING
 	);
-	INSERT INTO config VALUES ('debug',    0 );
-	INSERT INTO config VALUES ('tls',      0 );
-	INSERT INTO config VALUES ('user',     '');
-	INSERT INTO config VALUES ('password', '');
-	INSERT INTO config VALUES ('host',     'localhost');
-	INSERT INTO config VALUES ('port',     25);
+	INSERT INTO config VALUES ('debug',          0);
+	INSERT INTO config VALUES ('tls',            0);
+	INSERT INTO config VALUES ('user',           '');
+	INSERT INTO config VALUES ('password',       '');
+	INSERT INTO config VALUES ('host',           'localhost');
+	INSERT INTO config VALUES ('port',           25);
+	INSERT INTO config VALUES ('num-entries',    200);
+	INSERT INTO config VALUES ('days-to-expiry', 30);
     }
     rename DB {}
     return

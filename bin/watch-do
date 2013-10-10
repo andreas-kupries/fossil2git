@@ -61,9 +61,23 @@ proc seen {artifactid} {
 }
 
 proc see {pid artifactid} {
+    #puts "  Seen $artifactid /dry";return
     puts "  Seen $artifactid"
+    set now [clock seconds]
     DB eval {
-	INSERT INTO seen VALUES (NULL, :pid, :artifactid)
+	INSERT INTO seen VALUES (NULL, :pid, :artifactid, :now)
+    }
+    return
+}
+
+proc touch {pid artifactid} {
+    puts "  Touch $artifactid"
+    set now [clock seconds]
+    DB eval {
+	UPDATE seen
+	SET atime = :now
+	WHERE pid  = :pid
+	AND   hash = :artifactid
     }
     return
 }
@@ -82,6 +96,7 @@ proc config {k} {
 
 proc do {} {
     db
+    set num [config num-entries]
 
     # Iterate over all projects.
     DB eval {
@@ -91,14 +106,13 @@ proc do {} {
 	FROM project P
 	ORDER BY url
     } {
-	do-project $pid $url $src
+	do-project $pid $url $src $num
     }
 
     return
 }
 
-proc do-project {pid url sender} {
-
+proc do-project {pid url sender num} {
     puts "Repository $url ..."
 
     set receivers [DB eval {
@@ -115,10 +129,10 @@ proc do-project {pid url sender} {
 	return
     }
 
-    foreach artifact [process-timeline [get-timeline $url]] {
+    foreach {artifact title} [process-timeline $pid [get-timeline $url $num]] {
 	process-artifact \
 	    [get-artifact $url $artifact] \
-	    [list send-mail $url $sender $receivers $artifact]
+	    [list send-mail $url $sender $receivers $artifact $title]
 	see $pid $artifact
     }
 
@@ -151,10 +165,10 @@ proc process-artifact {manifest cmd} {
     return
 }
 
-proc get-timeline {url} {
-    puts "  Timeline ..."
-    get $url/timeline.rss?type=t&n=200
-    # Note: type filtering seems to broken.
+proc get-timeline {url num} {
+    puts "  Timeline ($num) ..."
+    get $url/timeline.rss?type=t&n=$num
+    # Note: type filtering seems to be broken.
 }
 
 proc get-artifact {url artifact} {
@@ -181,8 +195,10 @@ proc get {url} {
 # # ## ### ##### ######## ############# ######################
 ## SAX parse timeline RSS
 
-proc process-timeline {rss} {
-    variable alist {}
+proc process-timeline {pid rss} {
+    variable alist    {}
+    variable thetitle {}
+    variable thepid   $pid
 
     xml::parser theparser -namespace -final 1 \
 	-elementstartcommand  start-element \
@@ -225,17 +241,30 @@ proc end-element {name} {
     # # ## ### ##### ######## #############
     ## Bespoke processing
     contextmatch {
+	{rss channel item title} {
+	    if {[regexp {&lt;i&gt;(.*)&lt;/i} $chardata --> part]} {
+		set chardata $part
+	    } elseif {[regexp {<i>(.*)</i} $chardata --> part]} {
+		set chardata $part
+	    }
+	    variable thetitle [string trim $chardata]
+	}
 	{rss channel item link} {
 	    # chardata = link
 	    # ignore anything but /info/...
-	    # ignore already seen artifacts as well.
-	    if {
-		[regexp {/info/(.*)$} $chardata -> artifact] &&
-		![seen $artifact]
-	    } {
-		puts "  New: $artifact"
-		variable alist
-		lappend  alist $artifact
+	    # ignore already seen artifacts as well, except that we
+	    # touch them to prevent expiry.
+	    if {[regexp {/info/(.*)$} $chardata -> artifact]} {
+		if {![seen $artifact]} {
+		    variable thetitle
+		    variable alist
+		    puts "  New: $artifact"
+		    puts "  === ($thetitle)"
+		    lappend  alist $artifact $thetitle
+		} else {
+		    variable thepid
+		    touch $thepid $artifact
+		}
 	    }
 	}
     }
@@ -279,14 +308,14 @@ proc traverse {name level} {
 
 # # ## ### ##### ######## ############# ######################
 
-proc send-mail {url sender receivers artifact ticket stamp user fields} {
-    set corpus  [generate-mail $url $artifact $ticket $stamp $user $fields]
+proc send-mail {url sender receivers artifact title ticket stamp user fields} {
+    set corpus  [generate-mail $url $artifact $title $ticket $stamp $user $fields]
     set project [lindex [split $url /] end]
 
     set tshort [string range $ticket   0 7]
     set ashort [string range $artifact 0 7]
 
-    set subject "\[$project\] (Ticket $tshort) Change $ashort"
+    set subject "\[$project\] (Ticket $tshort) $title"
 
     # NOTE: To get the ticket title this code has to manage a local
     #       clone of the tracked repository for direct access to the
@@ -295,34 +324,35 @@ proc send-mail {url sender receivers artifact ticket stamp user fields} {
     #       Assuming that the ticket setup has a title field.
     #       ==> Field to use could be a configuration entry.
 
+    puts "    $subject"
     puts "    ================================================"
     puts [textutil::adjust::indent $corpus {        }]
     puts "    ================================================"
 
+    #return
+
     set token [mime::initialize -string $corpus]
+
+    lappend config -header    [list From    $sender]
+    lappend config -header    [list Subject $subject]
+    lappend config -header    [list X-Fossil-Ticket-Note $project]
+    lappend config -debug     [config debug]
+    lappend config -usetls    [config tls]
+    lappend config -tlspolicy tls-policy
+    lappend config -username  [config user]
+    lappend config -password  [config password]
+    lappend config -servers   [list [config host]]
+    lappend config -ports     [config port]
 
     foreach dst $receivers {
 	puts "    To: $dst"
 
-	lappend config -header    [list To      $dst]
-	lappend config -header    [list From    $sender]
-	lappend config -header    [list Subject $subject]
-	lappend config -header    [list X-Fossil-Ticket-Note $project]
-
-	lappend config -debug     [config debug]
-	lappend config -usetls    [config tls]
-	lappend config -tlspolicy tls-policy
-	lappend config -username  [config user]
-	lappend config -password  [config password]
-	lappend config -servers   [list [config host]]
-	lappend config -ports     [config port]
-
-	set res [smtp::sendmessage $token {*}$config]
+	set res [smtp::sendmessage $token \
+		     -header [list To $dst] \
+		     {*}$config]
 	foreach item $res {
 	    puts "    ERR $item"
 	}
-
-	unset config
     }
 
     mime::finalize $token
@@ -335,7 +365,7 @@ proc tls-policy {args} {
     return secure
 }
 
-proc generate-mail {url artifact ticket stamp user fields} {
+proc generate-mail {url artifact title ticket stamp user fields} {
     # NOTE: Mail is currently pure text.
     # Maybe make this a multipart/mixed ? text + html).
 
@@ -347,6 +377,7 @@ proc generate-mail {url artifact ticket stamp user fields} {
     lappend lines $url
     lappend lines ""
     lappend lines "Change Notification For"
+    lappend lines "  \[$title\]"
     lappend lines "  Ticket   $url/tktview?name=$ticket"
     lappend lines "  Artifact $url/tinfo?name=$artifact"
     lappend lines "  On       $stamp"
