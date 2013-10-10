@@ -9,7 +9,7 @@ dst=aku
 # # ## ### ##### ######## #############
 
 watch=""
-watch="$watch http://core.tcl.tk/"
+#watch="$watch http://core.tcl.tk/"
 watch="$watch http://core.tcl.tk/tcl"
 watch="$watch http://core.tcl.tk/tk"
 watch="$watch http://core.tcl.tk/thread"
