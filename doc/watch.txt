@@ -49,3 +49,13 @@ watch-cron
 	locking against concurrent execution, and logging into a file.
 	(Logging is append-only, use logrotate or similar to keep
 	growth in check).
+
+watch-unsee <artifact>
+
+	Drop artifact from seen table, forcing mail regeneration.
+
+watch-rss <url> <n>
+watch-dump <url> <artifact>
+
+	Tools to inspect the rss timeline and specific artifacts of a
+	repository.
