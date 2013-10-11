@@ -24,15 +24,32 @@ proc main {} {
 
 proc cmdline {} {
     global argv
-    if {[llength $argv] != 0} { usage }
+    variable mail 1
+    variable dry  0
+    #if {[llength $argv] != 0} { usage }
+
+    foreach flag $argv {
+	switch -exact -- $flag {
+	    no-mail {
+		variable mail 0
+	    }
+	    dry {
+		variable dry 1
+	    }
+	    default {
+		puts stderr "Bad flag \"$flag\", expected 'dry', or 'no-mail'"
+		exit 1
+	    }
+	}
+    }
 
     #lassign $argv
-    return $argv
+    return
 }
 
 proc usage {} {
     global argv0
-    puts stderr "Usage: $argv0"
+    puts stderr "Usage: $argv0 ?dry|no-mail...?"
     exit 1
 }
 
@@ -62,8 +79,13 @@ proc seen {artifactid} {
 }
 
 proc see {pid artifactid} {
-    #puts "  Seen $artifactid /dry";return
-    puts "  Seen $artifactid"
+    variable dry
+	puts -nonewline "  Seen $artifactid"
+    if {$dry} {
+	puts " (dry)"
+	return
+    }
+    puts ""
     set now [clock seconds]
     DB eval {
 	INSERT INTO seen VALUES (NULL, :pid, :artifactid, :now)
@@ -313,6 +335,12 @@ proc traverse {name level} {
 # # ## ### ##### ######## ############# ######################
 
 proc send-mail {url sender receivers artifact title ticket stamp user fields} {
+    variable mail
+    if {!$mail} {
+	puts "    Skip mail"
+	return
+    }
+
     set corpus  [generate-mail $url $sender \
 		     $artifact $title $ticket \
 		     $stamp $user $fields]

@@ -32,11 +32,18 @@ watch-list
 	Show currently known repositories with sender and receiver
 	information.
 
-watch-do
+watch-do ?dry|no-mail...?
 
 	Run a check on all repositories, detect new tickets, send mail.
 	Touch all artifacts as seen, tickets or not, and update their
 	access time.
+
+	"Dry" disables saving of seen artifacts into the state. A
+	future run of watch-do will consider them again.
+
+	"No-mail" disables the generation of mails. Good for an
+	initial run of watch-do to front-load the table of seen
+	artifacts with past changes.
 
 watch-expire
 
