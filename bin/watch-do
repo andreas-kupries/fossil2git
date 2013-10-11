@@ -9,6 +9,7 @@ package require http
 package require tdom
 package require struct::matrix
 package require textutil::adjust
+package require clock::iso8601
 
 package require tls
 package require smtp
@@ -312,13 +313,9 @@ proc traverse {name level} {
 # # ## ### ##### ######## ############# ######################
 
 proc send-mail {url sender receivers artifact title ticket stamp user fields} {
-    set corpus  [generate-mail $url $artifact $title $ticket $stamp $user $fields]
-    set project [lindex [split $url /] end]
-
-    set tshort [string range $ticket   0 7]
-    set ashort [string range $artifact 0 7]
-
-    set subject "\[$project\] (Ticket $tshort) $title"
+    set corpus  [generate-mail $url $sender \
+		     $artifact $title $ticket \
+		     $stamp $user $fields]
 
     # NOTE: To get the ticket title this code has to manage a local
     #       clone of the tracked repository for direct access to the
@@ -327,7 +324,6 @@ proc send-mail {url sender receivers artifact title ticket stamp user fields} {
     #       Assuming that the ticket setup has a title field.
     #       ==> Field to use could be a configuration entry.
 
-    puts "    $subject"
     puts "    ================================================"
     puts [textutil::adjust::indent $corpus {        }]
     puts "    ================================================"
@@ -336,11 +332,6 @@ proc send-mail {url sender receivers artifact title ticket stamp user fields} {
 
     set token [mime::initialize -string $corpus]
 
-    lappend config -header    [list From    $sender]
-    lappend config -header    [list Subject $subject]
-    lappend config -header    [list Date    $stamp]
-    lappend config -header    [list X-Fossil-Ticket-Note $project]
-    lappend config -header    [list X-Tool-Origin http://core.tcl.tk/akupries/fossil2git]
     lappend config -debug     [config debug]
     lappend config -usetls    [config tls]
     lappend config -tlspolicy tls-policy
@@ -373,15 +364,30 @@ proc tls-policy {args} {
     return secure
 }
 
-proc generate-mail {url artifact title ticket stamp user fields} {
+proc generate-mail {url sender artifact title ticket stamp user fields} {
     # NOTE: Mail is currently pure text.
     # Maybe make this a multipart/mixed ? text + html).
+
+    set project [lindex [split $url /] end]
+    set tshort  [string range $ticket   0 9]
+    set ashort  [string range $artifact 0 9]
+    set subject "\[$project\] (Ticket $tshort) $title"
+
+    # Trim the subsecond part of the timestamp.
+    # Convert into a non-iso timestamp more suitable to mail readers.
+    regsub {\.\d+$} $stamp {} cleaniso
+    set maildate [clock format [clock::iso8601::parse_time $cleaniso -gmt 1] -gmt 1]
 
     # We can pull the HTML for the ticket (change) directly from the
     # repository (see ticket/artifact urls below) include that.  Easy,
     # and automatically follows any layout changes/differences of the
     # various repositories.
 
+    lappend lines "From:    $sender"
+    lappend lines "Subject: $subject"
+    lappend lines "Date:    $maildate"
+    lappend lines "X-Fossil-Ticket-Note: $project"
+    lappend lines "X-Tool-Origin:        http://core.tcl.tk/akupries/fossil2git"
     lappend lines ""
     lappend lines "Repository: $url"
     lappend lines ""
@@ -389,7 +395,7 @@ proc generate-mail {url artifact title ticket stamp user fields} {
     lappend lines "  \[$title\]"
     lappend lines "  Ticket   $url/tktview?name=$ticket"
     lappend lines "  Artifact $url/tinfo?name=$artifact"
-    lappend lines "  On       $stamp"
+    lappend lines "  On       $cleaniso"
     lappend lines "  By       $user"
     lappend lines ""
 
