@@ -80,7 +80,7 @@ proc seen {artifactid} {
 
 proc see {pid artifactid} {
     variable dry
-	puts -nonewline "  Seen $artifactid"
+    puts -nonewline "  Seen"
     if {$dry} {
 	puts " (dry)"
 	return
@@ -139,7 +139,7 @@ proc do {} {
 }
 
 proc do-project {pid url sender num} {
-    puts "Repository $url ..."
+    puts -nonewline "Repository $url ..."
 
     set receivers [DB eval {
 	    SELECT R.mail AS dst
@@ -151,7 +151,7 @@ proc do-project {pid url sender num} {
     }]
 
     if {![llength $receivers]} {
-	puts "Skipped (no receivers)"
+	puts "  Skipped (no receivers)"
 	return
     }
 
@@ -183,22 +183,25 @@ proc process-artifact {manifest cmd} {
     }
 
     if {![info exists ticket] || ![dict size $field]} {
-	puts "    Not a ticket change"
+	puts -nonewline "    Not a ticket change"
 	return
     }
 
+    puts ""
     {*}$cmd $ticket $stamp $user $field
     return
 }
 
 proc get-timeline {url num} {
     #puts "  Timeline ($num) ..."
-    get $url/timeline.rss?type=t&n=$num
+    set r [get $url/timeline.rss?type=t&n=$num]
+    if {$r ne {}} { puts "" }
     # Note: type filtering seems to be broken.
+    return $r
 }
 
 proc get-artifact {url artifact} {
-    puts "\n  Artifact $artifact ..."
+    puts -nonewline "  Artifact $artifact ..."
     get $url/raw?name=$artifact
 }
 
