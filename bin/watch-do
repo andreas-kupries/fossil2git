@@ -433,6 +433,8 @@ proc generate-mail {url sender artifact title ticket stamp user fields} {
 	set v [dict get $fields $f]
 	# Special handling...
 	switch -exact -- $f {
+	    title   -
+	    comment -
 	    icomment { set v [reformat $v] }
 	    mimetype {
 		continue ;# = ignore this field
