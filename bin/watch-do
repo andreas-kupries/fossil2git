@@ -162,7 +162,7 @@ proc do-project {pid url sender num} {
 	see $pid $artifact
     }
 
-    puts "Done\n"
+    #puts "Done\n"
     return
 }
 
@@ -192,7 +192,7 @@ proc process-artifact {manifest cmd} {
 }
 
 proc get-timeline {url num} {
-    puts "  Timeline ($num) ..."
+    #puts "  Timeline ($num) ..."
     get $url/timeline.rss?type=t&n=$num
     # Note: type filtering seems to be broken.
 }
