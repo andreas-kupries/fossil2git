@@ -406,15 +406,17 @@ proc tls-policy {args} {
 
 proc generate-mail-attachment {url sender artifact title ticket stamp user fields} {
     generate-mail "Attachment" \
+	"$url/info/$artifact" \
 	$url $sender $artifact $title $ticket $stamp $user $fields
 }
 
 proc generate-mail-ticket {url sender artifact title ticket stamp user fields} {
     generate-mail "Change" \
+	"$url/tinfo?name=$artifact" \
 	$url $sender $artifact $title $ticket $stamp $user $fields
 }
 
-proc generate-mail {what url sender artifact title ticket stamp user fields} {
+proc generate-mail {what alink url sender artifact title ticket stamp user fields} {
     # NOTE: Mail is currently pure text.
     # Maybe make this a multipart/mixed ? text + html).
 
@@ -444,7 +446,7 @@ proc generate-mail {what url sender artifact title ticket stamp user fields} {
     lappend lines "$what Notification For"
     lappend lines "  \[$title\]"
     lappend lines "  Ticket   $url/tktview?name=$ticket"
-    lappend lines "  Artifact $url/tinfo?name=$artifact"
+    lappend lines "  Artifact $alink"
     lappend lines "  On       $cleaniso"
     lappend lines "  By       $user"
     lappend lines ""
