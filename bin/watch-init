@@ -73,7 +73,7 @@ proc dbsetup {path} {
 	    sid   INTEGER PRIMARY KEY AUTOINCREMENT,
 	    pid   INTEGER REFERENCES project ( pid ),
 	    hash  STRING,
-	    atime INTEGER
+	    atime INTEGER,
 	    UNIQUE ( pid, hash )
 	);
 	CREATE TABLE config (
