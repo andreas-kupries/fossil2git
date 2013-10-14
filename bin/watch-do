@@ -182,13 +182,13 @@ proc process-artifact {manifest cmd} {
 	if {[regexp {^U (.*)$} $line -> user]} continue
     }
 
-    if {![info exists ticket] || ![dict size $field]} {
-	puts -nonewline "    Not a ticket change"
+    if {[info exists ticket] && [dict size $field]} {
+	puts " Ticket"
+	{*}$cmd ticket $ticket $stamp $user $field
 	return
     }
 
-    puts ""
-    {*}$cmd $ticket $stamp $user $field
+    puts -nonewline "    Unknown change"
     return
 }
 
@@ -337,7 +337,7 @@ proc traverse {name level} {
 
 # # ## ### ##### ######## ############# ######################
 
-proc send-mail {url sender receivers artifact title ticket stamp user fields} {
+proc send-mail {url sender receivers artifact title what ticket stamp user fields} {
     variable mail
     if {!$mail} {
 	puts "    Skip mail"
