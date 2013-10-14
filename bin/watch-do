@@ -439,6 +439,7 @@ proc generate-mail {url sender artifact title ticket stamp user fields} {
 	    title   -
 	    comment -
 	    icomment { set v [reformat $v] }
+	    cmimetype -
 	    mimetype {
 		continue ;# = ignore this field
 	    }
