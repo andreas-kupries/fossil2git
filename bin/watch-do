@@ -171,6 +171,7 @@ proc process-artifact {manifest cmd} {
     set field {}
     set stamp unknown
     set user  {}
+    set anote {}
 
     foreach line [split $manifest \n] {
 	if {[regexp {^J (.*) (.*)$} $line -> fname value]} {
@@ -180,6 +181,21 @@ proc process-artifact {manifest cmd} {
 	if {[regexp {^K (.*)$} $line -> ticket]} continue
 	if {[regexp {^D (.*)$} $line -> stamp]} continue
 	if {[regexp {^U (.*)$} $line -> user]} continue
+
+	if {[regexp {^A (.*)$} $line -> aref]} continue
+	if {[regexp {^C (.*)$} $line -> anote]} continue
+    }
+
+    if {[info exists aref]} {
+	puts " Attachment"
+	lassign $aref aname ticket aref
+
+	dict set field attachment::id   $aref
+	dict set field attachment::name $aname
+	dict set field attachment::note $anote
+
+	{*}$cmd attachment $ticket $stamp $user $field
+	return
     }
 
     if {[info exists ticket] && [dict size $field]} {
@@ -344,16 +360,9 @@ proc send-mail {url sender receivers artifact title what ticket stamp user field
 	return
     }
 
-    set corpus  [generate-mail $url $sender \
-		     $artifact $title $ticket \
-		     $stamp $user $fields]
-
-    # NOTE: To get the ticket title this code has to manage a local
-    #       clone of the tracked repository for direct access to the
-    #       ticket tables.
-    #
-    #       Assuming that the ticket setup has a title field.
-    #       ==> Field to use could be a configuration entry.
+    set corpus  [generate-mail-$what \
+		     $url $sender $artifact $title \
+		     $ticket $stamp $user $fields]
 
     puts "    ================================================"
     puts [textutil::adjust::indent $corpus {        }]
@@ -395,14 +404,24 @@ proc tls-policy {args} {
     return secure
 }
 
-proc generate-mail {url sender artifact title ticket stamp user fields} {
+proc generate-mail-attachment {url sender artifact title ticket stamp user fields} {
+    generate-mail "Attachment" \
+	$url $sender $artifact $title $ticket $stamp $user $fields
+}
+
+proc generate-mail-ticket {url sender artifact title ticket stamp user fields} {
+    generate-mail "Change" \
+	$url $sender $artifact $title $ticket $stamp $user $fields
+}
+
+proc generate-mail {what url sender artifact title ticket stamp user fields} {
     # NOTE: Mail is currently pure text.
     # Maybe make this a multipart/mixed ? text + html).
 
     set project [lindex [split $url /] end]
     set tshort  [string range $ticket   0 9]
     set ashort  [string range $artifact 0 9]
-    set subject "\[$project\] (Ticket $tshort) $title"
+    set subject "\[$project\] (Ticket $tshort - $what) $title"
 
     # Trim the subsecond part of the timestamp.
     # Convert into a non-iso timestamp more suitable to mail readers.
@@ -422,7 +441,7 @@ proc generate-mail {url sender artifact title ticket stamp user fields} {
     lappend lines ""
     lappend lines "Repository: $url"
     lappend lines ""
-    lappend lines "Change Notification For"
+    lappend lines "$what Notification For"
     lappend lines "  \[$title\]"
     lappend lines "  Ticket   $url/tktview?name=$ticket"
     lappend lines "  Artifact $url/tinfo?name=$artifact"
@@ -442,6 +461,10 @@ proc generate-mail {url sender artifact title ticket stamp user fields} {
 	    cmimetype -
 	    mimetype {
 		continue ;# = ignore this field
+	    }
+	    attachment::id {
+		# Pseudo field for attached artifacts, id of attachment.
+		set v $url/artifact/$v
 	    }
 	    default  { }
 	}
