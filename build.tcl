@@ -1,13 +1,17 @@
 #!/bin/sh
 # -*- tcl -*- \
 exec ./kettle -f "$0" "${1+$@}"
-#kettle tcl
+# For kettle sources, documentation, etc. see
+# - http://core.tcl.tk/akupries/kettle
+# - http://chiselapp.com/user/andreas_kupries/repository/Kettle
 #
+# One-way mirroring of fossil repositories to git
 kettle tclapp bin/do-mirror
 kettle tclapp bin/list
 kettle tclapp bin/setup-export
 kettle tclapp bin/setup-import
 #
+# Tracking ticket changes in fossil repositories
 kettle tclapp bin/watch-add
 kettle tclapp bin/watch-config-get
 kettle tclapp bin/watch-config-set
