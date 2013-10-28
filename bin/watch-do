@@ -192,7 +192,7 @@ proc process-artifact {manifest cmd} {
 
 	dict set field attachment::id   $aref
 	dict set field attachment::name $aname
-	dict set field attachment::note $anote
+	dict set field attachment::note [dearmor $anote]
 
 	{*}$cmd attachment $ticket $stamp $user $field
 	return
@@ -457,6 +457,7 @@ proc generate-mail {what alink url sender artifact title ticket stamp user field
 	set v [dict get $fields $f]
 	# Special handling...
 	switch -exact -- $f {
+	    attachment::note -
 	    title   -
 	    comment -
 	    icomment { set v [reformat $v] }
