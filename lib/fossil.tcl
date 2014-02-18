@@ -17,7 +17,8 @@ package require Tcl 8.5
 package require sqlite3
 
 namespace eval ::fx::fossil {
-    namespace export locate repository
+    namespace export locate repository \
+	fx-tables fx-enums fx-enum-items
     namespace ensemble create
 }
 
@@ -49,6 +50,40 @@ proc fx::fossil::locate {p} {
 	WHERE name = 'repository'
     }]]
 }
+
+proc fx::fossil::fx-enum-items {db table} {
+    return [$db eval [subst {
+	SELECT item
+	FROM   $table
+	ORDER BY item
+    }]]
+}
+
+proc fx::fossil::fx-enums {db} {
+    set enums {}
+    foreach table [fx-tables] {
+	if {![string match fx_aku_enum_* $table]} continue
+	regsub {^fx_aku_enum_} $table {} enum
+	lappend enums $enum
+    }
+    return $enums
+}
+
+proc fx::fossil::fx-tables {db} {
+    set tables {}
+    $db eval {
+	SELECT name
+	FROM sqlite_master
+	WHERE type = 'table'
+	AND   name LIKE 'fx_aku_%'
+	;
+    } {
+	lappend tables [string tolower $name]
+    }
+    return $tables
+}
+
+# # ## ### ##### ######## ############# ######################
 
 proc fx::fossil::is {dir} {
     foreach control {
