@@ -1,6 +1,18 @@
 #!/usr/bin/env tclsh
 # Query and modify global configuration.
 
+# @@ Meta Begin
+# Application bin/watch-config-set ?
+# Meta author      ?
+# Meta category    ?
+# Meta description ?
+# Meta location    http:/core.tcl.tk/akupries/fossil2git
+# Meta platform    tcl
+# Meta require     ?
+# Meta subject     ?
+# Meta summary     ?
+# @@ Meta End
+
 package require Tcl 8.5
 package require sqlite3
 

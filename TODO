@@ -1,0 +1,20 @@
+
+- All tools replicate some code to access the shared state file.
+  Should be in a small package instead.  Or merge all the scripts into
+  a single tool.
+
+- The database schema is not fully baked.  I currently have artifact
+  --(n:1)-- repository and equate repository with project.  This does
+  not account for multiple repositories (mirrors) of a project.  And
+  for robustness watching multiple mirrors of a project is likely
+  sensible.
+
+- Artifacts are marked as seen even if the sending of their mail
+  fails. No idea yet of how to deal with multiple destinations
+  associated with a repo where some are ok, and some fail.
+
+- Long term idea: Make the mail multipart/mixed and use the /tinfo
+  link for the artifact s source for the text/html part. I.e. send the
+  change artifact rendered as html by fossil itself in the mail.
+
+- The type=t filtering of the timeline.rss seems to be broken in fossil.

@@ -1,5 +1,17 @@
 #!/usr/bin/env tclsh
 
+# @@ Meta Begin
+# Application bin/do-mirror ?
+# Meta author      ?
+# Meta category    ?
+# Meta description ?
+# Meta location    http:/core.tcl.tk/akupries/fossil2git
+# Meta platform    tcl
+# Meta require     ?
+# Meta subject     ?
+# Meta summary     ?
+# @@ Meta End
+
 # Assumes that ssh has access to an ssh-agent providing all necessary
 # keys for access to which git hosting service is used. (github, SF, google).
 

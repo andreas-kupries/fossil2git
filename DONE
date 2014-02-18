@@ -1,0 +1,30 @@
+- The configuration used to access mail is current hardwired in
+  watch-do.  See proc "config".  This should be put into the shared
+  state, with scripts to query and modify.  Extension: Allow this to
+  be both global and per-project/repository
+
+- I plan to add a mail header X-Fossil-Ticket-Note to the sent mails,
+  to make filtering/sorting easier.
+
+- I currently use n=200 for querying the timeline. That is something
+  we might wish to configure, either globally, or on a per project
+  basis.
+
+- The table of seen artifacts in the shared state can currently grow
+  out of bounds. There is no code yet to wipe old entries we are sure
+  to not see again anymore. (Could be done with a last-touched
+  timestamp which is always updated, even if no mail is sent, or not a
+  ticket.  Then, when an artifact falls out of the .rss it is not
+  getting touched anymore and we can wipe anything older than some
+  global threshold (Say, 30 days ?)
+
+- The sent mail's subject is currently not very informative.  It is
+  especially not showing the title of a ticket.  To get this I believe
+  I need a local clone of the watched repository I can then directly
+  access via sqlite (ticket tables).  (And the field to use, like
+  'title' likely has to be configured on a per-project/repository
+  basis)
+
+- watch-do does not lock against multiple concurrent runs. Ok, for
+  this I prefer to make a helper script which handles the locking and
+  is the main script used in cron.

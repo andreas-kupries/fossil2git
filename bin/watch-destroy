@@ -1,6 +1,18 @@
 #!/usr/bin/env tclsh
 # Note a fossil repository for tracking of ticket changes.
 
+# @@ Meta Begin
+# Application bin/watch-destroy ?
+# Meta author      ?
+# Meta category    ?
+# Meta description ?
+# Meta location    http:/core.tcl.tk/akupries/fossil2git
+# Meta platform    tcl
+# Meta require     ?
+# Meta subject     ?
+# Meta summary     ?
+# @@ Meta End
+
 package require Tcl 8.5
 package require sqlite3
 
