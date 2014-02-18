@@ -138,11 +138,11 @@ proc ::fx::enum::import {config} {
     # We catch issues and report them, but do not abort importing.
 
     set i [interp::createEmpty]
-    $i alias enum IEnum
-    $i alias item IItem
-    $i alias end  IEnd
+    $i alias enum ::fx::enum::IEnum
+    $i alias item ::fx::enum::IItem
+    $i alias end  ::fx::enum::IEnd
     $i eval $data
-    $i destroy
+    interp delete $i
 
     variable imported
     foreach {enum items} $imported {
@@ -150,7 +150,7 @@ proc ::fx::enum::import {config} {
 	flush stdout
 
 	try {
-	    fx::fx do create $enum {*}$items
+	    fx::fx do enum create $enum {*}$items
 	} on error {e o} {
 	    puts $e
 	} on ok {e o} {
@@ -164,15 +164,18 @@ proc ::fx::enum::import {config} {
 proc ::fx::enum::IEnum {name} {
     variable current $name
     variable citems {}
+    return
 }
 proc ::fx::enum::IItem {item} {
     variable citems
     lappend  citems $item
+    return
 }
 proc ::fx::enum::IEnd {} {
     variable current
     variable citems
-    variable imported $current $citems
+    variable imported
+    lappend  imported $current $citems
     set current {}
     set citems {}
     return

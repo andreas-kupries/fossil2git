@@ -61,7 +61,7 @@ proc fx::fossil::fx-enum-items {db table} {
 
 proc fx::fossil::fx-enums {db} {
     set enums {}
-    foreach table [fx-tables] {
+    foreach table [fx-tables $db] {
 	if {![string match fx_aku_enum_* $table]} continue
 	regsub {^fx_aku_enum_} $table {} enum
 	lappend enums $enum

@@ -33,7 +33,7 @@ namespace eval ::fx::validate::enum-item {
     namespace export release validate default complete
     namespace ensemble create
 
-    namespace import ::fx::fossil::fx-enums
+    namespace import ::fx::fossil::fx-enum-items
     namespace import ::cmdr::validate::common::fail
     namespace import ::cmdr::validate::common::complete-enum
 }

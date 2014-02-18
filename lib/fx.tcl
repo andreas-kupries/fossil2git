@@ -40,7 +40,7 @@ proc fx::main {argv} {
     } trap {CMDR VALIDATE} {e o} {
 	puts $e
     } on error {e o} {
-	puts $o
+	puts $::errorInfo
     }
     return
 }
@@ -273,7 +273,6 @@ cmdr create fx::fx fx {
 		Defaults to stdout.
 	    } {
 		alias o
-		optional
 		validate wchan
 	    }
 	    input enums {
@@ -282,7 +281,7 @@ cmdr create fx::fx fx {
 		optional
 		list
 		validate [fx::vt enum]
-		generate [fx::vt enum]
+		generate [fx::vt enum default]
 	    }
 	} [fx::call enum export]
 
