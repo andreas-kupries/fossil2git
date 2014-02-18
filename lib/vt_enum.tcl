@@ -48,7 +48,16 @@ proc ::fx::validate::enum::validate {p x} {
     fail $p ENUM "an enumeration" $x
 }
 
-proc ::fx::validate::enum::default  {p} { return {} }
+proc ::fx::validate::enum::default  {p} {
+    # Default is the tables of all enums.
+    # See 'enum export' for the use.
+    set t {}
+    foreach e [Values $p] {
+	lappend t fx_aku_enum_$e
+    }
+    return $t
+}
+
 proc ::fx::validate::enum::complete {p} {
     complete-enum list [Values $p] $x
 }

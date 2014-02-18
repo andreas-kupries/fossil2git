@@ -282,6 +282,7 @@ cmdr create fx::fx fx {
 		optional
 		list
 		validate [fx::vt enum]
+		generate [fx::vt enum]
 	    }
 	} [fx::call enum export]
 
