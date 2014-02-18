@@ -50,6 +50,15 @@ cmdr create fx fx {
 	}
     }
 
+    private repository {
+	section Introspection
+	description {
+	    Print the name of the repository we are working on.
+	}
+    } [lambda config {
+	puts [$config @repository]
+    }]
+
     # Configuration Mgmt. In all separate parts
     officer config {
 	description {
@@ -77,6 +86,7 @@ cmdr create fx fx {
 		repository, and their values.
 	    }
 	} [call fx::config list]
+	default
 
 	private get {
 	    section Configuration
@@ -96,8 +106,18 @@ cmdr create fx fx {
 	    use .setting
 	    input value {
 		The new value of the configuration setting.
-	    } {}
+	    } {
+	    }
 	} [call fx::config set]
+
+	private unset {
+	    section Configuration
+	    description {
+		Remove the specified local configuration setting.
+		This sets it back to the system default.
+	    }
+	    use .setting
+	} [call fx::config unset]
 
 	# Standard fossil cli configuration commands, implement maybe.
 	# push
@@ -119,6 +139,7 @@ cmdr create fx fx {
 		List all reports defined in the repository.
 	    }
 	} [call fx::report list]
+	default
 
 	private def {
 	    section Reporting
@@ -193,6 +214,7 @@ cmdr create fx fx {
 		List all enumerations stored in the repository.
 	    }
 	} [call fx::enum list]
+	default
 
 	private create {
 	    section Enumerations

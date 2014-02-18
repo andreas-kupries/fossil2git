@@ -20,7 +20,7 @@ package require fx::table
 package require cmdr::validate::common
 
 namespace eval ::fx::config {
-    namespace export setting available list get set
+    namespace export setting available list get set unset
     namespace ensemble create
 
     namespace import ::cmdr::validate::common::fail
@@ -142,7 +142,7 @@ proc ::fx::config::list {config} {
 
     [table t {Setting Last-Changed Value} {
 	[$config @repository-db] eval {
-	    SELECT name, value, datetime(mtime) AS modtime
+	    SELECT name, value, mtime
 	    FROM   config
 	    ORDER BY name
 	    ;
@@ -166,7 +166,7 @@ proc ::fx::config::list {config} {
 		::set value [string range $value 0 29]...
 	    }
 
-	    $t add $name $modtime $value
+	    $t add $name [clock format $mtime] $value
 	}
     }] show puts
     return
@@ -186,17 +186,55 @@ proc ::fx::config::get {config} {
 proc ::fx::config::set {config} {
     ::set name  [$config @setting]
     ::set value [$config @value]
+    ::set r     [$config @repository] ;# TODO: Reformat to show relative to cwd
+    ::set db    [$config @repository-db]
+    ::set now   [clock seconds]
 
-    puts -nonewline "Setting ${name}: "
-
-    [$config @repository-db] eval {
-	UPDATE config
-	SET   value = :value
-	WHERE name  = :name
-	;
+    puts -nonewline "Setting $r (${name}): "
+    $db transaction {
+	# Change ...
+	$db eval {
+	    UPDATE config
+	    SET   value = :value,
+	          mtime = :now
+	    WHERE name  = :name
+	    ;
+	}
+	# ... or insert
+	if {![$db changes]} {
+	    $db eval {
+		INSERT INTO config
+		VALUES (:name, :value, :now);
+	    }
+	}
     }
 
-    puts " '$value'"
+    # Show actual value found in the database.
+    puts '[$db onecolumn {
+	    SELECT value
+	    FROM  config
+	    WHERE name  = :name
+	    ;
+    }]'
+    return
+}
+
+
+proc ::fx::config::unset {config} {
+    ::set name  [$config @setting]
+    ::set r     [$config @repository] ;# TODO: Reformat to show relative to cwd
+    ::set db    [$config @repository-db]
+
+    puts -nonewline "Unsetting $r (${name})"
+    $db transaction {
+	$db eval {
+	    DELETE
+	    FROM config
+	    WHERE name  = :name
+	    ;
+	}
+    }
+    puts ""
     return
 }
 
