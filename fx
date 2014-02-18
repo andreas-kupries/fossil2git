@@ -204,7 +204,7 @@ cmdr create fx fx {
 	    input newitem {
 		New value for the enumeration.
 	    } {
-		validate [call fx::enum !item]
+		validate [call fx::enum notitem]
 	    }
 	}
 
@@ -221,7 +221,7 @@ cmdr create fx fx {
 	    description {
 		Create a new named enumeration.
 	    }
-	    input enum {
+	    input newenum {
 		Name of the enumeration to create.
 	    } {
 		validate [call fx::enum notknown]
@@ -311,7 +311,14 @@ cmdr create fx fx {
 
 proc main {} {
     global argv
-    fx do {*}$argv
+
+    try {
+	fx do {*}$argv
+    } trap {CMDR VALIDATE} {e o} {
+	puts $e
+    } on error {e o} {
+	puts $o
+    }
     return
 }
 

@@ -3,7 +3,7 @@
 
 # @@ Meta Begin
 # Package fx::config 0
-# Meta author      ?
+# Meta author      {Andreas Kupries}
 # Meta category    ?
 # Meta description ?
 # Meta location    http:/core.tcl.tk/akupries/fossil2git
@@ -14,17 +14,16 @@
 # @@ Meta End
 
 package require Tcl 8.5
-package require sqlite3
-package require fx::fossil
+#package require fx::fossil
 package require fx::table
 package require cmdr::validate::common
+
+# # ## ### ##### ######## ############# ######################
 
 namespace eval ::fx::config {
     namespace export setting available list get set unset
     namespace ensemble create
 
-    namespace import ::cmdr::validate::common::fail
-    namespace import ::cmdr::validate::common::complete-enum
     namespace import ::fx::table::do
     rename do table
 
@@ -113,6 +112,9 @@ namespace eval ::fx::config {
 namespace eval ::fx::config::setting {
     namespace export release validate default complete
     namespace ensemble create
+
+    namespace import ::cmdr::validate::common::fail
+    namespace import ::cmdr::validate::common::complete-enum
 }
 
 proc ::fx::config::setting::release  {p x} { return }
@@ -168,7 +170,7 @@ proc ::fx::config::list {config} {
 
 	    $t add $name [clock format $mtime] $value
 	}
-    }] show puts
+    }] show
     return
 }
 
