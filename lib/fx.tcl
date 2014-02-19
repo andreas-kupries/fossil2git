@@ -165,6 +165,10 @@ cmdr create fx::fx fx {
 	    Management of a fossil repositories' set of ticket reports.
 	}
 
+	# execute a report ... proper matrix output, json output, nested tcl
+	# execute a temp report => enter a report, execute it, delete it.
+	# see if we can get reports parameterized. at least from fx.
+
 	private list {
 	    section Reporting
 	    description {
@@ -173,7 +177,7 @@ cmdr create fx::fx fx {
 	} [fx::call report list]
 	default
 
-	private def {
+	private add {
 	    section Reporting
 	    description {
 		Add a report definition to the repository.
@@ -187,7 +191,7 @@ cmdr create fx::fx fx {
 		default [lambda p { set ::tcl_platform(user) }]
 	    }
 	    input title {
-		Report title.
+		The report's name.
 	    } {
 		validate str
 	    }
@@ -199,7 +203,7 @@ cmdr create fx::fx fx {
 		validate str
 		generate [lambda p { read stdin }]
 	    }
-	} [fx::call report def]
+	} [fx::call report add]
 
 	private get {
 	    section Reporting
@@ -207,11 +211,23 @@ cmdr create fx::fx fx {
 		Retrieve the specified report definition.
 	    }
 	    input id {
-		Id of the report to retrieve.
+		Id or name of the report to retrieve.
 	    } {
 		validate [fx::vt report-id]
 	    }
 	} [fx::call report get]
+
+	private delete {
+	    section Reporting
+	    description {
+		Delete the specified report definition.
+	    }
+	    input id {
+		Id or name of the report to delete.
+	    } {
+		validate [fx::vt report-id]
+	    }
+	} [fx::call report delete]
     }
     officer enum {
 	description {
