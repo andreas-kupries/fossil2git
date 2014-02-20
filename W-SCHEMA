@@ -1,0 +1,138 @@
+Watch Schema
+============
+
+seen-artifacts --(n:1) --> project <--(n:m)--> receiver
+
+	seen     = ( (project-id, hash) U, atime )
+	project  = ( repo-location U, sender-address )
+	receiver = ( receiver-address U )
+
+configuration
+
+	debug		0		| mail sender configuration
+	tls		0		| => global and local!
+	user		''		| Use prefix
+	password	''		|	fx-aku-watch-mail-
+	host		localhost	| for in "config"
+	port		25		|
+	--------------------------
+	num-entries	200
+	days-to-expiry	30
+
+New Schema
+===========
+
+(1) New table "fx_aku_config"
+	key PK
+	value
+	mtime
+
+or reuse fossil's "config" table. In case of reuse add the prefix
+string "fx-aku-" to our configuration keys below.
+
+	watch-mail-debug	0
+	watch-mail-tls		0
+	watch-mail-user		''
+	watch-mail-password	''
+	watch-mail-host		localhost
+	watch-mail-port		25
+	watch-mail-sender	''	Mandatory
+
+Additional keys, always global:
+
+	watch:*
+
+	*	local location of a repository to watch (relative
+		path, relative to $HOME)
+
+Additional keys, always local:
+
+	watch-mail-send2-*:*
+
+	*1	event type
+	*2	receiving mail address
+
+	watch-mail-field:*
+
+	*	name of ticket field to search for receiver address.
+		Event type implied, always 't'.
+
+	watch-mail-suspended	0	bool, not suspended by default
+	watch-sync		0	bool, do not sync on cron run
+					(set for local clone of watched repo)
+
+	watch-mail-susp-*
+
+	*	event type currently suspended
+
+Note: No expiry. We are not looking at a limited RSS timeline anymore.
+
+(2) New table "fx_aku_watch_seen"
+
+	id REFERENCES event.objid
+
+	ci	checkin			objid = manifest artifact
+	e	event			objid = event artifact
+	g	edit checkin comment	objid = control artifact
+	t	ticket change		objid = change artifact - ticket uuid inside
+	w	wiki change		objid = wiki page
+
+(3) On events and mail
+
+	'ci' events can only be sent to fixed configured receivers.
+	'e' ditto
+	'g' ditto
+	'w' ditto
+
+		See above	watch-mail-send2-*:*
+
+	't' events can have both fixed and dynamic receivers.
+
+		See above	watch-mail-send2-*:*
+		See above	watch-mail-field-*
+
+	Dynamic receivers are taken from ticket fields, for the
+	changed ticket. The set of fields to look at must be
+	configured (per repository).
+
+	Adding/removing fields/receivers for various events
+	automatically add/removes the repository to/from the global
+	watch list (for the cron).
+
+	Dynamic field handling
+
+	(1)	Check if the value is in "concealed.hash".
+		If yes, replace with "concealed.content"
+
+		=>	Decode hidden contact information of a ticket
+			submitter.
+
+	(2)	Check if the value is in "user.login".
+		If yes, replace with "user.info"
+
+		=>	Convert repository accounts into emails.
+
+		NOTE: The "user.info" may not be a proper email address.
+			(See Tcllib, Tcl)
+
+		Need a way to disable accounts, i.e. exclude them from
+		email delivery.
+
+		No need to precheck however. With a proper
+		sender-address in the mail configuration any bounces
+		are sent to a person responsible for managing this.
+
+		TODO: FUTURE Automate bounce handling.
+
+		watch-mail-disabled:*
+
+		*	name of the disabled account.
+
+	Remove duplicates from the set of receivers collected from all
+	fields.
+
+	Should possibly do a general syntax check for valid address.
+
+(4) Import seen information from an existing watcher ?
+
+	Easier to say that all is seen on first setup.

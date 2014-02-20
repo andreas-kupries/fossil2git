@@ -63,7 +63,8 @@ proc fx::vt {p args} {
 
 # # ## ### ##### ######## ############# ######################
 
-cmdr create fx::fx fx {
+cmdr create fx::fx $::argv0 {
+    # # ## ### ##### ######## ############# ######################
     common *all* {
 	option repository {
 	    The repository to work with.
@@ -82,6 +83,14 @@ cmdr create fx::fx fx {
 	}
     }
 
+    common .global {
+	# Used by officers 'config' and 'note config'.
+	option global {
+	    Set the configuration globally
+	} { alias g ; presence }
+    }
+
+    # # ## ### ##### ######## ############# ######################
     private repository {
 	section Introspection
 	description {
@@ -91,10 +100,26 @@ cmdr create fx::fx fx {
 	puts [$config @repository]
     }]
 
-    # Configuration Mgmt. In all separate parts
+    private delegate {
+	section Convenience
+	description {
+	    Delegate the command to the local fossil executable.
+	}
+	input args {
+	    Command and arguments to deliver to core fossil
+	} { list ; validate str }
+    } [lambda config {
+	exec >@ stdout 2>@ stderr <@ stdin \
+	    {*}[auto_execok fossil] {*}[$config @args]
+    }]
+    # All commands not known to fx are delegated to the fossil core.
+    default
+
+    # # ## ### ##### ######## ############# ######################
     officer config {
 	description {
 	    Management of a fossil repositories' configuration, in detail.
+	    I.e. this has access to all the individual pieces.
 	}
 	common .setting {
 	    input setting {
@@ -160,6 +185,11 @@ cmdr create fx::fx fx {
 	# import
 	# reset
     }
+
+    # # ## ### ##### ######## ############# ######################
+    # Report mgmt. Using an external report format which is easier to
+    # write by a human being. Also nicer table output, and structured
+    # output.
     officer report {
 	description {
 	    Management of a fossil repositories' set of ticket reports.
@@ -229,6 +259,10 @@ cmdr create fx::fx fx {
 	    }
 	} [fx::call report delete]
     }
+
+    # # ## ### ##### ######## ############# ######################
+    # Mgmt of enumerations (used in ticket system for example. Type,
+    # severity, priority, category, ...)
     officer enum {
 	description {
 	    Management of enumerations for the ticketing system.
@@ -365,8 +399,134 @@ cmdr create fx::fx fx {
 	    }
 	} [fx::call enum change]
     }
+
+    # # ## ### ##### ######## ############# ######################
+    officer note {
+	description {
+	    Management of notification emails for ticket
+	    changes, new revisions, etc.
+	}
+
+	# Required commands:
+	# - Global setup (mail configuration)
+	# - Show and change the mail configuration
+	# - Add/remove fixed mail receivers (per event type)
+	# - Config of dynamic ticket receivers
+	#   => ticket fields to use as sources
+	#   ex. Tcl/Tk: assignee, closer, login, contact, submitter
+	# - Exclude/Include users from email delivery
+	# - Suspend/activate notification for a project, event type.
+	# - watch remote repo (ping /stat) => create a local clone, watch implies sync.
+	#
+	# All commands check for and remind the user about a missing
+	# mail configuration, especially the mandatory fields.
+
+	# Old command set (see bin/)
+	#
+	# init              | irrelevant, dropped
+	# final             | irrelevant, dropped
+	# cron              | ?
+
+	# setup   repo from | automatic, 'from' handling moves to mail setup below.
+	# destroy repo      | irrelevant, dropped
+
+	# config-get ?k?    | config show  (--global, -G)
+	# config-set k v    | config set
+	# config-unset k    | config unset
+
+	# add    repo to    | route add type to
+	# list   repo       | route list, routes
+	# remove repo to    | route drop type ?to?
+	#                   | +field name       | type 't' implied.
+	#                   | -field name       |
+	# do                | deliver ?--global?
+
+	# expire            | irrelevant, dropped
+	# rss               | irrelevant, dropped
+	# dump  uuid        | 'fossil artifact'
+	# unsee uuid        | as-is
+
+	officer config {
+	    description {
+		Manage the mail setup for notification emails.
+	    }
+	    private show {
+		section Notifications {Mail setup}
+		description {
+		    Show the current mail setup for notifications.
+		}
+	    } [fx::call watch mail-config-show]
+	    common .key {
+		input key {
+		    The part of the mail setup to (re)configure.
+		} { validate [fx::vt mail-config]
+		}
+	    }
+	    private set {
+		section Notifications {Mail setup}
+		description {
+		    Set the specified part of the mail setup for notifications.
+		}
+		use .global
+		use .key
+		input value {
+		    The new value of the configuration.
+		}
+	    } [fx::call watch mail-config-set]
+	    private unset {
+		section Notifications {Mail setup}
+		description {
+		    Reset the specified part of the mail setup for notifications
+		    to its default.
+		}
+		use .global
+		use .key
+	    } [fx::call watch mail-config-unset]
+	}
+
+	officer route {
+	    # to-address: email address, or field name (@foo)
+	    # @foo restricted to type 'ticket'.
+
+	    private add {
+		section Notifications
+		description {
+		    Add fixed mail destination for the named event type.
+		}
+		use .etype
+		# to-address
+	    } [fx::call watch route-add]
+	    private list {
+		section Notifications
+		description {
+		    Show all mail destinations.
+		}
+	    } [fx::call watch route-list]
+	    default
+	    private drop {
+		section Notifications
+		description {
+		    Remove the specified mail destinations
+		    (glob pattern) for the event type.
+		}
+		use .etype
+		# to-address, optional, glob, default *.
+	    } [fx::call watch route-drop]
+	}
+	alias routes = route list
+
+	private deliver {
+	    section Notifications
+	    description {
+		Send notification emails to all configured destinations,
+		for all new events (since the last delievery).
+	    }
+	    use .global
+	    # or .all ?
+	} [fx::call watch deliver]
+    }
+
     # - mgmt of mirrors, fossil and git (export)
-    # - mgmt of watchers
     # - Delegate unknown commands to fossil itself.
 }
 
