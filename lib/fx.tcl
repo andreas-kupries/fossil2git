@@ -414,9 +414,9 @@ cmdr create fx::fx $::argv0 {
 	# - Config of dynamic ticket receivers
 	#   => ticket fields to use as sources
 	#   ex. Tcl/Tk: assignee, closer, login, contact, submitter
-	# - Exclude/Include users from email delivery
-	# - Suspend/activate notification for a project, event type.
-	# - watch remote repo (ping /stat) => create a local clone, watch implies sync.
+	# - TODO-SPEC Exclude/Include users from email delivery
+	# - TODO-SPEC Suspend/activate notification for a project, event type.
+	# - MAYBE watch remote repo (ping /stat) => create a local clone, watch implies sync.
 	#
 	# All commands check for and remind the user about a missing
 	# mail configuration, especially the mandatory fields.
@@ -437,8 +437,8 @@ cmdr create fx::fx $::argv0 {
 	# add    repo to    | route add type to
 	# list   repo       | route list, routes
 	# remove repo to    | route drop type ?to?
-	#                   | +field name       | type 't' implied.
-	#                   | -field name       |
+	#                   | route field add  to | type 't' implied.
+	#                   | route field drop to |
 	# do                | deliver ?--global?
 
 	# expire            | irrelevant, dropped
@@ -455,7 +455,9 @@ cmdr create fx::fx $::argv0 {
 		description {
 		    Show the current mail setup for notifications.
 		}
-	    } [fx::call watch mail-config-show]
+	    } [fx::call note mail-config-show]
+	    default
+
 	    common .key {
 		input key {
 		    The part of the mail setup to (re)configure.
@@ -472,7 +474,8 @@ cmdr create fx::fx $::argv0 {
 		input value {
 		    The new value of the configuration.
 		}
-	    } [fx::call watch mail-config-set]
+	    } [fx::call note mail-config-set]
+
 	    private unset {
 		section Notifications {Mail setup}
 		description {
@@ -481,12 +484,23 @@ cmdr create fx::fx $::argv0 {
 		}
 		use .global
 		use .key
-	    } [fx::call watch mail-config-unset]
+	    } [fx::call note mail-config-unset]
 	}
 
 	officer route {
-	    # to-address: email address, or field name (@foo)
-	    # @foo restricted to type 'ticket'.
+	    private list {
+		section Notifications
+		description {
+		    Show all mail destinations.
+		}
+	    } [fx::call note route-list]
+	    default
+
+	    common .etype {
+		input event {
+		    Event to work with.
+		} { validate [fx::vt event-type] }
+	    }
 
 	    private add {
 		section Notifications
@@ -494,15 +508,11 @@ cmdr create fx::fx $::argv0 {
 		    Add fixed mail destination for the named event type.
 		}
 		use .etype
-		# to-address
-	    } [fx::call watch route-add]
-	    private list {
-		section Notifications
-		description {
-		    Show all mail destinations.
-		}
-	    } [fx::call watch route-list]
-	    default
+		input to {
+		    Email addresses of the added routes.
+		} { list ; validate str }
+	    } [fx::call note route-add]
+
 	    private drop {
 		section Notifications
 		description {
@@ -510,8 +520,54 @@ cmdr create fx::fx $::argv0 {
 		    (glob pattern) for the event type.
 		}
 		use .etype
-		# to-address, optional, glob, default *.
-	    } [fx::call watch route-drop]
+		input to {
+		    Glob patterns of the emails to remove
+		    from the routes.
+		} {
+		    optional
+		    list
+		    default *
+		    validate str
+		}
+	    } [fx::call note route-drop]
+
+	    officer field {
+		private list {
+		    section Notifications
+		    description {
+			Show all available ticket fields.
+		    }
+		} [fx::call note field-list]
+		default
+
+		private add {
+		    section Notifications
+		    description {
+			Add field as source of mail destinations for ticket events.
+		    }
+		    input field {
+			Name of the field to use as source of mail destinations.
+		    } {
+			list
+			validate [fx::vt ticket-field]
+		    }
+		} [fx::call note route-field-add]
+
+		private drop {
+		    section Notifications
+		    description {
+			Remove the specified field as source
+			of mail destinations for ticket events.
+		    }
+		    input field {
+			Name of the field to stop using as source of mail destinations.
+		    } {
+			list
+			validate [fx::vt ticket-field]
+		    }
+		} [fx::call note route-field-drop]
+	    }
+	    alias fields = field list
 	}
 	alias routes = route list
 
@@ -523,7 +579,7 @@ cmdr create fx::fx $::argv0 {
 	    }
 	    use .global
 	    # or .all ?
-	} [fx::call watch deliver]
+	} [fx::call note deliver]
     }
 
     # - mgmt of mirrors, fossil and git (export)

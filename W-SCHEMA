@@ -12,7 +12,7 @@ configuration
 	debug		0		| mail sender configuration
 	tls		0		| => global and local!
 	user		''		| Use prefix
-	password	''		|	fx-aku-watch-mail-
+	password	''		|	fx-aku-note-mail-
 	host		localhost	| for in "config"
 	port		25		|
 	--------------------------
@@ -30,13 +30,13 @@ New Schema
 or reuse fossil's "config" table. In case of reuse add the prefix
 string "fx-aku-" to our configuration keys below.
 
-	watch-mail-debug	0
-	watch-mail-tls		0
-	watch-mail-user		''
-	watch-mail-password	''
-	watch-mail-host		localhost
-	watch-mail-port		25
-	watch-mail-sender	''	Mandatory
+	note-mail-debug	0
+	note-mail-tls		0
+	note-mail-user		''
+	note-mail-password	''
+	note-mail-host		localhost
+	note-mail-port		25
+	note-mail-sender	''	Mandatory
 
 Additional keys, always global:
 
@@ -47,21 +47,21 @@ Additional keys, always global:
 
 Additional keys, always local:
 
-	watch-mail-send2-*:*
+	note-send2-*:*
 
 	*1	event type
 	*2	receiving mail address
 
-	watch-mail-field:*
+	note-field:*
 
 	*	name of ticket field to search for receiver address.
 		Event type implied, always 't'.
 
-	watch-mail-suspended	0	bool, not suspended by default
-	watch-sync		0	bool, do not sync on cron run
-					(set for local clone of watched repo)
+	note-suspended	0	bool, not suspended by default
+	note-sync	0	bool, do not sync on cron run
+				(set for local clone of watched repo)
 
-	watch-mail-susp-*
+	note-suspended-*
 
 	*	event type currently suspended
 
@@ -84,12 +84,12 @@ Note: No expiry. We are not looking at a limited RSS timeline anymore.
 	'g' ditto
 	'w' ditto
 
-		See above	watch-mail-send2-*:*
+		See above	note-send2-*:*
 
 	't' events can have both fixed and dynamic receivers.
 
-		See above	watch-mail-send2-*:*
-		See above	watch-mail-field-*
+		See above	note-send2-*:*
+		See above	note-field-*
 
 	Dynamic receivers are taken from ticket fields, for the
 	changed ticket. The set of fields to look at must be
@@ -124,7 +124,7 @@ Note: No expiry. We are not looking at a limited RSS timeline anymore.
 
 		TODO: FUTURE Automate bounce handling.
 
-		watch-mail-disabled:*
+		note-account-disabled:*
 
 		*	name of the disabled account.
 
