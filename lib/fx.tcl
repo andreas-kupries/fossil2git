@@ -74,6 +74,10 @@ cmdr create fx::fx $::argv0 {
 	    alias R
 	    validate rwfile
 	    generate [fx::call fossil locate]
+	    # Note: This generator command dynamically recognizes
+	    # commands with an "all" parameter, and disables itself
+	    # (*) if that parameter is active/set. Ad *: I.e. returns
+	    # an empty string.
 	}
 	state repository-db {
 	    The repository database to work with.
@@ -88,6 +92,13 @@ cmdr create fx::fx $::argv0 {
 	option global {
 	    Set the configuration globally
 	} { alias g ; presence }
+    }
+
+    common .all {
+	option all {
+	    Do this for all repositories watched by fx.
+	} { alias A; presence }
+	# See also the note in option repository above.
     }
 
     # # ## ### ##### ######## ############# ######################
@@ -586,13 +597,11 @@ cmdr create fx::fx $::argv0 {
 		Send notification emails to all configured destinations,
 		for all new events (since the last delievery).
 	    }
-	    use .global
-	    # or .all ?
+	    use .all
 	} [fx::call note deliver]
     }
 
-    # - mgmt of mirrors, fossil and git (export)
-    # - Delegate unknown commands to fossil itself.
+    # TODO - mgmt of mirrors, fossil and git (export)
 }
 
 # # ## ### ##### ######## ############# ######################

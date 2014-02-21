@@ -22,10 +22,8 @@ package require cmdr::validate::common
 namespace eval ::fx::mgr::config {
     namespace export \
 	get-list get get-with-default has set unset \
-	get-local get-global
-
-    # TODO: has-glob, unset-glob
-
+	get-local get-global has-glob unset-glob \
+	get-list-global
     namespace ensemble create
 
     namespace import fx::fossil
@@ -94,11 +92,16 @@ proc ::fx::config::has {db name} {
 		   [has-global    $name] }]
 }
 
+proc ::fx::config::has-glob {db pattern} {
+    return [expr { [has-glob-local $db $pattern] ||
+		   [has-glob-global    $pattern] }]
+}
+
 proc ::fx::config::set {global db name $value} {
     if {$global} {
-	set-global $name $value
+	return [set-global $name $value]
     } else {
-	set-local $db $name $value
+	return [set-local $db $name $value]
     }
 }
 
@@ -107,6 +110,14 @@ proc ::fx::config::unset {global db name} {
 	unset-global $name
     } else {
 	unset-local $db $name
+    }
+}
+
+proc ::fx::config::unset-glob {global db pattern} {
+    if {$global} {
+	return [unset-glob-global $pattern]
+    } else {
+	return [unset-glob-local $db $pattern]
     }
 }
 
@@ -169,6 +180,24 @@ proc ::fx::config::has-global {name} {
     return
 }
 
+proc ::fx::config::has-glob-local {db pattern} {
+    return [$db onecolumn {
+	SELECT count(*)
+	FROM  config
+	WHERE name GLOB :pattern
+    }]
+    return
+}
+
+proc ::fx::config::has-glob-global {pattern} {
+    return [[fossil global] onecolumn {
+	SELECT count(*)
+	FROM  global_config
+	WHERE name GLOB :pattern
+    }]
+    return
+}
+
 proc ::fx::config::set-local {db name value} {
     ::set now [clock seconds]
     $db transaction {
@@ -223,10 +252,10 @@ proc ::fx::config::unset-local {db name} {
 	$db eval {
 	    DELETE
 	    FROM config
-	    WHERE name  = :name
+	    WHERE name = :name
 	}
     }
-    return
+    return [$db changes]
 }
 
 proc ::fx::config::unset-global {name} {
@@ -235,10 +264,33 @@ proc ::fx::config::unset-global {name} {
 	$db eval {
 	    DELETE
 	    FROM global_config
-	    WHERE name  = :name
+	    WHERE name = :name
 	}
     }
-    return
+    return [$db changes]
+}
+
+proc ::fx::config::unset-glob-local {db pattern} {
+    $db transaction {
+	$db eval {
+	    DELETE
+	    FROM config
+	    WHERE name GLOB :pattern
+	}
+    }
+    return [$db changes]
+}
+
+proc ::fx::config::unset-glob-global {pattern} {
+    ::set db [fossil global]
+    $db transaction {
+	$db eval {
+	    DELETE
+	    FROM global_config
+	    WHERE name GLOB :pattern
+	}
+    }
+    return [$db changes]
 }
 
 # # ## ### ##### ######## ############# ######################

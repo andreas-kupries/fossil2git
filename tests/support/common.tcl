@@ -96,6 +96,12 @@ proc keep   {} { variable keep 1 }
 proc nokeep {} { variable keep 0 }
 
 proc run {args} {
+    # run fx command with arguments
+    run-core [Where] {*}$args
+}
+
+proc run-core {args} {
+    # args = command to run...
     variable verbose
     if {$verbose} { puts "%% s $args" }
 
@@ -108,7 +114,7 @@ proc run {args} {
 	file delete $out $err
 	set env(HOME) [thehome]
 	set fail [catch {
-	    exec > $out 2> $err [Where] {*}$args
+	    exec > $out 2> $err {*}$args
 	}]
     } finally {
 	set env(HOME) $here
@@ -120,9 +126,22 @@ proc run {args} {
 proc stage-open {} {
     file delete -force [thehome];# auto close if left open.
     file mkdir         [thehome]
-    # TODO: Create standard fossil repository
-    # TODO: And a standard checkout from that.
-    # Implied: Standard global repository
+
+    # Create standard fossil repository
+    # And a standard checkout from that.
+    # Implied: A standard global repository
+
+    # NOTE: The use of run-core ensures that everything is done under
+    # the fake home directory instead twiddling with the user
+    # executing the testsuite.
+
+    indir [thehome] {
+	run-core fossil new source.fossil
+	file mkdir ckout
+	indir ckout {
+	    run-core fossil open ../source.fossil
+	}
+    }
     return
 }
 
@@ -132,10 +151,22 @@ proc stage-close {} {
 }
 
 proc Where {} {
-    # TODO: Get them from the test installation.
-    set r [auto_execok fx]
-    proc Where {} [list return $r]
-    return $r
+    # Note: Using the 'fx' app found in the test
+    # installation.
+
+    # TODO: Force the app to search its packages in the testinstall as
+    # well. The kettle testutilities do that for the packages used
+    # directly from the testfile. It does not the same for a child
+    # process.
+
+    # Hm. Maybe a tclsh child process with testutils loaded and then
+    # using the fx package directly. I.e. an fx app customized for use
+    # within the testsuite.
+
+    variable ::kt::localprefix
+    set exe $localprefix/bin/fx
+    proc Where {} [list return $exe]
+    return $exe
 }
 
 proc Capture {out err fail} {

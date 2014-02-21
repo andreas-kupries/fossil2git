@@ -49,6 +49,14 @@ proc fx::fossil::repository {p} {
 proc fx::fossil::locate {p} {
     # cmdr generate callback
 
+    if {[$p config has @all] && [$p config @all defined?]} {
+	# Leave the single repository undefined, do not even try to
+	# find it. This way we cannot run into an error when an "all"
+	# operation is run outside of a checkout and without a
+	# "repository".
+	return {}
+    }
+
     # NOTE how we are keeping the checkout database until process end.
     # Assumes that locate is called only once. See also fx cmdr
     # specification.
