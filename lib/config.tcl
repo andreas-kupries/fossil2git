@@ -15,7 +15,7 @@
 
 package require Tcl 8.5
 package require fx::table
-package require cmdr::validate::common
+package require fx::mgr::config
 
 # # ## ### ##### ######## ############# ######################
 
@@ -23,14 +23,9 @@ namespace eval ::fx::config {
     namespace export available list get set unset
     namespace ensemble create
 
+    namespace import ::fx::mgr::config
     namespace import ::fx::table::do
     rename do table
-
-    # Assumed database schema
-    # Table "config"
-    # Columns name  TEXT PK
-    # Columns mtime DATE
-    # Columns value CLOB
 }
 
 # # ## ### ##### ######## ############# ######################
@@ -41,22 +36,27 @@ proc ::fx::config::available {config} {
 }
 
 proc ::fx::config::list {config} {
-    # TODO: order by name, or last-changed
+    ::set settings [config get-list [$config @repository-db]]
+
+    # TODO: Filter unwanted parts first (dict filter).
+    # TODO: order by name, or last-changed.
     # Currently fixed order by name.
 
-    [table t {Setting Last-Changed Value} {
-	[$config @repository-db] eval {
-	    SELECT name, value, mtime
-	    FROM   config
-	    ORDER BY name
-	    ;
-	} {
+    [table t {Setting Global Last-Changed Value} {
+	foreach name [lsort -dict [dict keys $settings]] {
+	    # Maybe run a dict filter on settings.
 	    if {[string match ckout:*     $name]} continue
 	    if {[string match peer-*      $name]} continue
 	    if {[string match subrepo:*   $name]} continue
 	    if {[string match skin:*      $name]} continue
 	    if {[string match baseurl:*   $name]} continue
 	    if {[string match last-sync-* $name]} continue
+
+	    # Extension variables have their own command heriarchies
+	    # to ensure proper use.
+	    if {[string match fx-*        $name]} continue
+
+	    lassign [dict get $settings $name] where value time
 
 	    # Force unix EOL conventions.
 	    ::set value [string map [::list \r\n \n \r \n] $value]
@@ -70,74 +70,68 @@ proc ::fx::config::list {config} {
 		::set value [string range $value 0 29]...
 	    }
 
-	    $t add $name [clock format $mtime] $value
+	    ::set isglobal [expr { ($where eq "G") ? "*" : "" }]
+	    if {$mtime ne {}} {
+		::set mtime [clock format $mtime]
+	    }
+
+	    $t add $name $isglobal $mtime $value
 	}
     }] show
     return
 }
 
 proc ::fx::config::get {config} {
-    ::set name [$config @setting]
-    puts [[$config @repository-db] onecolumn {
-	SELECT value
-	FROM  config
-	WHERE name  = :name
-	;
-    }]
+    puts [config get \
+	      [$config @repository-db] \
+	      [$config @setting]]
     return
 }
 
 proc ::fx::config::set {config} {
-    ::set name  [$config @setting]
-    ::set value [$config @value]
-    ::set r     [$config @repository] ;# TODO: Reformat to show relative to cwd
-    ::set db    [$config @repository-db]
-    ::set now   [clock seconds]
+    ::set name   [$config @setting]
+    ::set value  [$config @value]
+    ::set db     [$config @repository-db]
+    ::set global [$config @global]
+
+    if {$global} {
+	::set r [fossil global-location]
+    } else {
+	::set r [$config @repository]
+    }
+    # TODO: Reformat r to show relative to cwd
 
     puts -nonewline "Setting $r (${name}): "
-    $db transaction {
-	# Change ...
-	$db eval {
-	    # Idea, remembering something on the sqlite list:
-	    # Have entry => Insert skips, Update changes.
-	    # No entry   => Insert acts,  Update is no-op.
 
-	    INSERT OR IGNORE INTO config
-	    VALUES (:name, :value, :now)
-	    ;
-	    UPDATE config
-	    SET   value = :value,
-	          mtime = :now
-	    WHERE name  = :name
-	    ;
-	}
+    config set $global $db $name $value
+
+    # This one place has to distinguish global/local on get based on
+    # the user's choice, instead of the regular heuristics (local,
+    # global, default|error).
+    if {$global} {
+	set current [config get-global $name]
+    } else {
+	set current [config get-local $db $name]
     }
 
-    # Show actual value found in the database.
-    puts '[$db onecolumn {
-	    SELECT value
-	    FROM  config
-	    WHERE name  = :name
-	    ;
-    }]'
+    puts '$current'
     return
 }
 
-
 proc ::fx::config::unset {config} {
-    ::set name  [$config @setting]
-    ::set r     [$config @repository] ;# TODO: Reformat to show relative to cwd
-    ::set db    [$config @repository-db]
+    ::set name   [$config @setting]
+    ::set global [$config @global]
 
-    puts -nonewline "Unsetting $r (${name})"
-    $db transaction {
-	$db eval {
-	    DELETE
-	    FROM config
-	    WHERE name  = :name
-	    ;
-	}
+    if {$global} {
+	::set r [fossil global-location]
+    } else {
+	::set r [$config @repository]
     }
+    # TODO: Reformat r to show relative to cwd
+    puts -nonewline "Unsetting $r (${name})"
+
+    config unset $global [$config @repository-db] $name
+
     puts ""
     return
 }

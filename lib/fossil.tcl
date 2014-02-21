@@ -17,12 +17,23 @@ package require Tcl 8.5
 package require sqlite3
 
 namespace eval ::fx::fossil {
-    namespace export locate repository \
-	fx-tables fx-enums fx-enum-items
+    namespace export global global-location locate \
+	repository fx-tables fx-enums fx-enum-items
     namespace ensemble create
 }
 
 # # ## ### ##### ######## ############# ######################
+
+proc fx::fossil::global {} {
+    if {![llength [info commands ::fox::fossil::G]]} {
+	sqlite3 ::fx::fossil::G [global-location]
+    }
+    return  ::fx::fossil::G
+}
+
+proc fx::fossil::global-location {} {
+    return ~/.fossil
+}
 
 proc fx::fossil::repository {p} {
     # cmdr generate callback
