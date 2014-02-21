@@ -91,6 +91,15 @@ cmdr create fx::fx $::argv0 {
     }
 
     # # ## ### ##### ######## ############# ######################
+    private version {
+	section Introspection
+	description {
+	    Print version and revision of the application.
+	}
+    } [lambda config {
+	puts "Version [package present fx]"
+    }]
+
     private repository {
 	section Introspection
 	description {
