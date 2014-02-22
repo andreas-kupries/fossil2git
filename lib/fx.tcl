@@ -102,6 +102,7 @@ cmdr create fx::fx $::argv0 {
     }
 
     # # ## ### ##### ######## ############# ######################
+
     private version {
 	section Introspection
 	description {
@@ -134,6 +135,9 @@ cmdr create fx::fx $::argv0 {
     }]
     # All commands not known to fx are delegated to the fossil core.
     default
+
+    # TODO Helper: Show generated mail
+    # TODO Helper: Test sending a mail
 
     # # ## ### ##### ######## ############# ######################
     officer config {

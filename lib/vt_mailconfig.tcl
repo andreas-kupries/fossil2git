@@ -94,7 +94,7 @@ namespace eval ::fx::validate::mail-config {
 	password ''
 	host 	 localhost
 	port 	 22
-	sender   ''
+	sender   {*Undefined* Please set.}
     }
 
     # Last map: Type validation per setting.

@@ -26,7 +26,7 @@ namespace eval ::fx::note {
 	mail-config-show mail-config-set mail-config-unset \
 	route-add route-list route-drop deliver
     namespace ensemble create
-
+_
     namespace import ::fx::mgr::config
     namespace import ::fx::table::do
     namespace import ::fx::validate::event-type
