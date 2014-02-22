@@ -43,7 +43,7 @@ proc ::fx::validate::setting::validate {p x} {
 
 proc ::fx::validate::setting::default  {p} { return {} }
 proc ::fx::validate::setting::complete {p} {
-    complete-enum list [dict keys [Legal]] $x
+    complete-enum [dict keys [Legal]] 1 $x
 }
 
 # # ## ### ##### ######## ############# ######################

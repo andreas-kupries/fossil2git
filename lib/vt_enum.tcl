@@ -59,7 +59,7 @@ proc ::fx::validate::enum::default  {p} {
 }
 
 proc ::fx::validate::enum::complete {p} {
-    complete-enum list [Values $p] $x
+    complete-enum [Values $p] 1 $x
 }
 
 proc ::fx::validate::enum::Values {p} {

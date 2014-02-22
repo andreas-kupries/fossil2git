@@ -2,7 +2,7 @@
 # # ## ### ##### ######## ############# ######################
 
 # @@ Meta Begin
-# Package fx::validate::enum-item 0
+# Package fx::validate::ticket-field 0
 # Meta author      {Andreas Kupries}
 # Meta category    ?
 # Meta description ?
@@ -13,48 +13,45 @@
 # Meta summary     ?
 # @@ Meta End
 
-# # ## ### ##### ######## ############# ######################
-
 package require Tcl 8.5
-package require fx::fossil
 package require cmdr::validate::common
 
 # # ## ### ##### ######## ############# ######################
 
 namespace eval ::fx::validate {
-    namespace export enum
+    namespace export ticket-field
     namespace ensemble create
 }
 
 # # ## ### ##### ######## ############# ######################
-## Custom validation types: enumerations and items.
+## Custom validation type, legal validateuration ticket-fields
 
-namespace eval ::fx::validate::enum-item {
+namespace eval ::fx::validate::ticket-field {
     namespace export release validate default complete
     namespace ensemble create
 
-    namespace import ::fx::fossil::fx-enum-items
     namespace import ::cmdr::validate::common::fail
     namespace import ::cmdr::validate::common::complete-enum
 }
 
-proc ::fx::validate::enum-item::release  {p x} { return }
-proc ::fx::validate::enum-item::validate {p x} {
-    if {$x in [Values $p]} { return $x }
-    fail $p ENUM-ITEM "an enumeration item" $x
+proc ::fx::validate::ticket-field::release  {p x} { return }
+proc ::fx::validate::ticket-field::validate {p x} {
+    set cx [string tolower $x]
+    if {$cx in [Legal $p]} { return $cx }
+    fail $p TICKET-FIELD "a repository ticket-field" $x
 }
 
-proc ::fx::validate::enum-item::default  {p} { return {} }
-proc ::fx::validate::enum-item::complete {p} {
-    complete-enum [Values $p] 0 $x
-}
-
-proc ::fx::validate::enum-item::Values {p} {
-    return [fx-enum-items \
-		[$p config @repository-db] \
-		[$p config @enum]]
+proc ::fx::validate::ticket-field::default  {p} { return {} }
+proc ::fx::validate::ticket-field::complete {p} {
+    complete-enum [Legal $p] 1 $x
 }
 
 # # ## ### ##### ######## ############# ######################
-package provide fx::validate::enum-item 0
+
+proc ::fx::validate::ticket-field::Legal {p} {
+    fossil ticket-fields [$p config @repository-db]
+}
+
+# # ## ### ##### ######## ############# ######################
+package provide fx::validate::ticket-field 0
 return
