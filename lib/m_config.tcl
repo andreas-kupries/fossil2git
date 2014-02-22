@@ -23,7 +23,7 @@ namespace eval ::fx::mgr::config {
     namespace export \
 	get-list get get-with-default has set unset \
 	get-local get-global has-glob unset-glob \
-	get-list-global
+	get-list-global get-extended-with-default
     namespace ensemble create
 
     namespace import fx::fossil
@@ -87,6 +87,20 @@ proc ::fx::config::get-with-default {db name default} {
     return $default
 }
 
+proc ::fx::config::get-extended-with-default {db name default} {
+    $db transaction {
+	if {[has-local $db $name]} {
+	   return [get-extended-local $db $name]
+	}
+    }
+    [fossil global] transaction {
+	if {[has-global $name]} {
+	   return [get-extended-global $name]
+	}
+    }
+    return $default
+}
+
 proc ::fx::config::has {db name} {
     return [expr { [has-local $db $name] ||
 		   [has-global    $name] }]
@@ -131,6 +145,7 @@ proc ::fx::mgr::config::get-list-local {db script} {
     } {
 	uplevel 1 $script
     }
+    return
 }
 
 proc ::fx::mgr::config::get-list-global {script} {
@@ -142,6 +157,7 @@ proc ::fx::mgr::config::get-list-global {script} {
 	set mtime {}
 	uplevel 1 $script
     }
+    return
 }
 
 proc ::fx::config::get-local {db name} {
@@ -150,7 +166,6 @@ proc ::fx::config::get-local {db name} {
 	FROM  config
 	WHERE name  = :name
     }]
-    return
 }
 
 proc ::fx::config::get-global {name} {
@@ -159,7 +174,22 @@ proc ::fx::config::get-global {name} {
 	FROM  global_config
 	WHERE name  = :name
     }]
-    return
+}
+
+proc ::fx::config::get-extended-local {db name} {
+    return [$db eval {
+	SELECT '0', mtime, value
+	FROM  config
+	WHERE name  = :name
+    }]
+}
+
+proc ::fx::config::get-extended-global {name} {
+    return [[fossil global] eval {
+	SELECT '1', '', value
+	FROM  global_config
+	WHERE name  = :name
+    }]
 }
 
 proc ::fx::config::has-local {db name} {
@@ -168,7 +198,6 @@ proc ::fx::config::has-local {db name} {
 	FROM  config
 	WHERE name  = :name
     }]
-    return
 }
 
 proc ::fx::config::has-global {name} {
@@ -177,7 +206,6 @@ proc ::fx::config::has-global {name} {
 	FROM  global_config
 	WHERE name  = :name
     }]
-    return
 }
 
 proc ::fx::config::has-glob-local {db pattern} {
@@ -186,7 +214,6 @@ proc ::fx::config::has-glob-local {db pattern} {
 	FROM  config
 	WHERE name GLOB :pattern
     }]
-    return
 }
 
 proc ::fx::config::has-glob-global {pattern} {
@@ -195,7 +222,6 @@ proc ::fx::config::has-glob-global {pattern} {
 	FROM  global_config
 	WHERE name GLOB :pattern
     }]
-    return
 }
 
 proc ::fx::config::set-local {db name value} {

@@ -16,6 +16,8 @@
 package require Tcl 8.5
 package require fx::table
 package require fx::mgr::config
+package require fx::validate::event-type
+package require fx::validate::mail-config
 
 # # ## ### ##### ######## ############# ######################
 
@@ -27,36 +29,25 @@ namespace eval ::fx::note {
 
     namespace import ::fx::mgr::config
     namespace import ::fx::table::do
+    namespace import ::fx::validate::event-type
+    namespace import ::fx::validate::mail-config
     rename do table
 }
 
 # # ## ### ##### ######## ############# ######################
 
 proc ::fx::note::mail-config-show {config} {
+    set db [$config @repository-db]
 
-    set settings [config get-list [$config @repository-db]]
-    set settings [dict filter $settings key fx-aku-note-*]
-
-    # Should possibly add info for missing keys, i.e. their defaults.
-    # fx-aku-note-mail-debug	0
-    # fx-aku-note-mail-tls	0
-    # fx-aku-note-mail-user	''
-    # fx-aku-note-mail-password	''
-    # fx-aku-note-mail-host	localhost
-    # fx-aku-note-mail-port	25
-    # fx-aku-note-mail-sender	''	Mandatory
-
-    # TODO: Have to drop the keys holding the route information.
-
-    set data {}
-    dict for {k v} $settings {
-	lassign $v where mtime value
-	regsub {^fx-aku-note-} $name {} name
-	set isglobal [expr { ($where eq "G") ? "*" : "" }]
-	if {$mtime ne {}} {
-	    set mtime [clock format $mtime]
-	}
-	lappend data [list $name $isglobal $mtime $value]
+    foreach k [mail-config all] {
+	set v [config get-extended-with-default $db \
+		   [mail-config internal $k] \
+		   [mail-config default  $k]]
+	lassign $v isglobal mtime v
+	set isglobal [expr { $isglobal ? "*" : ""}]
+	set mtime    [expr {($mtime ne {}) ? [clock format $mtime] : "" }]
+	lappend k $isglobal $mtime
+	lappend data $k
     }
 
     [table t {Key Global Last-Changed Value} {
@@ -76,7 +67,9 @@ proc ::fx::note::mail-config-set {config} {
     set value  [$config @value]
     set db     [$config @repository-db]
 
-    puts -nonewline "Setting ${name}: "
+    # TODO: type validation per chosen setting.
+
+    puts -nonewline "Setting [mail-config external $name]: "
 
     config set $global $db $name $value
 
@@ -96,7 +89,7 @@ proc ::fx::note::mail-config-unset {config} {
     set name   [$config @setting]
     set global [$config @global]
 
-    puts -nonewline "Unsetting ${name}"
+    puts -nonewline "Unsetting [mail-config external $name]"
 
     config unset $global [$config @repository-db] $name
 
@@ -110,10 +103,12 @@ proc ::fx::note::route-list {config} {
     # @repository(-db)
 
     set settings [config get-list [$config repository-db]]
-    set settings [dict filter $settings key fx-aku-note-*]
 
-    # We now have routes and standard settings mixed.
-    # Get rid of the non-routes
+    # We have a mix of routes other settings.
+
+    # Note: The event types in the saved route information is
+    # external, therefore conversion is not required for display.
+    # Validation and conversion to internal will happen on actual use.
 
     set data {}
     foreach k [lsort -dict [dict keys $settings]] {
@@ -142,40 +137,44 @@ proc ::fx::note::route-list {config} {
 
 proc ::fx::note::route-add {config} {
     # @to (list), @event, @repository(-db)
-    if {[RouteAdd [$config @repository-db] \
-	     fx-aku-note-send2-[$config @event]: \
-	     [$config @to]]} {
-	WatchMe [$config @repository]
-    }
+
+    # seen event is internal rep.
+    # for storage we go back to external rep.
+    set e [event-type external [$config @event]]
+
+    if {![RouteAdd [$config @repository-db] \
+	     fx-aku-note-send2-${e} \
+	     [$config @to]]
+    } return
+
+    WatchMe [$config @repository]
     return
 }
 
 proc ::fx::note::route-drop {config} {
     # @to (list), @event, @repository(-db)
-    if {[RouteDrop [$config @repository-db] \
-	     fx-aku-note-send2-[$config @event]: \
-	     [$config @to]] &&
-	![HasRoutes [$config @repository-db]]
-    } {
-	RemoveMe [$config @repository]
-    }
+
+    # seen event is internal rep.
+    # for storage we go back to external rep.
+    set e [event-type external [$config @event]]
+
+    if {![RouteDrop [$config @repository-db] \
+	     fx-aku-note-send2-$e \
+	     [$config @to]] ||
+	[HasRoutes [$config @repository-db]]
+    } return
+
+    RemoveMe [$config @repository]
+    return
 }
 
 proc ::fx::note::field-list {config} {
     # @repository-db
-    set db [$config @repository-db]
-    set columns {}
 
-    # table_info fields: cid, name, type, notnull, dflt_value, pk
-    $db eval "PRAGMA table_info(ticket)" ti {
-	lappend columns $ti(name)
-    }
-    $db eval "PRAGMA table_info(ticketchng)" ti {
-	lappend columns $ti(name)
-    }
+    set columns [fossil ticket-fields [$config @repository-db]]
 
     [table t Field {
-	foreach col [lsort -dict -unique $columns] {
+	foreach col [lsort -dict $columns] {
 	    # Ignore system columns.
 	    if {[string match tkt_* $col]} continue
 	    $t add $col
@@ -186,23 +185,25 @@ proc ::fx::note::field-list {config} {
 
 proc ::fx::note::route-field-add {config} {
     # @field (list), @repository(-db)
-    if {[RouteAdd [$config @repository-db] \
-	     fx-aku-note-field: \
-	     [$config @field]]} {
-	WatchMe [$config @repository]
-    }
+    if {![RouteAdd [$config @repository-db] \
+	     fx-aku-note-field \
+	     [$config @field]]
+    } return
+
+    WatchMe [$config @repository]
     return
 }
 
 proc ::fx::note::route-field-drop {config} {
     # @field (list), @repository(-db)
-    if {[RouteDrop [$config @repository-db] \
-	     fx-aku-note-field: \
-	     [$config @field]] &&
-	![HasRoutes [$config @repository-db]]
-    } {
-	RemoveMe [$config @repository]
-    }
+    if {![RouteDrop [$config @repository-db] \
+	     fx-aku-note-field \
+	     [$config @field]] ||
+	[HasRoutes [$config @repository-db]]
+    } return
+
+    RemoveMe [$config @repository]
+    return
 }
 
 # # ## ### ##### ######## ############# ######################
@@ -213,6 +214,7 @@ proc ::fx::note::route-deliver {config} {
     # @repository, @global, /... ?? --all how ?
 
     if {[$config @all]} {
+	# -- TODO -- Encapsulate conversions ...
 	config get-list-global {
 	    # name, value, mtime
 	    if {![string match fx-aku-note-watch:* $name]} continue

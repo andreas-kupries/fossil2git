@@ -18,7 +18,8 @@ package require sqlite3
 
 namespace eval ::fx::fossil {
     namespace export global global-location locate \
-	repository fx-tables fx-enums fx-enum-items
+	repository fx-tables fx-enums fx-enum-items \
+	ticket-fields
     namespace ensemble create
 }
 
@@ -100,6 +101,20 @@ proc fx::fossil::fx-tables {db} {
 	lappend tables [string tolower $name]
     }
     return $tables
+}
+
+proc fx::fossil::ticket-fields {db} {
+    set columns {}
+
+    # table_info fields: cid, name, type, notnull, dflt_value, pk
+    $db eval "PRAGMA table_info(ticket)" ti {
+	lappend columns $ti(name)
+    }
+    $db eval "PRAGMA table_info(ticketchng)" ti {
+	lappend columns $ti(name)
+    }
+
+    return [lsort -unique $columns]
 }
 
 # # ## ### ##### ######## ############# ######################
