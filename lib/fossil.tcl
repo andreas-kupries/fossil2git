@@ -17,38 +17,80 @@ package require Tcl 8.5
 package require sqlite3
 
 namespace eval ::fx::fossil {
-    namespace export global global-location locate \
-	repository fx-tables fx-enums fx-enum-items \
-	ticket-fields
+    namespace export \
+	global global-location \
+	repository repository-location \
+	repository-open repository-find \
+	fx-tables fx-enums fx-enum-items \
+	ticket-title ticket-fields get-manifest
     namespace ensemble create
+
+    # Cached location of the repository we are working with.
+    variable repo_location {}
+
+    # Location of a fossil binary for things we are shelling out
+    # (still).
+    variable fossil [auto_execok fossil]
+}
+
+# # ## ### ##### ######## ############# ######################
+## Commands for global and repository databases.
+
+proc ::fx::fossil::global {args} {
+    # Drop the procedure.
+    rename ::fx::fossil::global {}
+
+    # And replace it with the database command.
+    sqlite3 ::fx::fossil::global [global-location]
+
+    if {![llength $args]} return
+
+    # Run the new database on the arguments.
+    return [uplevel 1 [list ::fx::fossil::global {*}$args]]
+}
+
+proc ::fx::fossil::repository {args} {
+    # This procedure will be overwritten by 'repository-open' below.
+    global argv0
+    return -code error \
+	-errorcode {FX FOSSIL REPOSITORY UNKNOWN} \
+	"$argv0 was not able to determine the repository"
 }
 
 # # ## ### ##### ######## ############# ######################
 
-proc fx::fossil::global {} {
-    if {![llength [info commands ::fox::fossil::G]]} {
-	sqlite3 ::fx::fossil::G [global-location]
-    }
-    return  ::fx::fossil::G
-}
-
-proc fx::fossil::global-location {} {
-    return ~/.fossil
-}
-
-proc fx::fossil::repository {p} {
+proc ::fx::fossil::repository-open {p} {
     # cmdr generate callback
 
     # NOTE how we are keeping the repository database until process
     # end.  Assumes that locate is called only once. See also fx cmdr
     # specification.
 
-    sqlite3 ::fx::fossil::R [$p config @repository]
-    return  ::fx::fossil::R
+    set location [$p config @repository]
+    if {$location eq {}} {
+	# Do not create a repository db if we have no location for it
+	# (see repo-location below, use case "all").
+	return {}
+    }
+
+    sqlite3 ::fx::fossil::repo $location
+    return  ::fx::fossil::repo
 }
 
-proc fx::fossil::locate {p} {
+# # ## ### ##### ######## ############# ######################
+
+proc ::fx::fossil::global-location {} {
+    return ~/.fossil
+}
+
+proc ::fx::fossil::repository-location {} {
+    variable repo_location
+    return  $repo_location
+}
+
+proc ::fx::fossil::repository-find {p} {
     # cmdr generate callback
+    variable repo_location
 
     if {[$p config has @all] && [$p config @all defined?]} {
 	# Leave the single repository undefined, do not even try to
@@ -64,24 +106,29 @@ proc fx::fossil::locate {p} {
 
     sqlite3 CK [ckout [scan-up Repository [pwd] fx::fossil::is]]
 
-    return [file normalize [CK onecolumn {
+    set repo_location [file normalize [CK onecolumn {
 	SELECT value
 	FROM vvar
 	WHERE name = 'repository'
     }]]
+
+    rename CK {}
+    return $repo_location
 }
 
-proc fx::fossil::fx-enum-items {db table} {
-    return [$db eval [subst {
+# # ## ### ##### ######## ############# ######################
+
+proc ::fx::fossil::fx-enum-items {table} {
+    return [repository eval [subst {
 	SELECT item
 	FROM   $table
 	ORDER BY item
     }]]
 }
 
-proc fx::fossil::fx-enums {db} {
+proc ::fx::fossil::fx-enums {} {
     set enums {}
-    foreach table [fx-tables $db] {
+    foreach table [fx-tables] {
 	if {![string match fx_aku_enum_* $table]} continue
 	regsub {^fx_aku_enum_} $table {} enum
 	lappend enums $enum
@@ -89,9 +136,9 @@ proc fx::fossil::fx-enums {db} {
     return $enums
 }
 
-proc fx::fossil::fx-tables {db} {
+proc ::fx::fossil::fx-tables {} {
     set tables {}
-    $db eval {
+    repository eval {
 	SELECT name
 	FROM sqlite_master
 	WHERE type = 'table'
@@ -103,23 +150,45 @@ proc fx::fossil::fx-tables {db} {
     return $tables
 }
 
-proc fx::fossil::ticket-fields {db} {
-    set columns {}
+proc ::fx::fossil::ticket-title {uuid} {
+    # TODO: get configured name of the title field.
 
+    set titlefield title
+    return [fossil repository onecolumn [subst {
+	SELECT $titlefield
+	FROM ticket
+	WHERE tkt_uuid = :uuid
+    }]]
+}
+
+proc ::fx::fossil::ticket-fields {} {
     # table_info fields: cid, name, type, notnull, dflt_value, pk
-    $db eval "PRAGMA table_info(ticket)" ti {
+    # Looking at tables "ticket" and "ticketchng".
+
+    set columns {}
+    repository eval {
+	PRAGMA table_info(ticket)
+    } ti {
 	lappend columns $ti(name)
     }
-    $db eval "PRAGMA table_info(ticketchng)" ti {
+    repository eval {
+	PRAGMA table_info(ticketchng)
+    } ti {
 	lappend columns $ti(name)
     }
 
     return [lsort -unique $columns]
 }
 
+proc ::fx::fossil::get-manifest {uuid} {
+    variable fossil
+    variable repo_location
+    return [exec {*}$fossil artifact $uuid -R $repo_location]
+}
+
 # # ## ### ##### ######## ############# ######################
 
-proc fx::fossil::is {dir} {
+proc ::fx::fossil::is {dir} {
     foreach control {
 	_FOSSIL_
 	.fslckout
@@ -133,7 +202,7 @@ proc fx::fossil::is {dir} {
     return 0
 }
 
-proc fx::fossil::ckout {dir} {
+proc ::fx::fossil::ckout {dir} {
     foreach control {
 	_FOSSIL_
 	.fslckout
@@ -149,7 +218,7 @@ proc fx::fossil::ckout {dir} {
 	"Not a checkout: $dir"
 }
 
-proc fx::fossil::scan-up {this dir predicate} {
+proc ::fx::fossil::scan-up {this dir predicate} {
     set dir [file normalize $dir]
     while {1} {
 	# Found the proper directory, per the predicate.
