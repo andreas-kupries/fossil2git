@@ -50,9 +50,10 @@ proc ::fx::validate::enum-item::complete {p} {
 }
 
 proc ::fx::validate::enum-item::Values {p} {
-    return [fx-enum-items \
-		[$p config @repository-db] \
-		[$p config @enum]]
+    # Force parameter, validation can happen
+    # before the cmdr completion phase.
+    $p config @repository-db
+    return [fx-enum-items [$p config @enum]]
 }
 
 # # ## ### ##### ######## ############# ######################

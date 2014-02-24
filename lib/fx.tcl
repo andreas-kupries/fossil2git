@@ -73,17 +73,19 @@ cmdr create fx::fx $::argv0 {
 	} {
 	    alias R
 	    validate rwfile
-	    generate [fx::call fossil locate]
+	    generate [fx::call fossil repository-find]
 	    # Note: This generator command dynamically recognizes
 	    # commands with an "all" parameter, and disables itself
 	    # (*) if that parameter is active/set. Ad *: I.e. returns
 	    # an empty string.
 	}
 	state repository-db {
-	    The repository database to work with.
+	    The repository database we are working with.
 	} {
-	    defered
-	    generate [fx::call fossil repository]
+	    # ensure that this is run before the action code, making
+	    # the database command globally accessible.
+	    immediate
+	    generate [fx::call fossil repository-open]
 	}
     }
 
@@ -510,6 +512,9 @@ cmdr create fx::fx $::argv0 {
 		use .key
 	    } [fx::call note mail-config-unset]
 	}
+
+	# TODO: Batch export/import of routes.
+	# TODO: Global routes?
 
 	officer route {
 	    private list {

@@ -63,7 +63,10 @@ proc ::fx::validate::enum::complete {p} {
 }
 
 proc ::fx::validate::enum::Values {p} {
-    return [fx-enums [$p config @repository-db]]
+    # Force parameter, validation can happen
+    # before the cmdr completion phase.
+    $p config @repository-db
+    return [fx-enums]
 }
 
 # # ## ### ##### ######## ############# ######################
