@@ -30,7 +30,7 @@ namespace eval ::fx::mailer {
 
 # # ## ### ##### ######## ############# ######################
 
-proc ::fx::mailer::get-config {db} {
+proc ::fx::mailer::get-config {} {
     foreach {option listify setting} {
 	-debug    0 debug
 	-usetls   0 tls
@@ -39,7 +39,7 @@ proc ::fx::mailer::get-config {db} {
 	-servers  1 host
 	-ports    0 port
     } {
-	lappend config $option [Get $db $listify $setting]
+	lappend config $option [Get $listify $setting]
     }
 
     lappend config -tlspolicy ::fx::mailer::TlsPolicy
@@ -48,8 +48,8 @@ proc ::fx::mailer::get-config {db} {
     return $config
 }
 
-proc ::fx::mailer::Get {db listify setting} {
-    set  v [config get-width-default $db \
+proc ::fx::mailer::Get {listify setting} {
+    set  v [config get-width-default \
 		[mail-config internal $setting] \
 		[mail-config default  $setting]]
     if {$listify} { set v [list $v] }
@@ -58,11 +58,9 @@ proc ::fx::mailer::Get {db listify setting} {
 
 # # ## ### ##### ######## ############# ######################
 
-proc ::fx::mailer::send {config receivers corpuscmd} {
-    if {[suspended]} return
-    if {![llength $receivers]} return
-
-    set corpus [{*}$corpuscmd]
+proc ::fx::mailer::send {config receivers corpus} {
+    #if {[suspended]} return
+    #if {![llength $receivers]} return
 
     puts "    ================================================"
     puts [textutil::adjust::indent $corpus {        }]

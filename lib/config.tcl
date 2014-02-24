@@ -36,7 +36,7 @@ proc ::fx::config::available {config} {
 }
 
 proc ::fx::config::list {config} {
-    ::set settings [config get-list [$config @repository-db]]
+    ::set settings [config get-list]
 
     # TODO: Filter unwanted parts first (dict filter).
     # TODO: order by name, or last-changed.
@@ -82,36 +82,33 @@ proc ::fx::config::list {config} {
 }
 
 proc ::fx::config::get {config} {
-    puts [config get \
-	      [$config @repository-db] \
-	      [$config @setting]]
+    puts [config get [$config @setting]]
     return
 }
 
 proc ::fx::config::set {config} {
     ::set name   [$config @setting]
     ::set value  [$config @value]
-    ::set db     [$config @repository-db]
     ::set global [$config @global]
 
     if {$global} {
 	::set r [fossil global-location]
     } else {
-	::set r [$config @repository]
+	::set r [fossil repository-location]
     }
     # TODO: Reformat r to show relative to cwd
 
     puts -nonewline "Setting $r (${name}): "
 
-    config set $global $db $name $value
-
-    # This one place has to distinguish global/local on get based on
-    # the user's choice, instead of the regular heuristics (local,
-    # global, default|error).
+    # This one of two places has to distinguish global/local on get
+    # based on the user's choice, instead of the regular heuristics
+    # (local, global, default|error).
     if {$global} {
+	config set-global $name $value
 	set current [config get-global $name]
     } else {
-	set current [config get-local $db $name]
+	config set-local $name $value
+	set current [config get-local $name]
     }
 
     puts '$current'
@@ -125,12 +122,20 @@ proc ::fx::config::unset {config} {
     if {$global} {
 	::set r [fossil global-location]
     } else {
-	::set r [$config @repository]
+	::set r [fossil repository-location]
     }
     # TODO: Reformat r to show relative to cwd
+
     puts -nonewline "Unsetting $r (${name})"
 
-    config unset $global [$config @repository-db] $name
+    # This one of two places has to distinguish global/local on get
+    # based on the user's choice, instead of the regular heuristics
+    # (local, global, default|error).
+    if {$global} {
+	config unset-global $name $value
+    } else {
+	config unset-local $name $value
+    }
 
     puts ""
     return
