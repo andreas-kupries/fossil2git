@@ -14,8 +14,12 @@
 # @@ Meta End
 
 package require Tcl 8.5
-package require fx::table
+package require fx::fossil
+package require fx::mailer
+package require fx::mailgen
 package require fx::mgr::config
+package require fx::seen
+package require fx::table
 package require fx::validate::event-type
 package require fx::validate::mail-config
 
@@ -26,21 +30,24 @@ namespace eval ::fx::note {
 	mail-config-show mail-config-set mail-config-unset \
 	route-add route-list route-drop deliver
     namespace ensemble create
-_
+
+    namespace import ::fx::fossil
+    namespace import ::fx::mailer
+    namespace import ::fx::mailgen
     namespace import ::fx::mgr::config
+    namespace import ::fx::seen
     namespace import ::fx::table::do
+    rename do table
+
     namespace import ::fx::validate::event-type
     namespace import ::fx::validate::mail-config
-    rename do table
 }
 
 # # ## ### ##### ######## ############# ######################
 
 proc ::fx::note::mail-config-show {config} {
-    set db [$config @repository-db]
-
     foreach k [mail-config all] {
-	set v [config get-extended-with-default $db \
+	set v [config get-extended-with-default \
 		   [mail-config internal $k] \
 		   [mail-config default  $k]]
 	lassign $v isglobal mtime v
@@ -65,19 +72,18 @@ proc ::fx::note::mail-config-set {config} {
     set global [$config @global]
     set name   [$config @key]
     set value  [$config @value]
-    set db     [$config @repository-db]
 
     # TODO: type validation per chosen setting.
 
     puts -nonewline "Setting [mail-config external $name]: "
 
-    config set $global $db $name $value
-
     if {$global} {
+	config set-global $name $value
 	set current [config get-global $name]
 	set suffix  " (global)"
     } else {
-	set current [config get-local $db $name]
+    config set-local $name $value
+	set current [config get-local $name]
 	set suffix  {}
     }
 
@@ -91,7 +97,11 @@ proc ::fx::note::mail-config-unset {config} {
 
     puts -nonewline "Unsetting [mail-config external $name]"
 
-    config unset $global [$config @repository-db] $name
+    if {$global} {
+	config unset-global $name
+    } else {
+	config unset-local $name
+    }
 
     puts ""
     return
@@ -102,29 +112,15 @@ proc ::fx::note::mail-config-unset {config} {
 proc ::fx::note::route-list {config} {
     # @repository(-db)
 
-    set settings [config get-list [$config repository-db]]
-
-    # We have a mix of routes other settings.
-
-    # Note: The event types in the saved route information is
-    # external, therefore conversion is not required for display.
-    # Validation and conversion to internal will happen on actual use.
-
-    set data {}
-    foreach k [lsort -dict [dict keys $settings]] {
-	# dynamic route through ticket field
-	if {[string match fx-aku-note-field:* $k]} {
-	    regsub {^fx-aku-note-field:} $k {} field
-	    lappend data [list ticket $field]
-	    continue
+    # Retrieve data, and restructure for table.
+    dict for {event routes} [RouteMap] {
+	foreach route $route {
+	    lassign $route static destination
+	    if {!$static} {
+		set destination <${destination}>
+	    }
+	    lappend data [list $event $destination]
 	}
-	# fixed route for event
-	if {[string match fx-aku-note-send2-*:* $k]} {
-	    regexp {^fx-aku-note-send2-([^:]*):(.*)$} $k -> event addr
-	    lappend data [list $event $addr]
-	    continue
-	}
-	# ignore everything else
     }
 
     [table t {Event Route} {
@@ -142,7 +138,7 @@ proc ::fx::note::route-add {config} {
     # for storage we go back to external rep.
     set e [event-type external [$config @event]]
 
-    if {![RouteAdd [$config @repository-db] \
+    if {![RouteAdd \
 	     fx-aku-note-send2-${e} \
 	     [$config @to]]
     } return
@@ -158,10 +154,10 @@ proc ::fx::note::route-drop {config} {
     # for storage we go back to external rep.
     set e [event-type external [$config @event]]
 
-    if {![RouteDrop [$config @repository-db] \
+    if {![RouteDrop \
 	     fx-aku-note-send2-$e \
 	     [$config @to]] ||
-	[HasRoutes [$config @repository-db]]
+	[HasRoutes]
     } return
 
     RemoveMe [$config @repository]
@@ -171,7 +167,7 @@ proc ::fx::note::route-drop {config} {
 proc ::fx::note::field-list {config} {
     # @repository-db
 
-    set columns [fossil ticket-fields [$config @repository-db]]
+    set columns [fossil ticket-fields]
 
     [table t Field {
 	foreach col [lsort -dict $columns] {
@@ -185,7 +181,7 @@ proc ::fx::note::field-list {config} {
 
 proc ::fx::note::route-field-add {config} {
     # @field (list), @repository(-db)
-    if {![RouteAdd [$config @repository-db] \
+    if {![RouteAdd \
 	     fx-aku-note-field \
 	     [$config @field]]
     } return
@@ -196,10 +192,10 @@ proc ::fx::note::route-field-add {config} {
 
 proc ::fx::note::route-field-drop {config} {
     # @field (list), @repository(-db)
-    if {![RouteDrop [$config @repository-db] \
+    if {![RouteDrop \
 	     fx-aku-note-field \
 	     [$config @field]] ||
-	[HasRoutes [$config @repository-db]]
+	[HasRoutes]
     } return
 
     RemoveMe [$config @repository]
@@ -228,30 +224,157 @@ proc ::fx::note::route-deliver {config} {
 
     # Delivery for single repository.
 
+    # Determine the routes. This gives us (implicitly)
+    #   a list of the events we can ignore, too.
     # Determine not-yet-seen events.
     # Per event:
-    #  Generate a mail
-    #    Mail content is dependent on event type
-    #  Determine receivers
-    #  Send mail
-    #  Remember as seen
+    #   Determine receivers
+    #   Generate a mail
+    #     Mail content is dependent on event type
+    #   Send mail
+    #   Remember as seen
+
+    foreach {event routes} [RouteMap] {
+	# TODO: fake parameter for message generation in case of errors.
+	set e [event-type validate ... $event]
+	lappend map $e [list $event [lsort -unique $routes]]
+    }
+
+    set mc [mailer get-config]
+
+    seen not {
+	# type, id, uuid
+
+	# TODO: no mail and such when suspended.
+
+	if {[dict exists $map $type]} {
+	    # May have routes for the event, process the artifact.
+	    lassign [dict get $map $type] ex routes
+
+	    set data [Parse $type [fossil get-manifest $uuid]]
+	    set recv [Receivers $routes $data]
+
+	    if {[llength $recv]} {
+
+dict set data artifact $uuid
+dict set data project  ...
+dict set data location ...
+dict set data title [ticket-title $uuid]
+
+
+		mailer send $mc $recv \
+		    [::fx::mailgen $ex $data]
+	    }
+	}
+        seen touch $id
+    }
     return
+}
+
+# # ## ### ##### ######## ############# ######################
+## Artifact parsing, receiver collection
+
+proc ::fx::note::Parse {type manifest} {
+    # Parse artifact. Depending on type look directly into the
+    # database for more information (current ticket state,
+    # general config).
+
+    # Variables for the data held in the manifest.
+    # - Note: Currently only handling tickets and ticket attachments.
+    # - TODO parsing: Commits, Events, Control, Wiki
+
+    # changed fields
+    set field {}
+    set when unknown
+    set user  {}
+    set anote {}
+
+    foreach line [split $manifest \n] {
+	if {[regexp {^J (.*) (.*)$} $line -> fname value]} {
+	    dict set field $fname [dearmor $value]
+	    continue
+	}
+	if {[regexp {^K (.*)$} $line -> ticket]} continue
+	if {[regexp {^D (.*)$} $line -> when]} continue
+	if {[regexp {^U (.*)$} $line -> user]} continue
+
+	if {[regexp {^A (.*)$} $line -> aref]} continue
+	if {[regexp {^C (.*)$} $line -> anote]} continue
+    }
+
+    #dict set r artifact | set by caller, outside information
+    #dict set r location |
+    #dict set r project  |
+    #dict set r title    |
+    dict set r ticket $ticket
+    dict set r user   $user
+    dict set r when   $when
+
+    if {[info exists aref]} {
+	#puts " Attachment"
+	lassign $aref aname ticket aref
+
+	dict set field attachment::id   $aref
+	dict set field attachment::name $aname
+	dict set field attachment::note [dearmor $anote]
+
+	dict set r type   Attachment
+	dict set r fields $field
+	return $r
+    }
+
+    if {[info exists ticket] && [dict size $field]} {
+	#puts " Ticket"
+
+	dict set r type   Ticket
+	dict set r fields $field
+	return $r
+    }
+
+    # Unknown
+    error Unknown
+}
+
+proc ::fx::note::Receivers {routes manifest} {
+    set recv {}
+    set compress 0
+    # NOTE: The caller made sure that all route lists have unique
+    # elements.
+
+    foreach route $routes {
+	lassign $route static dest
+
+	if {$static} {
+	    lappend recv $dest
+	} else {
+	    # dynamic route, go through the specified field to determine actual destination.
+	    # TODO dynamic routing
+	    #lappend recv ...
+	    incr compress
+	}
+    }
+
+    if {$compress} {
+	# Dynamic fields may have introduced duplicate destinations.
+	set recv [lsort -unique $recv]
+    }
+    return $recv
 }
 
 # # ## ### ##### ######## ############# ######################
 ## Internal helpers: Low level generic route management.
 
-proc ::fx::note::RouteAdd {db prefix destinations} {
+proc ::fx::note::RouteAdd {prefix destinations} {
     set added 0
 
     foreach dst $destinations {
 	puts -nonewline "  $dst ... "
 
 	set key ${prefix}:$dst
-	if {[config has $db $key]} {
+	if {[config has $key]} {
 	    puts "Already known"
 	} else {
-	    config set 0 $db $key
+	    config set-local $key 1
 	    puts "Added"
 	    incr added
 	}
@@ -259,14 +382,15 @@ proc ::fx::note::RouteAdd {db prefix destinations} {
     return $added
 }
 
-proc ::fx::note::RouteDrop {db prefix destinations} {
+proc ::fx::note::RouteDrop {prefix destinations} {
     set removed 0
 
     foreach pattern $destinations {
 	puts -nonewline "  $dst ... "
 
 	set key ${prefix}:$dst
-	set by [config unset-glob 0 $db $key]
+	set  by [config unset-glob-local  $key]
+	#incr by [config unset-glob-global $key]
 	if {!$by} {
 	    puts "Ignored, no match"
 	} else {
@@ -277,9 +401,48 @@ proc ::fx::note::RouteDrop {db prefix destinations} {
     return $removed
 }
 
-proc ::fx::note::HasRoutes {db} {
+proc ::fx::note::HasRoutes {} {
     return [expr { [config has-glob fx-aku-note-send2-*:*] ||
 		   [config has-glob fx-aku-note-field:*]      }]
+}
+
+proc ::fx::note::RouteMap {} {
+    # @repository(-db)
+
+    set map {}
+    # map    = dict (event-type -> routes)
+    # routes = list (route)
+    # routes = list (static destination)
+    # static = boolean, true -> dest = email
+    #                   true -> dest = field 
+
+    set settings [config get-list]
+
+    # We have a mix of routes and other settings.
+
+    # Note: The event types in the saved route information is
+    # external, therefore conversion is not required for display.
+    # Validation and conversion to internal will happen on actual use.
+
+    set data {}
+    foreach k [lsort -dict [dict keys $settings]] {
+	# dynamic route through ticket field
+	if {[string match fx-aku-note-field:* $k]} {
+	    regsub {^fx-aku-note-field:} $k {} field
+
+	    dict lappend map ticket [list 0 $field]
+	    continue
+	}
+	# static route for event
+	if {[string match fx-aku-note-send2-*:* $k]} {
+	    regexp {^fx-aku-note-send2-([^:]*):(.*)$} $k -> event addr
+
+	    dict lappend map $event [list 1 $addr]
+	    continue
+	}
+	# ignore everything else
+    }
+    return
 }
 
 # # ## ### ##### ######## ############# ######################
@@ -287,11 +450,11 @@ proc ::fx::note::HasRoutes {db} {
 ## (De)register the repository in the global database, 'deliver all'
 
 proc ::fx::note::WatchMe {r} {
-    config set 1 fx-aku-note-watch:$r 1
+    config set-global fx-aku-note-watch:$r 1
 }
 
 proc ::fx::note::RemoveMe {r} {
-    config unset 1 fx-aku-note-watch:$r
+    config unset-global fx-aku-note-watch:$r
 }
 
 # # ## ### ##### ######## ############# ######################
