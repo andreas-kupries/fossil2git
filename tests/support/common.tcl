@@ -43,7 +43,13 @@ proc map {x args} {
 }
 
 proc thehome {} {
-    set r [file join [tmp] thehome]
+    # The test home directory is placed outside of the test tmp dir,
+    # which is inside of the fossil checkout, and thus prevents use of
+    # other fossil repositories.
+    #set tmp [tmp]
+    set tmp [fileutil::tempdir]
+
+    set r [file join $tmp fxhome.[pid]]
     proc thehome {} [list return $r]
     return $r
 }
@@ -163,8 +169,10 @@ proc Where {} {
     # using the fx package directly. I.e. an fx app customized for use
     # within the testsuite.
 
-    variable ::kt::localprefix
-    set exe $localprefix/bin/fx
+    set exe [auto_execok fx]
+
+    #variable ::kt::localprefix
+    #set exe $localprefix/bin/fx
     proc Where {} [list return $exe]
     return $exe
 }

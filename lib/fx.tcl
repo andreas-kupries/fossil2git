@@ -37,12 +37,15 @@ namespace eval fx {
 proc fx::main {argv} {
     try {
 	fx do {*}$argv
-    } trap {CMDR VALIDATE} {e o} {
-	puts $e
+    } trap {CMDR CONFIG WRONG-ARGS} {e o} - \
+      trap {CMDR VALIDATE} {e o} {
+        puts $e
+	return 1
     } on error {e o} {
 	puts $::errorInfo
+	return 1
     }
-    return
+    return 0
 }
 
 # # ## ### ##### ######## ############# ######################
@@ -111,7 +114,7 @@ cmdr create fx::fx $::argv0 {
 	    Print version and revision of the application.
 	}
     } [lambda config {
-	puts "Version [package present fx]"
+	puts "[file tail $::argv0] [package present fx]"
     }]
 
     private repository {
