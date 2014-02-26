@@ -17,6 +17,7 @@ package require Tcl 8.5
 package require fx::fossil
 package require fx::mailer
 package require fx::mailgen
+package require fx::manifest
 package require fx::mgr::config
 package require fx::seen
 package require fx::table
@@ -34,6 +35,7 @@ namespace eval ::fx::note {
     namespace import ::fx::fossil
     namespace import ::fx::mailer
     namespace import ::fx::mailgen
+    namespace import ::fx::manifest
     namespace import ::fx::mgr::config
     namespace import ::fx::seen
     namespace import ::fx::table::do
@@ -242,28 +244,34 @@ proc ::fx::note::route-deliver {config} {
 
     set mc [mailer get-config]
 
+    # Other general configuration identical across all notifications.
+    set pname [config get-with-default \
+		   project-name \
+		   [file rootname [file tail [fossil repository-location]]]]
+
+    set ploc  [config get-with-default \
+		   fx-aku-note-project-location \
+		   {Location not known}]
+
     seen not {
 	# type, id, uuid
-
 	# TODO: no mail and such when suspended.
 
 	if {[dict exists $map $type]} {
 	    # May have routes for the event, process the artifact.
 	    lassign [dict get $map $type] ex routes
 
-	    set data [Parse $type [fossil get-manifest $uuid]]
-	    set recv [Receivers $routes $data]
+	    set m [manifest parse \
+		       [fossil get-manifest $uuid] \
+		       self     $uuid \
+		       project  $pname \
+		       location $ploc]
+
+	    set recv [Receivers $routes $m]
 
 	    if {[llength $recv]} {
-
-dict set data artifact $uuid
-dict set data project  ...
-dict set data location ...
-dict set data title [ticket-title $uuid]
-
-
 		mailer send $mc $recv \
-		    [::fx::mailgen $ex $data]
+		    [::fx::mailgen $ex $m]
 	    }
 	}
         seen touch $id
@@ -272,68 +280,7 @@ dict set data title [ticket-title $uuid]
 }
 
 # # ## ### ##### ######## ############# ######################
-## Artifact parsing, receiver collection
-
-proc ::fx::note::Parse {type manifest} {
-    # Parse artifact. Depending on type look directly into the
-    # database for more information (current ticket state,
-    # general config).
-
-    # Variables for the data held in the manifest.
-    # - Note: Currently only handling tickets and ticket attachments.
-    # - TODO parsing: Commits, Events, Control, Wiki
-
-    # changed fields
-    set field {}
-    set when unknown
-    set user  {}
-    set anote {}
-
-    foreach line [split $manifest \n] {
-	if {[regexp {^J (.*) (.*)$} $line -> fname value]} {
-	    dict set field $fname [dearmor $value]
-	    continue
-	}
-	if {[regexp {^K (.*)$} $line -> ticket]} continue
-	if {[regexp {^D (.*)$} $line -> when]} continue
-	if {[regexp {^U (.*)$} $line -> user]} continue
-
-	if {[regexp {^A (.*)$} $line -> aref]} continue
-	if {[regexp {^C (.*)$} $line -> anote]} continue
-    }
-
-    #dict set r artifact | set by caller, outside information
-    #dict set r location |
-    #dict set r project  |
-    #dict set r title    |
-    dict set r ticket $ticket
-    dict set r user   $user
-    dict set r when   $when
-
-    if {[info exists aref]} {
-	#puts " Attachment"
-	lassign $aref aname ticket aref
-
-	dict set field attachment::id   $aref
-	dict set field attachment::name $aname
-	dict set field attachment::note [dearmor $anote]
-
-	dict set r type   Attachment
-	dict set r fields $field
-	return $r
-    }
-
-    if {[info exists ticket] && [dict size $field]} {
-	#puts " Ticket"
-
-	dict set r type   Ticket
-	dict set r fields $field
-	return $r
-    }
-
-    # Unknown
-    error Unknown
-}
+## Receiver collection
 
 proc ::fx::note::Receivers {routes manifest} {
     set recv {}

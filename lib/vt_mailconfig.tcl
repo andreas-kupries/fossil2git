@@ -85,6 +85,7 @@ namespace eval ::fx::validate::mail-config {
 	host 	 fx-aku-note-mail-host
 	port 	 fx-aku-note-mail-port
 	sender   fx-aku-note-mail-sender
+	location fx-aku-note-project-location
     }
 
     variable default {
@@ -95,6 +96,7 @@ namespace eval ::fx::validate::mail-config {
 	host 	 localhost
 	port 	 22
 	sender   {*Undefined* Please set.}
+	location {*Undefined* Please set.}
     }
 
     # Last map: Type validation per setting.

@@ -92,7 +92,7 @@ proc ::fx::fossil::repository-find {p} {
     # cmdr generate callback
     variable repo_location
 
-    if {[$p config has @all] && [$p config @all defined?]} {
+    if {[$p config has @all] && [$p config @all set?]} {
 	# Leave the single repository undefined, do not even try to
 	# find it. This way we cannot run into an error when an "all"
 	# operation is run outside of a checkout and without a
