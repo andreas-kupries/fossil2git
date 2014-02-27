@@ -1,0 +1,161 @@
+fx config available [OPTIONS]
+    List all available configuration settings.
+
+fx config exit [OPTIONS]
+    Exit the shell. No-op if not in a shell.
+
+fx config get [OPTIONS] <setting>
+    Print the value of the named configuration setting.
+
+fx config help [OPTIONS] [<cmdname>...]
+    Retrieve help for a command or command set. Without arguments help for all
+    commands is given. The default format is --full.
+
+fx config list [OPTIONS]
+    List all changed configuration settings of the repository, and their
+    values.
+
+fx config set [OPTIONS] <setting> <value>
+    Change the value of the named configuration setting to the given text.
+
+fx config unset [OPTIONS] <setting>
+    Remove the specified local configuration setting. This sets it back to the
+    system default.
+
+fx delegate [OPTIONS] <args>...
+    Delegate the command to the local fossil executable.
+
+fx enum add [OPTIONS] <enum> <items>...
+    Extend the specified enumeration with the given items.
+
+fx enum change [OPTIONS] <enum> <item> <newitem>
+    Rename the item in the specified enumeration. Careful, you may break your
+    ticketing system. Check first that all users have made the same
+    substitution.
+
+fx enum create [OPTIONS] <newenum> [<items>...]
+    Create a new named enumeration.
+
+fx enum delete [OPTIONS] <enum>
+    Delete the named enumeration. Careful, you may break your ticketing
+    system. Check first that the enumeration is not used anymore.
+
+fx enum exit [OPTIONS]
+    Exit the shell. No-op if not in a shell.
+
+fx enum export [OPTIONS] [<enums>...]
+    Save the specified enumeration(s). Defaults to all.
+
+fx enum help [OPTIONS] [<cmdname>...]
+    Retrieve help for a command or command set. Without arguments help for all
+    commands is given. The default format is --full.
+
+fx enum import [OPTIONS] [<import>]
+    Import an enumeration from a save file.
+
+fx enum list [OPTIONS]
+    List all enumerations stored in the repository.
+
+fx enum remove [OPTIONS] <enum> <items>...
+    Remove the named item(s) from the specified enumeration. Careful, you may
+    break your ticketing system. Check first that the item is not used
+    anymore.
+
+fx exit [OPTIONS]
+    Exit the shell. No-op if not in a shell.
+
+fx help [OPTIONS] [<cmdname>...]
+    Retrieve help for a command or command set. Without arguments help for all
+    commands is given. The default format is --full.
+
+fx note config exit [OPTIONS]
+    Exit the shell. No-op if not in a shell.
+
+fx note config help [OPTIONS] [<cmdname>...]
+    Retrieve help for a command or command set. Without arguments help for all
+    commands is given. The default format is --full.
+
+fx note config set [OPTIONS] <key> <value>
+    Set the specified part of the mail setup for notifications.
+
+fx note config show [OPTIONS]
+    Show the current mail setup for notifications.
+
+fx note config unset [OPTIONS] <key>
+    Reset the specified part of the mail setup for notifications to its
+    default.
+
+fx note deliver [OPTIONS]
+    Send notification emails to all configured destinations, for all new
+    events (since the last delivery).
+
+fx note exit [OPTIONS]
+    Exit the shell. No-op if not in a shell.
+
+fx note help [OPTIONS] [<cmdname>...]
+    Retrieve help for a command or command set. Without arguments help for all
+    commands is given. The default format is --full.
+
+fx note route add [OPTIONS] <event> <to>...
+    Add fixed mail destination for the named event type.
+
+fx note route drop [OPTIONS] <event> [<to>...]
+    Remove the specified mail destinations (glob pattern) for the event type.
+
+fx note route exit [OPTIONS]
+    Exit the shell. No-op if not in a shell.
+
+fx note route field add [OPTIONS] <field>...
+    Add field as source of mail destinations for ticket events.
+
+fx note route field drop [OPTIONS] <field>...
+    Remove the specified field as source of mail destinations for ticket
+    events.
+
+fx note route field exit [OPTIONS]
+    Exit the shell. No-op if not in a shell.
+
+fx note route field help [OPTIONS] [<cmdname>...]
+    Retrieve help for a command or command set. Without arguments help for all
+    commands is given. The default format is --full.
+
+fx note route field list [OPTIONS]
+    Show all available ticket fields.
+
+fx note route fields [OPTIONS]
+    Show all available ticket fields.
+
+fx note route help [OPTIONS] [<cmdname>...]
+    Retrieve help for a command or command set. Without arguments help for all
+    commands is given. The default format is --full.
+
+fx note route list [OPTIONS]
+    Show all mail destinations.
+
+fx note routes [OPTIONS]
+    Show all mail destinations.
+
+fx report add [OPTIONS] <title> [<spec>]
+    Add a report definition to the repository.
+
+fx report delete [OPTIONS] <id>
+    Delete the specified report definition.
+
+fx report exit [OPTIONS]
+    Exit the shell. No-op if not in a shell.
+
+fx report get [OPTIONS] <id>
+    Retrieve the specified report definition.
+
+fx report help [OPTIONS] [<cmdname>...]
+    Retrieve help for a command or command set. Without arguments help for all
+    commands is given. The default format is --full.
+
+fx report list [OPTIONS]
+    List all reports defined in the repository.
+
+fx repository [OPTIONS]
+    Print the name of the repository we are working on.
+
+fx version [OPTIONS]
+    Print version and revision of the application.

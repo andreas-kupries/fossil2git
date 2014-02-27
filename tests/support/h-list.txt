@@ -1,0 +1,48 @@
+fx config available [OPTIONS]
+    fx config exit [OPTIONS]
+    fx config get [OPTIONS] <setting>
+    fx config help [OPTIONS] [<cmdname>...]
+    fx config list [OPTIONS]
+    fx config set [OPTIONS] <setting> <value>
+    fx config unset [OPTIONS] <setting>
+    fx delegate [OPTIONS] <args>...
+    fx enum add [OPTIONS] <enum> <items>...
+    fx enum change [OPTIONS] <enum> <item> <newitem>
+    fx enum create [OPTIONS] <newenum> [<items>...]
+    fx enum delete [OPTIONS] <enum>
+    fx enum exit [OPTIONS]
+    fx enum export [OPTIONS] [<enums>...]
+    fx enum help [OPTIONS] [<cmdname>...]
+    fx enum import [OPTIONS] [<import>]
+    fx enum list [OPTIONS]
+    fx enum remove [OPTIONS] <enum> <items>...
+    fx exit [OPTIONS]
+    fx help [OPTIONS] [<cmdname>...]
+    fx note config exit [OPTIONS]
+    fx note config help [OPTIONS] [<cmdname>...]
+    fx note config set [OPTIONS] <key> <value>
+    fx note config show [OPTIONS]
+    fx note config unset [OPTIONS] <key>
+    fx note deliver [OPTIONS]
+    fx note exit [OPTIONS]
+    fx note help [OPTIONS] [<cmdname>...]
+    fx note route add [OPTIONS] <event> <to>...
+    fx note route drop [OPTIONS] <event> [<to>...]
+    fx note route exit [OPTIONS]
+    fx note route field add [OPTIONS] <field>...
+    fx note route field drop [OPTIONS] <field>...
+    fx note route field exit [OPTIONS]
+    fx note route field help [OPTIONS] [<cmdname>...]
+    fx note route field list [OPTIONS]
+    fx note route fields [OPTIONS]
+    fx note route help [OPTIONS] [<cmdname>...]
+    fx note route list [OPTIONS]
+    fx note routes [OPTIONS]
+    fx report add [OPTIONS] <title> [<spec>]
+    fx report delete [OPTIONS] <id>
+    fx report exit [OPTIONS]
+    fx report get [OPTIONS] <id>
+    fx report help [OPTIONS] [<cmdname>...]
+    fx report list [OPTIONS]
+    fx repository [OPTIONS]
+    fx version [OPTIONS]

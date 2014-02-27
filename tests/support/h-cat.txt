@@ -1,0 +1,70 @@
+Configuration
+    fx config available                List all available configuration
+                                       settings
+    fx config get <setting>            Print the value of the named
+                                       configuration setting
+    fx config list                     List all changed configuration settings
+                                       of the repository, and their values
+    fx config set <setting> <value>    Change the value of the named
+                                       configuration setting to the given text
+    fx config unset <setting>          Remove the specified local configuration
+                                       setting
+
+Convenience
+    fx delegate <args>...    Delegate the command to the local fossil
+                             executable
+
+Enumerations
+    fx enum add <enum> <items>...             Extend the specified enumeration
+                                              with the given items
+    fx enum change <enum> <item> <newitem>    Rename the item in the specified
+                                              enumeration
+    fx enum create <newenum> [<items>...]     Create a new named enumeration
+    fx enum delete <enum>                     Delete the named enumeration
+    fx enum export [<enums>...]               Save the specified enumeration(s)
+    fx enum import [<import>]                 Import an enumeration from a save
+                                              file
+    fx enum list                              List all enumerations stored in
+                                              the repository
+    fx enum remove <enum> <items>...          Remove the named item(s) from the
+                                              specified enumeration
+
+Introspection
+    fx repository     Print the name of the repository we are working on
+    fx version        Print version and revision of the application
+
+Notifications
+    fx note deliver                         Send notification emails to all
+                                            configured destinations, for all
+                                            new events (since the last
+                                            delivery)
+    fx note route add <event> <to>...       Add fixed mail destination for the
+                                            named event type
+    fx note route drop <event> [<to>...]    Remove the specified mail
+                                            destinations (glob pattern) for the
+                                            event type
+    fx note route field add <field>...      Add field as source of mail
+                                            destinations for ticket events
+    fx note route field drop <field>...     Remove the specified field as
+                                            source of mail destinations for
+                                            ticket events
+    fx note route field list                Show all available ticket fields
+    fx note route fields                    Show all available ticket fields
+    fx note route list                      Show all mail destinations
+    fx note routes                          Show all mail destinations
+
+    Mail setup
+        fx note config set <key> <value>    Set the specified part of the mail
+                                            setup for notifications
+        fx note config show                 Show the current mail setup for
+                                            notifications
+        fx note config unset <key>          Reset the specified part of the
+                                            mail setup for notifications to its
+                                            default
+
+Reporting
+    fx report add <title> [<spec>]    Add a report definition to the repository
+    fx report delete <id>             Delete the specified report definition
+    fx report get <id>                Retrieve the specified report definition
+    fx report list                    List all reports defined in the
+                                      repository

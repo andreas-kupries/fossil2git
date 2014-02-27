@@ -1,0 +1,234 @@
+# -*- tcl -*- tcl.tk//DSL tcltest//EN//2.0 tcl.tk//DSL tcltest//EN//2.0
+## (c) 2014 Andreas Kupries
+# # ## ### ##### ######## ############# #####################
+## client note config - Notification configuration
+
+kt check Tcl     8.5
+kt check tcltest 2
+
+# # ## ### ##### ######## ############# #####################
+
+kt source support/common.tcl
+
+# TODO: Prevent --global for unshareable per-repo settings! --> location
+
+# # ## ### ##### ######## ############# #####################
+
+test note-config-1.0 {client note config, default = show, default settings} -setup {
+    stage-open
+} -body {
+    in-ckout {
+	run note config
+    }
+} -cleanup {
+    stage-close
+} -result [viewFile support/nc-defaults.txt]
+
+# # ## ### ##### ######## ############# #####################
+## set
+
+test note-config-2.0 {client note config set, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run note config set
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "wrong#args, not enough*"
+
+test note-config-2.1 {client note config set, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run note config set K
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "wrong#args, not enough*"
+
+test note-config-2.2 {client note config set, wrong args, too many} -setup {
+    stage-open
+} -body {
+    run note config set K V X
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "wrong#args, too many*"
+
+test note-config-2.3 {client note config set, bogus key} -setup {
+    stage-open
+} -body {
+    run note config set bogus V
+} -cleanup {
+    stage-close
+} -returnCodes error -result {Expected an fx notification setting for input "key", got "bogus"}
+
+test note-config-2.4.0 {client note config set, sender, implicit repo} -setup {
+    stage-open
+} -body {
+    in-ckout {
+	run note config set sender a@k
+    }
+} -cleanup {
+    stage-close
+} -result {Setting sender: 'a@k'}
+
+test note-config-2.4.1 {client note config set, sender, explicit repo} -setup {
+    stage-open
+} -body {
+    run note config set -R [therepo] sender a@k
+} -cleanup {
+    stage-close
+} -result {Setting sender: 'a@k'}
+
+test note-config-2.5 {client note config set, persistence} -setup {
+    stage-open
+} -body {
+    in-ckout {
+	run note config set sender a@k
+	run note config show
+    }
+} -cleanup {
+    stage-close
+} -match glob -result {*| sender *| a@k *| Repository *| * |*}
+
+test note-config-2.6 {client note config set --global} -setup {
+    stage-open
+} -body {
+    in-ckout {
+	run note config set sender a@k --global
+    }
+} -cleanup {
+    stage-close
+} -result {Setting sender: 'a@k' (global)}
+
+test note-config-2.7 {client note config set --global, persistence} -setup {
+    stage-open
+} -body {
+    in-ckout {
+	run note config set sender a@k --global
+	run note config show
+    }
+} -cleanup {
+    stage-close
+} -match glob -result {*| sender *| a@k *| Global *| * |*}
+
+
+test note-config-2.7.1 {client note config set --global, persistence} -setup {
+    stage-open
+} -body {
+    in-ckout {
+	run note config set host other --global
+	run note config show
+    }
+} -cleanup {
+    stage-close
+} -match glob -result {*| host *| other *| Global *| * |*}
+
+
+# TODO | Known bug that you set any value anywhere,
+# TODO | without getting proper validation for each setting.
+
+# # ## ### ##### ######## ############# #####################
+## unset
+
+test note-config-3.0 {client note config unset, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run note config unset
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "wrong#args, not enough*"
+
+test note-config-3.1 {client note config set, wrong args, too many} -setup {
+    stage-open
+} -body {
+    run note config unset K X
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "wrong#args, too many*"
+
+test note-config-3.2 {client note config unset, bogus key} -setup {
+    stage-open
+} -body {
+    run note config unset bogus
+} -cleanup {
+    stage-close
+} -returnCodes error -result {Expected an fx notification setting for input "key", got "bogus"}
+
+test note-config-3.3.0 {client note config unset, sender, implicit repo} -setup {
+    stage-open
+    in-ckout { 	run note config set sender a@k }
+} -body {
+    in-ckout {
+	run note config unset sender
+    }
+} -cleanup {
+    stage-close
+} -result {Unsetting sender}
+
+test note-config-3.3.1 {client note config unset, sender, explicit repo} -setup {
+    stage-open
+    in-ckout { 	run note config set sender a@k }
+} -body {
+    run note config unset -R [therepo] sender
+} -cleanup {
+    stage-close
+} -result {Unsetting sender}
+
+test note-config-3.4 {client note config unset, persistence, back to default} -setup {
+    stage-open
+    in-ckout { 	run note config set sender a@k }
+} -body {
+    in-ckout {
+	run note config unset sender
+	run note config show
+    }
+} -cleanup {
+    stage-close
+} -match glob -result {*| sender *|*Undefined*| Default *| * |*}
+
+# TODO | Unset of key which is not set (should work)
+
+# # ## ### ##### ######## ############# #####################
+## show
+
+
+test note-config-4.0 {client note config show, wrong args, too many} -setup {
+    stage-open
+} -body {
+    in-ckout {
+	run note config show X
+    }
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "wrong#args, too many*"
+
+test note-config-4.1 {client note config show, default settings} -setup {
+    stage-open
+} -body {
+    in-ckout {
+	run note config show
+    }
+} -cleanup {
+    stage-close
+} -result [viewFile support/nc-defaults.txt]
+
+test note-config-4.2 {client note config show, various settings/origins} -setup {
+    stage-open
+    in-ckout {
+	run note config set debug    1
+	run note config set host     foo.mailer.somewhere --global
+	run note config set location http://foo.fossil-hoster.anywhere
+	run note config set password gargamel
+	run note config set port     445
+	run note config set sender   notifier@fossil-hoster.anywhere
+	run note config set tls      1
+	run note config set user     griffin
+    }
+} -body {
+    in-ckout {
+	run note config show
+    }
+} -cleanup {
+    stage-close
+} -match glob -result [viewFile support/nc-various.txt]
+
+# # ## ### ##### ######## ############# #####################
+cleanupTests

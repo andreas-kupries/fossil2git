@@ -1,0 +1,12 @@
++----------+-------------------------+---------+--------------+
+| Key      | Value                   | Origin  | Last-Changed |
++----------+-------------------------+---------+--------------+
+| debug    | 0                       | Default |              |
+| host     | localhost               | Default |              |
+| location | *Undefined* Please set. | Default |              |
+| password |                         | Default |              |
+| port     | 22                      | Default |              |
+| sender   | *Undefined* Please set. | Default |              |
+| tls      | 0                       | Default |              |
+| user     |                         | Default |              |
++----------+-------------------------+---------+--------------+

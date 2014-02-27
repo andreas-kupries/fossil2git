@@ -1,0 +1,12 @@
++----------+-----------------------------------+------------+-*-+
+| Key      | Value                             | Origin     | Last-Changed *|
++----------+-----------------------------------+------------+-*-+
+| debug    | 1                                 | Repository | * |
+| host     | foo.mailer.somewhere              | Global     | * |
+| location | http://foo.fossil-hoster.anywhere | Repository | * |
+| password | gargamel                          | Repository | * |
+| port     | 445                               | Repository | * |
+| sender   | notifier@fossil-hoster.anywhere   | Repository | * |
+| tls      | 1                                 | Repository | * |
+| user     | griffin                           | Repository | * |
++----------+-----------------------------------+------------+-*-+

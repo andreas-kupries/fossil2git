@@ -69,6 +69,18 @@ proc indir {dir script} {
     }
 }
 
+proc the-ckout {} {
+    return [thehome]/ckout
+}
+
+proc therepo {} {
+    return [thehome]/source.fossil
+}
+
+proc in-ckout {script} {
+    uplevel 1 [list indir [the-ckout] $script]
+}
+
 proc withenv {script args} {
     global env
     set saved [array get env]
@@ -109,7 +121,7 @@ proc run {args} {
 proc run-core {args} {
     # args = command to run...
     variable verbose
-    if {$verbose} { puts "%% s $args" }
+    if {$verbose} { puts "[pwd] %% $args" }
 
     set out [file join [tmp] [pid].out]
     set err [file join [tmp] [pid].err]
