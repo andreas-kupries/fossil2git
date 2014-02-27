@@ -18,6 +18,10 @@ package require clock::iso8601
 
 # # ## ### ##### ######## ############# ######################
 
+namespace eval ::fx {
+    namespace export manifest
+    namespace ensemble create
+}
 namespace eval ::fx::manifest {
     namespace export parse
     namespace ensemble create

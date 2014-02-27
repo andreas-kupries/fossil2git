@@ -18,6 +18,10 @@ package require struct::matrix
 package require textutil::adjust
 package require clock::iso8601
 
+namespace eval ::fx {
+    namespace export mailgen
+    namespace ensemble create
+}
 namespace eval ::fx::mailgen {
     namespace export ticket wiki event checkin
     namespace ensemble create

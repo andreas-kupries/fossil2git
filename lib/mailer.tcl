@@ -20,6 +20,10 @@ package require mime
 package require fx::mgr::config
 package require fx::validate::mail-config
 
+namespace eval ::fx {
+    namespace export mailer
+    namespace ensemble create
+}
 namespace eval ::fx::mailer {
     namespace export get-config send
     namespace ensemble create
