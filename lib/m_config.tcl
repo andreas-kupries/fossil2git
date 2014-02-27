@@ -19,6 +19,11 @@ package require cmdr::validate::common
 
 # # ## ### ##### ######## ############# ######################
 
+namespace eval ::fx::mgr {
+    namespace export config
+    namespace ensemble create
+}
+
 namespace eval ::fx::mgr::config {
     namespace export \
 	get-list get get-with-default has \
@@ -28,7 +33,7 @@ namespace eval ::fx::mgr::config {
 	unset-glob-global unset-glob-local
     namespace ensemble create
 
-    namespace import fx::fossil
+    namespace import ::fx::fossil
 
     # Assumed database schema
     #
@@ -59,7 +64,7 @@ proc ::fx::mgr::config::get-list {} {
     return $config
 }
 
-proc ::fx::config::get {name} {
+proc ::fx::mgr::config::get {name} {
     fossil repository transaction {
 	if {[has-local $name]} {
 	   return [get-local $name]
@@ -75,7 +80,7 @@ proc ::fx::config::get {name} {
 	"Unknown config key $name"
 }
 
-proc ::fx::config::get-with-default {name default} {
+proc ::fx::mgr::config::get-with-default {name default} {
     fossil repository transaction {
 	if {[has-local $name]} {
 	   return [get-local $name]
@@ -89,7 +94,7 @@ proc ::fx::config::get-with-default {name default} {
     return $default
 }
 
-proc ::fx::config::get-extended-with-default {name default} {
+proc ::fx::mgr::config::get-extended-with-default {name default} {
     fossil repository transaction {
 	if {[has-local $name]} {
 	   return [get-extended-local $name]
@@ -100,15 +105,15 @@ proc ::fx::config::get-extended-with-default {name default} {
 	   return [get-extended-global $name]
 	}
     }
-    return $default
+    return [list -1 {} $default]
 }
 
-proc ::fx::config::has {name} {
+proc ::fx::mgr::config::has {name} {
     return [expr { [has-local  $name] ||
 		   [has-global $name] }]
 }
 
-proc ::fx::config::has-glob {pattern} {
+proc ::fx::mgr::config::has-glob {pattern} {
     return [expr { [has-glob-local  $pattern] ||
 		   [has-glob-global $pattern] }]
 }
@@ -138,7 +143,7 @@ proc ::fx::mgr::config::get-list-global {script} {
     return
 }
 
-proc ::fx::config::get-local {name} {
+proc ::fx::mgr::config::get-local {name} {
     return [fossil repository onecolumn {
 	SELECT value
 	FROM  config
@@ -146,7 +151,7 @@ proc ::fx::config::get-local {name} {
     }]
 }
 
-proc ::fx::config::get-global {name} {
+proc ::fx::mgr::config::get-global {name} {
     return [fossil global onecolumn {
 	SELECT value
 	FROM  global_config
@@ -154,7 +159,7 @@ proc ::fx::config::get-global {name} {
     }]
 }
 
-proc ::fx::config::get-extended-local {name} {
+proc ::fx::mgr::config::get-extended-local {name} {
     return [fossil repository eval {
 	SELECT '0', mtime, value
 	FROM  config
@@ -162,7 +167,7 @@ proc ::fx::config::get-extended-local {name} {
     }]
 }
 
-proc ::fx::config::get-extended-global {name} {
+proc ::fx::mgr::config::get-extended-global {name} {
     return [fossil global eval {
 	SELECT '1', '', value
 	FROM  global_config
@@ -170,7 +175,7 @@ proc ::fx::config::get-extended-global {name} {
     }]
 }
 
-proc ::fx::config::has-local {name} {
+proc ::fx::mgr::config::has-local {name} {
     return [fossil repository onecolumn {
 	SELECT count(*)
 	FROM  config
@@ -178,7 +183,7 @@ proc ::fx::config::has-local {name} {
     }]
 }
 
-proc ::fx::config::has-global {name} {
+proc ::fx::mgr::config::has-global {name} {
     return [fossil global onecolumn {
 	SELECT count(*)
 	FROM  global_config
@@ -186,7 +191,7 @@ proc ::fx::config::has-global {name} {
     }]
 }
 
-proc ::fx::config::has-glob-local {pattern} {
+proc ::fx::mgr::config::has-glob-local {pattern} {
     return [fossil repository onecolumn {
 	SELECT count(*)
 	FROM  config
@@ -194,7 +199,7 @@ proc ::fx::config::has-glob-local {pattern} {
     }]
 }
 
-proc ::fx::config::has-glob-global {pattern} {
+proc ::fx::mgr::config::has-glob-global {pattern} {
     return [fossil global onecolumn {
 	SELECT count(*)
 	FROM  global_config
@@ -202,7 +207,7 @@ proc ::fx::config::has-glob-global {pattern} {
     }]
 }
 
-proc ::fx::config::set-local {name value} {
+proc ::fx::mgr::config::set-local {name value} {
     set now [clock seconds]
     fossil repository transaction {
 	# Tricky code handling setting a value for a non-existing key,
@@ -227,7 +232,7 @@ proc ::fx::config::set-local {name value} {
     return
 }
 
-proc ::fx::config::set-global {name value} {
+proc ::fx::mgr::config::set-global {name value} {
     fossil global transaction {
 	# Tricky code handling setting a value for a non-existing key,
 	# or overwriting the value of an existing one.
@@ -250,7 +255,7 @@ proc ::fx::config::set-global {name value} {
     return
 }
 
-proc ::fx::config::unset-local {name} {
+proc ::fx::mgr::config::unset-local {name} {
     fossil repository transaction {
 	fossil repository eval {
 	    DELETE
@@ -261,7 +266,7 @@ proc ::fx::config::unset-local {name} {
     return [fossil repository changes]
 }
 
-proc ::fx::config::unset-global {name} {
+proc ::fx::mgr::config::unset-global {name} {
     fossil global transaction {
 	fossil global eval {
 	    DELETE
@@ -272,7 +277,7 @@ proc ::fx::config::unset-global {name} {
     return [fossil global changes]
 }
 
-proc ::fx::config::unset-glob-local {pattern} {
+proc ::fx::mgr::config::unset-glob-local {pattern} {
     fossil repository transaction {
 	fossil repository eval {
 	    DELETE
@@ -283,7 +288,7 @@ proc ::fx::config::unset-glob-local {pattern} {
     return [fossil repository changes]
 }
 
-proc ::fx::config::unset-glob-global {pattern} {
+proc ::fx::mgr::config::unset-glob-global {pattern} {
     fossil global transaction {
 	fossil global eval {
 	    DELETE
