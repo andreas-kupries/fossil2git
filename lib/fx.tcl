@@ -521,7 +521,7 @@ cmdr create fx::fx [file tail $::argv0] {
 
 	officer route {
 	    private list {
-		section Notifications
+		section Notifications Destinations
 		description {
 		    Show all mail destinations.
 		}
@@ -535,7 +535,7 @@ cmdr create fx::fx [file tail $::argv0] {
 	    }
 
 	    private add {
-		section Notifications
+		section Notifications Destinations
 		description {
 		    Add fixed mail destination for the named event type.
 		}
@@ -546,7 +546,7 @@ cmdr create fx::fx [file tail $::argv0] {
 	    } [fx::call note route-add]
 
 	    private drop {
-		section Notifications
+		section Notifications Destinations
 		description {
 		    Remove the specified mail destinations
 		    (glob pattern) for the event type.
@@ -565,7 +565,7 @@ cmdr create fx::fx [file tail $::argv0] {
 
 	    officer field {
 		private list {
-		    section Notifications
+		    section Notifications Destinations
 		    description {
 			Show all available ticket fields.
 		    }
@@ -573,7 +573,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		default
 
 		private add {
-		    section Notifications
+		    section Notifications Destinations
 		    description {
 			Add field as source of mail destinations for ticket events.
 		    }
@@ -586,7 +586,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		} [fx::call note route-field-add]
 
 		private drop {
-		    section Notifications
+		    section Notifications Destinations
 		    description {
 			Remove the specified field as source
 			of mail destinations for ticket events.

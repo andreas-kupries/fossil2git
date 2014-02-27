@@ -34,24 +34,27 @@ Introspection
     fx version        Print version and revision of the application
 
 Notifications
-    fx note deliver                         Send notification emails to all
-                                            configured destinations, for all
-                                            new events (since the last
-                                            delivery)
-    fx note route add <event> <to>...       Add fixed mail destination for the
-                                            named event type
-    fx note route drop <event> [<to>...]    Remove the specified mail
-                                            destinations (glob pattern) for the
-                                            event type
-    fx note route field add <field>...      Add field as source of mail
-                                            destinations for ticket events
-    fx note route field drop <field>...     Remove the specified field as
-                                            source of mail destinations for
-                                            ticket events
-    fx note route field list                Show all available ticket fields
-    fx note route fields                    Show all available ticket fields
-    fx note route list                      Show all mail destinations
-    fx note routes                          Show all mail destinations
+    fx note deliver     Send notification emails to all configured
+                        destinations, for all new events (since the last
+                        delivery)
+
+    Destinations
+        fx note route add <event> <to>...       Add fixed mail destination for
+                                                the named event type
+        fx note route drop <event> [<to>...]    Remove the specified mail
+                                                destinations (glob pattern) for
+                                                the event type
+        fx note route field add <field>...      Add field as source of mail
+                                                destinations for ticket events
+        fx note route field drop <field>...     Remove the specified field as
+                                                source of mail destinations for
+                                                ticket events
+        fx note route field list                Show all available ticket
+                                                fields
+        fx note route fields                    Show all available ticket
+                                                fields
+        fx note route list                      Show all mail destinations
+        fx note routes                          Show all mail destinations
 
     Mail setup
         fx note config set <key> <value>    Set the specified part of the mail
