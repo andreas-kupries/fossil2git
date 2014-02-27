@@ -71,7 +71,7 @@ proc ::fx::validate::mail-config::default {x} {
 
 proc ::fx::validate::mail-config::all {} {
     variable legal
-    return $legal
+    return  $legal
 }
 
 # # ## ### ##### ######## ############# ######################

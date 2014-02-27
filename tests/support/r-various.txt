@@ -1,0 +1,11 @@
++---------+-------+
+| Event   | Route |
++---------+-------+
+| commit  | a@e   |
+| commit  | a@k   |
+| control | a@k   |
+| control | x@y   |
+| event   | c@d   |
+| ticket  | b@c   |
+| wiki    | a@k   |
++---------+-------+

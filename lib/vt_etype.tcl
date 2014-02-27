@@ -28,7 +28,7 @@ namespace eval ::fx::validate {
 
 namespace eval ::fx::validate::event-type {
     namespace export release validate default complete \
-	external
+	external all
     namespace ensemble create
 
     namespace import ::cmdr::validate::common::fail
@@ -55,6 +55,11 @@ proc ::fx::validate::event-type::complete {p} {
 proc ::fx::validate::event-type::external {x} {
     variable imap
     return [dict get $imap $x]
+}
+
+proc ::fx::validate::event-type::all {} {
+    variable legal
+    return  $legal
 }
 
 # # ## ### ##### ######## ############# ######################

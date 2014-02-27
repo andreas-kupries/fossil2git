@@ -563,6 +563,13 @@ cmdr create fx::fx [file tail $::argv0] {
 		}
 	    } [fx::call note route-drop]
 
+	    private events {
+		section Notifications Destinations
+		description {
+		    Show all events we can generate notifications for.
+		}
+	    } [fx::call note event-list]
+
 	    officer field {
 		private list {
 		    section Notifications Destinations

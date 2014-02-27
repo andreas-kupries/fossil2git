@@ -1,0 +1,260 @@
+# -*- tcl -*- tcl.tk//DSL tcltest//EN//2.0 tcl.tk//DSL tcltest//EN//2.0
+## (c) 2014 Andreas Kupries
+# # ## ### ##### ######## ############# #####################
+## client note routes - fixed - Notifications, Fixed routes
+
+kt check Tcl     8.5
+kt check tcltest 2
+
+# # ## ### ##### ######## ############# #####################
+
+kt source support/common.tcl
+
+# # ## ### ##### ######## ############# #####################
+
+test note-routes-fixed-1.0 {client note route, default = list, none} -setup {
+    stage-open
+} -body {
+    in-ckout {
+	run note route
+    }
+} -cleanup {
+    stage-close
+} -result [viewFile support/r-empty.txt]
+
+# # ## ### ##### ######## ############# #####################
+## events
+
+test note-routes-fixed-2.0 {client note route events, wrong args, too many} -setup {
+    stage-open
+} -body {
+    run note route events X
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "wrong#args, too many*"
+
+test note-routes-fixed-2.1 {client note route events, available events} -setup {
+    stage-open
+} -body {
+    run note route events
+} -cleanup {
+    stage-close
+} -result [viewFile support/e-available.txt]
+
+# # ## ### ##### ######## ############# #####################
+## add
+
+test note-routes-fixed-3.0 {client note route add, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run note route add
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "wrong#args, not enough*"
+
+test note-routes-fixed-3.1 {client note route set, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run note route add E
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "wrong#args, not enough*"
+
+test note-routes-fixed-3.2 {client note route set, bogus event} -setup {
+    stage-open
+} -body {
+    run note route add bogus V
+} -cleanup {
+    stage-close
+} -returnCodes error -result {Expected a repository event-type for input "event", got "bogus"}
+
+test note-routes-fixed-3.3.0 {client note route add, implicit repo} -setup {
+    stage-open
+} -body {
+    in-ckout {
+	run note route add commit a@k
+    }
+} -cleanup {
+    stage-close
+} -result {a@k ... Added}
+
+test note-routes-fixed-3.3.1 {client note route add, explicit repo} -setup {
+    stage-open
+} -body {
+    run note route add -R [therepo] commit a@k
+} -cleanup {
+    stage-close
+} -result {a@k ... Added}
+
+test note-routes-fixed-3.4 {client note route add, persistence} -setup {
+    stage-open
+} -body {
+    in-ckout {
+	run note route add commit a@k
+	run note routes
+    }
+} -cleanup {
+    stage-close
+} -match glob -result {*|* commit *|* a@k *|*}
+
+test note-routes-fixed-3.5 {client note route add, multiple of same} -setup {
+    stage-open
+    in-ckout { run note route add commit a@k }
+} -body {
+    in-ckout {
+	run note route add commit a@k
+    }
+} -cleanup {
+    stage-close
+} -result {a@k ... Already known}
+
+# TODO: Check the effect of adding routes on the global database.
+
+
+
+
+# # ## ### ##### ######## ############# #####################
+## drop
+
+test note-routes-fixed-4.0 {client note route drop, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run note route drop
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "wrong#args, not enough*"
+
+test note-routes-fixed-4.1 {client note route set, bogus event} -setup {
+    stage-open
+} -body {
+    run note route drop bogus
+} -cleanup {
+    stage-close
+} -returnCodes error -result {Expected a repository event-type for input "event", got "bogus"}
+
+test note-routes-fixed-4.2.0 {client note route drop, implicit repo} -setup {
+    stage-open
+    in-ckout {
+	run note route add commit a@k
+    }
+} -body {
+    in-ckout {
+	run note route drop commit a@k
+    }
+} -cleanup {
+    stage-close
+} -result {a@k ... Removed 1}
+
+test note-routes-fixed-4.2.1 {client note route drop, explicit repo} -setup {
+    stage-open
+    in-ckout {
+	run note route add commit a@k
+    }
+} -body {
+    run note route drop -R [therepo] commit a@k
+} -cleanup {
+    stage-close
+} -result {a@k ... Removed 1}
+
+test note-routes-fixed-4.3 {client note route drop, persistence} -setup {
+    stage-open
+    in-ckout {
+	run note route add commit a@k
+    }
+} -body {
+    in-ckout {
+	run note route drop commit a@k
+	run note routes
+    }
+} -cleanup {
+    stage-close
+} -result [viewFile support/r-empty.txt]
+
+test note-routes-fixed-4.4 {client note route drop, not existing} -setup {
+    stage-open
+} -body {
+    in-ckout {
+	run note route drop commit a@k
+    }
+} -cleanup {
+    stage-close
+} -result {a@k ... Ignored, no match}
+
+test note-routes-fixed-4.5 {client note route drop, pattern} -setup {
+    stage-open
+    in-ckout {
+	run note route add commit a@k
+	run note route add commit b@k
+	run note route add commit a@e
+	run note route add commit b@e
+    }
+} -body {
+    in-ckout {
+	run note route drop commit a@*
+    }
+} -cleanup {
+    stage-close
+} -result {a@* ... Removed 2}
+
+test note-routes-fixed-4.6 {client note route drop, default pattern} -setup {
+    stage-open
+    in-ckout {
+	run note route add commit a@k
+	run note route add commit b@k
+	run note route add commit a@e
+	run note route add commit b@e
+    }
+} -body {
+    in-ckout {
+	run note route drop commit
+    }
+} -cleanup {
+    stage-close
+} -result {* ... Removed 4}
+
+# TODO: Check the effect of dropping routes on the global database.
+
+# # ## ### ##### ######## ############# #####################
+## list
+
+test note-routes-fixed-5.0 {client note route list, wrong args, too many} -setup {
+    stage-open
+} -body {
+    in-ckout {
+	run note route list X
+    }
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "wrong#args, too many*"
+
+test note-routes-fixed-5.1 {client note route list, default settings} -setup {
+    stage-open
+} -body {
+    in-ckout {
+	run note route list
+    }
+} -cleanup {
+    stage-close
+} -result [viewFile support/r-empty.txt]
+
+test note-routes-fixed-5.2 {client note route list, various settings/origins} -setup {
+    stage-open
+    in-ckout {
+	run note route add commit a@k
+	run note route add commit a@e
+	run note route add ticket b@c
+	run note route add event  c@d
+	run note route add wiki   a@k
+	run note route add control x@y
+	run note route add control a@k
+    }
+} -body {
+    in-ckout {
+	run note route list
+    }
+} -cleanup {
+    stage-close
+} -match glob -result [viewFile support/r-various.txt]
+
+# # ## ### ##### ######## ############# #####################
+cleanupTests

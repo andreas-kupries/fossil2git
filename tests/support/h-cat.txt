@@ -44,6 +44,8 @@ Notifications
         fx note route drop <event> [<to>...]    Remove the specified mail
                                                 destinations (glob pattern) for
                                                 the event type
+        fx note route events                    Show all events we can generate
+                                                notifications for
         fx note route field add <field>...      Add field as source of mail
                                                 destinations for ticket events
         fx note route field drop <field>...     Remove the specified field as

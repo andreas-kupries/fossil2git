@@ -29,7 +29,8 @@ package require fx::validate::mail-config
 namespace eval ::fx::note {
     namespace export \
 	mail-config-show mail-config-set mail-config-unset \
-	route-add route-list route-drop deliver
+	route-add route-list route-drop deliver event-list \
+	field-list
     namespace ensemble create
 
     namespace import ::fx::fossil
@@ -126,8 +127,9 @@ proc ::fx::note::route-list {config} {
     # @repository(-db)
 
     # Retrieve data, and restructure for table.
+    set data {}
     dict for {event routes} [RouteMap] {
-	foreach route $route {
+	foreach route $routes {
 	    lassign $route static destination
 	    if {!$static} {
 		set destination <${destination}>
@@ -174,6 +176,19 @@ proc ::fx::note::route-drop {config} {
     } return
 
     RemoveMe [$config @repository]
+    return
+}
+
+proc ::fx::note::event-list {config} {
+    # @repository-db
+
+    set columns [event-type all]
+
+    [table t Event {
+	foreach col [lsort -dict $columns] {
+	    $t add $col
+	}
+    }] show
     return
 }
 
@@ -344,11 +359,10 @@ proc ::fx::note::RouteDrop {prefix destinations} {
     set removed 0
 
     foreach pattern $destinations {
-	puts -nonewline "  $dst ... "
+	puts -nonewline "  $pattern ... "
 
-	set key ${prefix}:$dst
-	set  by [config unset-glob-local  $key]
-	#incr by [config unset-glob-global $key]
+	set key ${prefix}:$pattern
+	set by  [config unset-glob-local  $key]
 	if {!$by} {
 	    puts "Ignored, no match"
 	} else {
@@ -374,6 +388,8 @@ proc ::fx::note::RouteMap {} {
     # static = boolean, true -> dest = email
     #                   true -> dest = field 
 
+    # TODO: Create a "config get-glob" method and use it.
+
     set settings [config get-list]
 
     # We have a mix of routes and other settings.
@@ -382,7 +398,6 @@ proc ::fx::note::RouteMap {} {
     # external, therefore conversion is not required for display.
     # Validation and conversion to internal will happen on actual use.
 
-    set data {}
     foreach k [lsort -dict [dict keys $settings]] {
 	# dynamic route through ticket field
 	if {[string match fx-aku-note-field:* $k]} {
@@ -400,7 +415,7 @@ proc ::fx::note::RouteMap {} {
 	}
 	# ignore everything else
     }
-    return
+    return $map
 }
 
 # # ## ### ##### ######## ############# ######################

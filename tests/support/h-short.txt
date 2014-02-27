@@ -102,6 +102,9 @@ fx note route add [OPTIONS] <event> <to>...
 fx note route drop [OPTIONS] <event> [<to>...]
     Remove the specified mail destinations (glob pattern) for the event type.
 
+fx note route events [OPTIONS]
+    Show all events we can generate notifications for.
+
 fx note route exit [OPTIONS]
     Exit the shell. No-op if not in a shell.
 
