@@ -437,43 +437,20 @@ cmdr create fx::fx [file tail $::argv0] {
 	}
 
 	# Required commands:
-	# - Global setup (mail configuration)
-	# - Show and change the mail configuration
-	# - Add/remove fixed mail receivers (per event type)
-	# - Config of dynamic ticket receivers
-	#   => ticket fields to use as sources
-	#   ex. Tcl/Tk: assignee, closer, login, contact, submitter
 	# - TODO-SPEC Exclude/Include users from email delivery
 	# - TODO-SPEC Suspend/activate notification for a project, event type.
-	# - MAYBE watch remote repo (ping /stat) => create a local clone, watch implies sync.
+	# - MAYBE watch remote repo (ping /stat) => create a local clone,
+	#                                             watch implies sync.
 	#
 	# All commands check for and remind the user about a missing
 	# mail configuration, especially the mandatory fields.
 
-	# Old command set (see bin/)
-	#
-	# init              | irrelevant, dropped
-	# final             | irrelevant, dropped
-	# cron              | ?
-
-	# setup   repo from | automatic, 'from' handling moves to mail setup below.
-	# destroy repo      | irrelevant, dropped
-
-	# config-get ?k?    | config show  (--global, -G)
-	# config-set k v    | config set
-	# config-unset k    | config unset
-
-	# add    repo to    | route add type to
-	# list   repo       | route list, routes
-	# remove repo to    | route drop type ?to?
-	#                   | route field add  to | type 't' implied.
-	#                   | route field drop to |
-	# do                | deliver ?--global?
-
-	# expire            | irrelevant, dropped
-	# rss               | irrelevant, dropped
 	# dump  uuid        | 'fossil artifact'
 	# unsee uuid        | as-is
+	#                   |
+	#                   | parse-artifact uuid
+	#                   | mail-for-artifact uuid
+	#                   | receivers-for-artifact uuid
 
 	officer config {
 	    description {
