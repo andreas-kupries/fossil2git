@@ -52,14 +52,25 @@ proc ::fx::note::mail-config-show {config} {
 	set v [config get-extended-with-default \
 		   [mail-config internal $k] \
 		   [mail-config default  $k]]
+
 	lassign $v isglobal mtime v
-	set isglobal [expr { $isglobal ? "*" : ""}]
-	set mtime    [expr {($mtime ne {}) ? [clock format $mtime] : "" }]
-	lappend k $isglobal $mtime
+
+	if {$isglobal < 0} {
+	    set origin Default
+	} elseif {$isglobal} {
+	    set origin Global
+	} else {
+	    set origin Repository
+	}
+
+	set mtime [expr {($mtime ne {})
+			 ? [clock format $mtime]
+			 : "" }]
+	lappend k $v $origin $mtime
 	lappend data $k
     }
 
-    [table t {Key Global Last-Changed Value} {
+    [table t {Key Value Origin Last-Changed} {
 	foreach item [lsort -dict -index 0 $data] {
 	    $t add {*}$item
 	}
@@ -84,7 +95,7 @@ proc ::fx::note::mail-config-set {config} {
 	set current [config get-global $name]
 	set suffix  " (global)"
     } else {
-    config set-local $name $value
+	config set-local $name $value
 	set current [config get-local $name]
 	set suffix  {}
     }
@@ -94,7 +105,7 @@ proc ::fx::note::mail-config-set {config} {
 }
 
 proc ::fx::note::mail-config-unset {config} {
-    set name   [$config @setting]
+    set name   [$config @key]
     set global [$config @global]
 
     puts -nonewline "Unsetting [mail-config external $name]"
