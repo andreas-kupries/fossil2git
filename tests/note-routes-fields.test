@@ -1,0 +1,175 @@
+# -*- tcl -*- tcl.tk//DSL tcltest//EN//2.0 tcl.tk//DSL tcltest//EN//2.0
+## (c) 2014 Andreas Kupries
+# # ## ### ##### ######## ############# #####################
+## client note routes - fixed - Notifications, Fixed routes
+
+kt check Tcl     8.5
+kt check tcltest 2
+
+# # ## ### ##### ######## ############# #####################
+
+kt source support/common.tcl
+
+# # ## ### ##### ######## ############# #####################
+
+test note-routes-field-1.0 {client note route field, default = list, none} -setup {
+    stage-open
+} -body {
+    in-ckout {
+	run note route field
+    }
+} -cleanup {
+    stage-close
+} -result [viewFile support/f-standard.txt]
+
+# # ## ### ##### ######## ############# #####################
+## events
+
+test note-routes-field-2.0 {client note route fields, wrong args, too many} -setup {
+    stage-open
+} -body {
+    run note route fields X
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "wrong#args, too many*"
+
+test note-routes-field-2.1 {client note route fields, standard fields} -setup {
+    stage-open
+} -body {
+    run note route fields
+} -cleanup {
+    stage-close
+} -result [viewFile support/f-standard.txt]
+
+# # ## ### ##### ######## ############# #####################
+## add
+
+test note-routes-field-3.0 {client note route field add, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run note route field add
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "wrong#args, not enough*"
+
+test note-routes-field-3.1 {client note route field set, bogus field} -setup {
+    stage-open
+} -body {
+    run note route field add bogus
+} -cleanup {
+    stage-close
+} -returnCodes error -result {Expected a repository ticket-field for input "field", got "bogus"}
+
+test note-routes-field-3.2.0 {client note route field add, implicit repo} -setup {
+    stage-open
+} -body {
+    in-ckout {
+	run note route field add username
+    }
+} -cleanup {
+    stage-close
+} -result {username ... Added}
+
+test note-routes-field-3.2.1 {client note route field add, explicit repo} -setup {
+    stage-open
+} -body {
+    run note route field add -R [therepo] username
+} -cleanup {
+    stage-close
+} -result {username ... Added}
+
+test note-routes-field-3.3 {client note route field add, persistence} -setup {
+    stage-open
+} -body {
+    in-ckout {
+	run note route field add username
+	run note routes
+    }
+} -cleanup {
+    stage-close
+} -match glob -result {*|* ticket *|* <username> *|*}
+
+test note-routes-field-3.4 {client note route field add, multiple of same} -setup {
+    stage-open
+    in-ckout { run note route field add username }
+} -body {
+    in-ckout {
+	run note route field add username
+    }
+} -cleanup {
+    stage-close
+} -result {username ... Already known}
+
+# TODO: Check the effect of adding routes on the global database.
+
+# # ## ### ##### ######## ############# #####################
+## drop
+
+test note-routes-field-4.0 {client note route field drop, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run note route field drop
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "wrong#args, not enough*"
+
+test note-routes-field-4.1 {client note route field drop, bogus field} -setup {
+    stage-open
+} -body {
+    run note route field drop bogus
+} -cleanup {
+    stage-close
+} -returnCodes error -result {Expected a repository ticket-field for input "field", got "bogus"}
+
+test note-routes-field-4.2.0 {client note route field drop, implicit repo} -setup {
+    stage-open
+    in-ckout {
+	run note route field add username
+    }
+} -body {
+    in-ckout {
+	run note route field drop username
+    }
+} -cleanup {
+    stage-close
+} -result {username ... Removed 1}
+
+test note-routes-field-4.2.1 {client note route field drop, explicit repo} -setup {
+    stage-open
+    in-ckout {
+	run note route field add username
+    }
+} -body {
+    run note route field drop -R [therepo] username
+} -cleanup {
+    stage-close
+} -result {username ... Removed 1}
+
+test note-routes-field-4.3 {client note route field drop, persistence} -setup {
+    stage-open
+    in-ckout {
+	run note route field add username
+    }
+} -body {
+    in-ckout {
+	run note route field drop username
+	run note routes
+    }
+} -cleanup {
+    stage-close
+} -result [viewFile support/r-empty.txt]
+
+test note-routes-field-4.4 {client note route field drop, not existing} -setup {
+    stage-open
+} -body {
+    in-ckout {
+	run note route field drop username
+    }
+} -cleanup {
+    stage-close
+} -result {username ... Ignored, no match}
+
+# TODO: Check the effect of dropping routes on the global database.
+
+# # ## ### ##### ######## ############# #####################
+cleanupTests

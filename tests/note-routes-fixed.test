@@ -110,9 +110,6 @@ test note-routes-fixed-3.5 {client note route add, multiple of same} -setup {
 
 # TODO: Check the effect of adding routes on the global database.
 
-
-
-
 # # ## ### ##### ######## ############# #####################
 ## drop
 
@@ -124,7 +121,7 @@ test note-routes-fixed-4.0 {client note route drop, wrong args, not enough} -set
     stage-close
 } -match glob -returnCodes error -result "wrong#args, not enough*"
 
-test note-routes-fixed-4.1 {client note route set, bogus event} -setup {
+test note-routes-fixed-4.1 {client note route drop, bogus event} -setup {
     stage-open
 } -body {
     run note route drop bogus

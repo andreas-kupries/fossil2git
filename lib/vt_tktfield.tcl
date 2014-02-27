@@ -15,6 +15,7 @@
 
 package require Tcl 8.5
 package require cmdr::validate::common
+package require fx::fossil
 
 # # ## ### ##### ######## ############# ######################
 
@@ -32,6 +33,7 @@ namespace eval ::fx::validate::ticket-field {
 
     namespace import ::cmdr::validate::common::fail
     namespace import ::cmdr::validate::common::complete-enum
+    namespace import ::fx::fossil
 }
 
 proc ::fx::validate::ticket-field::release  {p x} { return }
@@ -49,7 +51,10 @@ proc ::fx::validate::ticket-field::complete {p} {
 # # ## ### ##### ######## ############# ######################
 
 proc ::fx::validate::ticket-field::Legal {p} {
-    fossil ticket-fields [$p config @repository-db]
+    # Force parameter, validation can happen before the cmdr
+    # completion phase.
+    $p config @repository-db
+    return [fossil ticket-fields]
 }
 
 # # ## ### ##### ######## ############# ######################

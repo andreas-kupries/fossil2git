@@ -1,0 +1,18 @@
++-----------------+
+| Field           |
++-----------------+
+| comment         |
+| foundin         |
+| icomment        |
+| login           |
+| mimetype        |
+| priority        |
+| private_contact |
+| resolution      |
+| severity        |
+| status          |
+| subsystem       |
+| title           |
+| type            |
+| username        |
++-----------------+

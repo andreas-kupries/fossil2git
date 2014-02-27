@@ -29,8 +29,8 @@ package require fx::validate::mail-config
 namespace eval ::fx::note {
     namespace export \
 	mail-config-show mail-config-set mail-config-unset \
-	route-add route-list route-drop deliver event-list \
-	field-list
+	route-add route-drop route-list route-field-add \
+	route-field-drop deliver event-list field-list
     namespace ensemble create
 
     namespace import ::fx::fossil
