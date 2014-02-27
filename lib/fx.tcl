@@ -66,7 +66,7 @@ proc fx::vt {p args} {
 
 # # ## ### ##### ######## ############# ######################
 
-cmdr create fx::fx $::argv0 {
+cmdr create fx::fx [file tail $::argv0] {
     # # ## ### ##### ######## ############# ######################
     common *all* {
 	option repository {
@@ -607,7 +607,7 @@ cmdr create fx::fx $::argv0 {
 	    section Notifications
 	    description {
 		Send notification emails to all configured destinations,
-		for all new events (since the last delievery).
+		for all new events (since the last delivery).
 	    }
 	    use .all
 	} [fx::call note deliver]
