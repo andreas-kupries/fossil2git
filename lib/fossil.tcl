@@ -16,6 +16,10 @@
 package require Tcl 8.5
 package require sqlite3
 
+namespace eval ::fx {
+    namespace export fossil
+    namespace ensemble create
+}
 namespace eval ::fx::fossil {
     namespace export \
 	global global-location \
@@ -46,15 +50,24 @@ proc ::fx::fossil::global {args} {
     if {![llength $args]} return
 
     # Run the new database on the arguments.
-    return [uplevel 1 [list ::fx::fossil::global {*}$args]]
+    try {
+	set r [uplevel 1 [list ::fx::fossil::global {*}$args]]
+    } on return {e o} {
+	# tricky code here. We have rethrow with -code return to keep
+	# the semantics in case we are called with the 'transaction'
+	# method here, which passes a 'return' of the script as its
+	# own 'return', and we must do the same here.
+	return {*}$o -code return $e
+    }
+    return $r
 }
 
 proc ::fx::fossil::repository {args} {
     # This procedure will be overwritten by 'repository-open' below.
-    global argv0
+    ::global argv0
     return -code error \
 	-errorcode {FX FOSSIL REPOSITORY UNKNOWN} \
-	"$argv0 was not able to determine the repository"
+	"[file tail $argv0] was not able to determine the repository"
 }
 
 # # ## ### ##### ######## ############# ######################
@@ -73,14 +86,14 @@ proc ::fx::fossil::repository-open {p} {
 	return {}
     }
 
-    sqlite3 ::fx::fossil::repo $location
-    return  ::fx::fossil::repo
+    sqlite3 ::fx::fossil::repository $location
+    return  ::fx::fossil::repository
 }
 
 # # ## ### ##### ######## ############# ######################
 
 proc ::fx::fossil::global-location {} {
-    return ~/.fossil
+    return [file normalize ~/.fossil]
 }
 
 proc ::fx::fossil::repository-location {} {
@@ -104,13 +117,24 @@ proc ::fx::fossil::repository-find {p} {
     # Assumes that locate is called only once. See also fx cmdr
     # specification.
 
-    sqlite3 CK [ckout [scan-up Repository [pwd] fx::fossil::is]]
+    # Get checkout directory and database.
+    set ckout [ckout [scan-up Repository [pwd] fx::fossil::is]]
+    sqlite3 CK $ckout
 
-    set repo_location [file normalize [CK onecolumn {
+    # Retrieve repository location. This may be relative (to the
+    # checkout directory).
+    set repo_location [CK onecolumn {
 	SELECT value
 	FROM vvar
 	WHERE name = 'repository'
-    }]]
+    }]
+
+    # Merge checkout directory and location to resolve relative
+    # paths. Absolute location supercedes the preceding path segments.
+    set repo_location [file join [file dirname $ckout] $repo_location]
+
+    # Normalize to make the path nicer.
+    set repo_location [file normalize $repo_location]
 
     rename CK {}
     return $repo_location
