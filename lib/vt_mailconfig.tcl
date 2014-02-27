@@ -28,7 +28,7 @@ namespace eval ::fx::validate {
 
 namespace eval ::fx::validate::mail-config {
     namespace export release validate default complete \
-	external all
+	internal external all
     namespace ensemble create
 
     namespace import ::cmdr::validate::common::fail
@@ -91,8 +91,8 @@ namespace eval ::fx::validate::mail-config {
     variable default {
 	debug    0
 	tls      0
-	user     ''
-	password ''
+	user     {}
+	password {}
 	host 	 localhost
 	port 	 22
 	sender   {*Undefined* Please set.}
