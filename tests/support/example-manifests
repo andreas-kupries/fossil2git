@@ -1,0 +1,300 @@
+AZ -- This header prevent misinterpretation of this file's contents as -- ZA
+AZ -- a proper manifest or other special artifact -- ZA
+C Cmdr\s1.1\sRelease
+D 2014-02-12T06:05:32.820
+E 2014-02-12T06:05:00 e2adcf270058a1ffb63308d924fb4ebf1c7bacf4
+T +bgcolor * #c0fff0
+T +sym-cmdr-1-1 *
+U aku
+W 359
+<b>Cmdr 1.1 Release</b> on February 11, 2014
+
+Archives of the release are available as:
+
+<ul>
+<li> <a href="zip/Cmdr-1.1.zip?uuid=cmdr-1-1">Zip Snapshot Archive</a>
+</li>
+<li> <a href="tarball/Cmdr-1.1.tar.gz?uuid=cmdr-1-1">Tar.gz Snapshot Archive</a>
+</li>
+<li> <a href="doc/cmdr-1-1/embedded/www/toc.html">Documentation (Online)</a>
+</li>
+</ul>
+
+Z c3a497652f8c42aec79291cc2667c318
+D 2014-02-12T06:06:17.109
+L cmdr
+P b90b4795de33044f549018bde02b522d4b1a95ae
+U aku
+W 1170
+A framework for command line parsing and dispatch (Speak: Commander).
+
+<h2>Feedback</h2>
+
+<ul>
+<p>Please go to and use our <a href="reportlist">Trackers</a>.
+They are for Bugs, Patches, and Ideas &amp; Feature Requests.</p>
+</ul>
+
+<h2>Releases</h2>
+
+<ul>
+<p>Current:
+<b>1.1 (Feb 11, 2014)</b>
+<a href="event/e2adcf270058a1ff">Details</a>
+</p>
+<p>[Past Releases]</p>
+<p>[Development Snapshots]</p>
+</ul>
+
+<h2>Instructions</h2>
+<ul><p>
+<a href="doc/trunk/embedded/www/doc/files/cmdr_license.html">BSD Licensed</a>
+
+<a href="doc/trunk/embedded/www/doc/files/cmdr_howto_get_sources.html">How To Get The Sources</a>
+
+<a href="doc/trunk/embedded/www/doc/files/cmdr_howto_installation.html">How To Build And Install The Packages</a>
+
+<a href="doc/trunk/embedded/www/doc/files/cmdr_howto_development.html">The Developer's Guide</a>
+</p></ul>
+
+<h2>Documentation</h2>
+<ul><p>
+<a href="doc/trunk/embedded/www/doc/files/cmdr_introduction.html">User Introduction</a>
+
+<a href="doc/trunk/embedded/www/toc.html">Command Reference</a>
+</p></ul>
+
+<h2>Contact</h2>
+<ul><p>
+<a href="mailto:akupries@shaw.ca">Andreas Kupries @shaw.ca</a>
+</p></ul>
+
+Z 73c1fa68043c00fb74f2bbcda2eb512a
+D 2013-11-27T07:57:19.938
+T +comment dbd259771bf9a7298e07938fb551ae244f56d4ad Tweaked\sdocumented\stitles\sfor\sbetter\smarking\sof\sinternals.\sFixed\sa\sfew\sissues\swith\svalidation\stypes,\smainly\sshuffling\stext\sblocks\saround,\splus\sfix\sin\sAPI\sdocumentation.\r\n
+U aku
+Z 177c0cd490ea3ebc35ba3a3637a78275
+D 2013-12-02T17:50:40.417
+T +sym-release-1-0 2e15301ff511496523bfb39dab5b6c0b84c05bec
+U aku
+Z 055fe358a10bf2ddf7a4c304c210dac2
+C officer\s-\sExtended\sclass\sto\saccept\sthe\sunique\sprefixes\sof\sthe\sknown\scommand\snames\sfor\sdispatch.
+D 2014-02-19T20:20:16.293
+F actor.tcl 99ff5c73d47846fc82a893815b8db971e4730d09
+F build.tcl 987d29fa14a95641053ec27ee49c6ab26bb52da9 x
+F cmdr.tcl 27a53390378e7ce33067dc9417d9014f12039f1f
+F config.tcl 6ae75f7ca9d214be7c4f2d1d0d8d63fbcb8eab72
+F doc/README.txt 59858af3e2c3ecc69ccfaadf33b71f8adabcb0c9
+F doc/attic/api.txt 30238b22e1cb2e46aa2811dd48f5c5c06bae8542
+F doc/attic/fill_rules.txt 4e14900d360801e2e67523d0bfec1760875acc12
+F doc/attic/notes.txt 10e02cfd71961b6f22b71a856a4e3cf35b3ca140
+F doc/attic/notes_actions.txt 59511380967816c798ca4eaacc05b1f5849e1ff5
+F doc/attic/notes_arguments.txt 2a636800854a6750e9b624b69f4fa0dd6f305051
+F doc/attic/notes_classes.txt e8540576856adac3ff01a453d32b049bc2c8521c
+F doc/attic/notes_complete.txt 1d8d41d27843cb2284843380b01929687b886290
+F doc/attic/notes_help.txt 9b8082465a1d12654be19b171eb7fec02b3263d9
+F doc/attic/notes_parameters.txt e94764dcca7c19ac038606108b590d484183939a
+F doc/attic/notes_validators.txt e908a6dc875805695b1dd18f1d309272db4f735b
+F doc/attic/spec_value 5bf5825dce1c757cc2b978cbf8057e0da6814d9c
+F doc/cmdr.man b79603b69c2eec1f645161a2543474ffcd94e64c
+F doc/cmdr_actor.man 9a688d8a0eb6010bb606ed51b712e0ce34aafc40
+F doc/cmdr_changes.man 5a7aa5c547376fc43780bb2243bbe10fe92f045a
+F doc/cmdr_config.man 5eab7f582b9a989462cbe80df1abd823d03763c9
+F doc/cmdr_dev_completion.man 2110e66b47f752dccbfb84281bea8864ae35ef82
+F doc/cmdr_dev_dsl.man 0addeb145252acc259638fe874615e7d0e6aeabf
+F doc/cmdr_dsl.man f15b7ad45b4949f076f2cb1dae5c8a35ba259eda
+F doc/cmdr_dsl_officer.man 56ae41c871349503055b8be6b22dc7d030d91f97
+F doc/cmdr_dsl_parameter.man ffeadc9d6f46f977530d9681ff988ace37e32455
+F doc/cmdr_dsl_private.man 41c39fd4da46812904bf9121dfa38255b365be64
+F doc/cmdr_flow.man e73f6c867a430010f8c2052dbc90d1660628e2ad
+F doc/cmdr_help.man 05fffea91b3782cc3fdcfa8579753246ab5b8cbf
+F doc/cmdr_help_json.man e0a8ae67144c19a121b8ca8abc25e8f20827a898
+F doc/cmdr_help_sql.man d7bc6124bf96aedd0985c328ffe0af3aab1462aa
+F doc/cmdr_help_tcl.man efa82341704a15fbbc849a98bdbf9f54af7c33e0
+F doc/cmdr_helpformats.man 9b58f779622540ed7d3d1a9163c42040bba28759
+F doc/cmdr_howto_development.man 829e11f6672df1b11c1fda8f6f22f8f5be88fd72
+F doc/cmdr_howto_get_sources.man c2f0c3fe07a676f4fdd901a93a276c9ddf5c3888
+F doc/cmdr_howto_installation.man c33c74f4e4c7dd17b967f38ddd1d1c089eb6df41
+F doc/cmdr_introduction.man 9ca38697250283c67e4688ecb375b27ca58776c2
+F doc/cmdr_license.man 08b2f14dff3fa3a6506ee8e8b74d1935f9665513
+F doc/cmdr_officer.man 94094bcb4c2a72022b8ae92b3039a54a0db4aa09
+F doc/cmdr_parameter.man f03a05f3932a291c2b30cf7152c8444c2abebbeb
+F doc/cmdr_private.man 5fadcef0ef3484fcc0b4390cd6d0119ed4eaf423
+F doc/cmdr_util.man d74bc872af362a521d7bfa242caa1c8afed65dac
+F doc/cmdr_validate.man 1d793970ed4869bf8338508e830261584c536c32
+F doc/cmdr_vcommon.man 3d28695485ec795304e3e83f17ec4b23dc7c237e
+F doc/cmdr_vtypes.man 2716dec0a84ab9961680ed8a25911216c5ca18f9
+F doc/figures/architecture.dia 5cc0767b7b143a470336e3e6b54ca005c3bdf809
+F doc/figures/architecture.png cc2de5bd2868d4673e4b446017bb08e4380f48cc
+F doc/figures/architecture.txt e846bd136d38721f769859d7244efd072d75e1a6
+F doc/figures/dsl_dependencies.inc cc447b04da4a569764b72033e037a6765f00ccb3
+F doc/figures/dsl_umlsequence.inc 4efb9f30d7c49253ad6b042c58a14fe4aba82a1d
+F doc/figures/erd.dia 4a9661fa29007b0151dfc29de7ce3d050b529955
+F doc/figures/erd.png 0598d354dcb85157f4517c7353f6a18c4623e61e
+F doc/figures/erd.txt 6a78d3260c13eec51ef5e9c64fcc65781e3da340
+F doc/figures/main-shell.dia e7af2931b8eeee1964fc25b59263a7895b698932
+F doc/figures/main-shell.png 1435cbb3cc704144d678f26ba2025849fce38b8f
+F doc/figures/mini-shell.dia a851a82ab7559102383458852c6f7bab522d7286
+F doc/figures/mini-shell.png e89328f6aaf0ada55c555fd706dab232b6056ee8
+F doc/figures/pkg_dependencies.dia 4ae896521dd4dd038aa7acec863f6ff991d9e32b
+F doc/figures/pkg_dependencies.png fe73173b7c8f2b42f9efaa56b077f8175cf89381
+F doc/parts/architecture.inc ff1b11eb3b089e1b1778e5a2418cbf2b5e2284a3
+F doc/parts/build-dev.inc b80bd061aa20bdfd1dfb67b0576f7386cb11aa2b
+F doc/parts/build.inc 90ce22957c645cbe27ea598953b30142f3045ffc
+F doc/parts/changes.inc 4c180ecfe60b844bd1f2046f7217c7664d6e664e
+F doc/parts/changes1.1.inc 35dc3fcf5e1d6d9d7969c3c12c7621ef3e6f4a7c
+F doc/parts/changes1.inc 83910152ffce48275694d4648ea4a7b849703498
+F doc/parts/completion_main.inc e7adee7433946efff80205201a1f70fff9e1dba8
+F doc/parts/completion_methods.inc d08ba5b76b0f57c31c517f2cc0c0caf8d55270bb
+F doc/parts/completion_mini.inc 2226aa1c40edae4536f520613a3a595f8037c597
+F doc/parts/completion_state.inc bd31ad1e098f07e1ab895026b234ed667c8c011f
+F doc/parts/configuration.inc 65986d845d3e8da9f4c5beb3a8b6537f10714020
+F doc/parts/definitions.inc e9c3cef46ca11e7cdeeba49635ed09c1a045742e
+F doc/parts/dev_dsl_officer.inc de09960dda0030ad84fdb6c4a8824ce1f4ce0267
+F doc/parts/dev_dsl_parameter.inc 9bf7f5c3e777406ea3c1d104657f8fcb090dc695
+F doc/parts/dev_dsl_private.inc 25537fb6e07c63e862fd2010d2fa2483a77e19f4
+F doc/parts/dsl_general.inc 6f0f68f637a25bd47c2461e5612e3fd9828a4db3
+F doc/parts/dsl_officer.inc 23b5468f29050caa2b0ee91273c2dcee796a6459
+F doc/parts/dsl_para_callbacks.inc b0c8bd97708e1d6738f808d91b14c5de7724f2e8
+F doc/parts/dsl_para_general.inc ed8dbba1e0229228a9d5a869fd104c2094de1e82
+F doc/parts/dsl_para_naming.inc 7af1b2bc5da2a11f0e73d0c89e5a547ae1f0ab5f
+F doc/parts/dsl_para_reps.inc 29061ec1525645ce50dd60be416bf8b54a79526a
+F doc/parts/dsl_para_validation.inc 7113128ca0b14760c0123ae84ac2ce49ca5ad097
+F doc/parts/dsl_parameter.inc d24226c720188380105b06984b9890aa1827bfa1
+F doc/parts/dsl_private.inc 469e0943bb8e0dcdcc95d702ffcbe6a06bd1a954
+F doc/parts/ex_alias0.inc ec3bcbe52ff511776c90a342aa7a36dbc4d2a09e
+F doc/parts/ex_alias1.inc 5c52cd565df136ffb8dc642ee51ef844df0e744f
+F doc/parts/ex_alias_backend.inc 4f9295538fa6a86b108b34d8aabf453ed2d893be
+F doc/parts/feedback.inc 9d8111921861742d99d301519e0ae45cac32f15d
+F doc/parts/flow_completion.inc e691ccdeff2a0a512e5af33e3128a8f2eb97740b
+F doc/parts/flow_dispatch.inc 549c5945e907f125f4c1fff9ceb743de01afe4d0
+F doc/parts/flow_execution.inc 65171dd5f5741a6b44f68b85885163bee531eb1b
+F doc/parts/flow_parsing.inc c6233f670b2e0214125b65125e5f1a5f0cb6b3fe
+F doc/parts/help_para_structure.inc 39471a6bb08c6efcf274205648622c336dbfe099
+F doc/parts/help_structure.inc 4beb4053651c63eb34d9590551754beb0137b834
+F doc/parts/keywords.inc 07ade1ae864109ef1ce1d0a94b17b54f3f05d8ed
+F doc/parts/layout_standard.inc cd84695ef9014cd57d0588a86ccc7f73b98cf537
+F doc/parts/license.inc 1c700d630449da5434b59c86c6c4bbfc9b771257
+F doc/parts/module.inc a79f696a41e515ce92e095a919cb26b09005eb1d
+F doc/parts/para_value.inc b885b012f1c289389a0cfb7acb3ed6a2b1263c4f
+F doc/parts/related.inc 13b1ccb50b80ba63cf8b7aa16560e546d269543c
+F doc/parts/related_dsl.inc b264ecd4e6e470784b9a80a4a0163ad832929a36
+F doc/parts/requirements.inc 87a7ec15cfa2a4b139a802e0f63e163b6219398d
+F doc/parts/retrieve.inc 3d3a5e3a8ae4c4e35d884435a896b20cf469f319
+F doc/parts/rq_kettle.inc 1ccf5085885e09ba203f1ca68dfb59fa121d8a0f
+F doc/parts/rq_linenoise.inc 17d16cc9138820df5c45acb80dcece5b6c00d495
+F doc/parts/rq_tcl85.inc 0e6890f10dafd1e62c31109ab9845a83c9914ab9
+F doc/parts/rq_tcllib.inc aab868cb873138831e68a146567915bec7a32dd0
+F doc/parts/rq_tcloo.inc 3c241e73d63ca45b2d87ed7b3cad645b49f213bc
+F doc/parts/scm.inc 0cae74cf26731b000c8372b1128fb019b4e1115a
+F doc/parts/vtypes_general.inc e6b089ce23b6b46df16f74a7f727023b2f2c1259
+F doc/parts/vtypes_std.inc 1d3d485cfe1acbf146587c164ae8fb48ac3bc31e
+F doc/parts/welcome.inc 8f97a664b3b23c767b1874d07919116f1bed5ba2
+F embedded/man/files/cmdr.n ea5e5a2a8187b159cc283d731d772a13aac285d2
+F embedded/man/files/cmdr_actor.n 4ed630337024766b1e9b09a2b29a1c0ac86e8a5d
+F embedded/man/files/cmdr_changes.n 4d0ecb4090a0e3fb57002fba9d8e2cd28db6d4b3
+F embedded/man/files/cmdr_config.n 6b946a7808108ac77a7fe2b24b90a683a9884d78
+F embedded/man/files/cmdr_dev_completion.n 4d582dc0cb6eefc0ace2130466fa30ea94a49ba9
+F embedded/man/files/cmdr_dev_dsl.n 9ffb7a42cc069ab13d5e44fdf992d84553ba1425
+F embedded/man/files/cmdr_dsl.n a4f5ba797292dca49bea99b230c39e843e63c3ff
+F embedded/man/files/cmdr_dsl_officer.n 83dfc286ea367803b2855d2980971567c0b304a1
+F embedded/man/files/cmdr_dsl_parameter.n 06e7dadcf1d84dd2c83fed14a8ba476b9d585d34
+F embedded/man/files/cmdr_dsl_private.n c166b732d5c052356c899b107ff8ca8de9101bdf
+F embedded/man/files/cmdr_flow.n 7a1f0809521c887b4ff9cef7744ef753e65cadd0
+F embedded/man/files/cmdr_help.n 74e4531915c9abe63fece2f60eb51e0afc76f4f4
+F embedded/man/files/cmdr_help_json.n 00f32065e26cc2b0a019299e50769cc66ba0dd99
+F embedded/man/files/cmdr_help_sql.n e938c2025603197d31b522046e96615538188707
+F embedded/man/files/cmdr_help_tcl.n 9ebae6bc051025c6991f8e5c453f1d3dae6bfc36
+F embedded/man/files/cmdr_helpformats.n e9968de69798f0c2c9e34a0bff5a5cc729e22060
+F embedded/man/files/cmdr_howto_development.n 47151494979e3bc53c370d3001389d14749ec0cd
+F embedded/man/files/cmdr_howto_get_sources.n bf91760a8c3893d37fd2481e90da5701e36ce49f
+F embedded/man/files/cmdr_howto_installation.n ee2b68c7cca725247b814d9c539755eb7c7c23fa
+F embedded/man/files/cmdr_introduction.n 6700b6d3640f5086e4f5b2442534f2f9248bb5b1
+F embedded/man/files/cmdr_license.n 3ff8d94833a903af41fa239176d26de9c2f8d154
+F embedded/man/files/cmdr_officer.n bf0bf5f67379efecd6181a055ec01eb1e1b95900
+F embedded/man/files/cmdr_parameter.n d9f81956e7a650bb48b5b10d8cf1676d30eccf2e
+F embedded/man/files/cmdr_private.n be0c068b5ac93970680cd65ffb490e1ac897bea5
+F embedded/man/files/cmdr_util.n 23382151c2b1faa4ef4c050a3d4108d7b7f8fc7a
+F embedded/man/files/cmdr_validate.n e3f2fb61926116766344cc5bd431f580b34c9fc4
+F embedded/man/files/cmdr_vcommon.n a2185c713fe9f0a4cc62cb44cbad32f6ed4b1b4b
+F embedded/man/files/cmdr_vtypes.n f08184d0cf100adc43983027f6419cc892da5235
+F embedded/man/index.n cb139baf32660c8b93bc4d00c7b68147656fd298
+F embedded/man/toc.n e16455f160da3e0f1c9c184516bcced5e6683c98
+F embedded/www/doc/files/cmdr.html 536d14daba9b3f1836405456dbea5a26b927feb4
+F embedded/www/doc/files/cmdr_actor.html d36823d83f710df468b99ff654364955fbc530a2
+F embedded/www/doc/files/cmdr_changes.html cec984799a6343f88f24ce8e9b801f5629b67bc7
+F embedded/www/doc/files/cmdr_config.html c9b34713964d5f78a4dd4da1eeca472850163a90
+F embedded/www/doc/files/cmdr_dev_completion.html 1a9af885c59ac511e33d3cbb0a751682bab1e29b
+F embedded/www/doc/files/cmdr_dev_dsl.html 074170122422e603624acddaa6183d415362f761
+F embedded/www/doc/files/cmdr_dsl.html f237b3bebd31648a57386e38cbd9363966a28933
+F embedded/www/doc/files/cmdr_dsl_officer.html 6381263c1a3fd179c1066accb0758bef2dfaadae
+F embedded/www/doc/files/cmdr_dsl_parameter.html 56301fcb2f73926714e8210d257c3a018f73a9ac
+F embedded/www/doc/files/cmdr_dsl_private.html c942cf82dae20b5743471974638211d7659a6216
+F embedded/www/doc/files/cmdr_flow.html 2e099280a88432bc5c958568533ad952acb55e0b
+F embedded/www/doc/files/cmdr_help.html 1a04a709d0d2faed16da753dbcf1c15aa5560f1b
+F embedded/www/doc/files/cmdr_help_json.html 4426c226c66cf47c25cf2f9c3ca86c16a011a131
+F embedded/www/doc/files/cmdr_help_sql.html ea6dd9ecdb17bfbdd1af75365c34339b3699c82d
+F embedded/www/doc/files/cmdr_help_tcl.html 4c01fb61b2089f9d5cee7414c93ea03018deb6f2
+F embedded/www/doc/files/cmdr_helpformats.html cceb30130f3c2579ddfd3cbca2b77020bd98747f
+F embedded/www/doc/files/cmdr_howto_development.html 84e7ebfed8f387e12a36605974be67baec01baa1
+F embedded/www/doc/files/cmdr_howto_get_sources.html 5605407c52dc4b14864aad08dcb06da1c48a8a19
+F embedded/www/doc/files/cmdr_howto_installation.html 3d3c15c669b5642f3e9179e7cab3bcd9e52beb96
+F embedded/www/doc/files/cmdr_introduction.html 8763eb306a00002b61dc9cf50b1b77d2dd95131e
+F embedded/www/doc/files/cmdr_license.html 04f4a67c1173896dd40d5ab625a6fb2a362015e8
+F embedded/www/doc/files/cmdr_officer.html 604a94cbfb66c92371237972bec77f0f9cd2a1e1
+F embedded/www/doc/files/cmdr_parameter.html 8a90497eab2dfe6f8558cebc7ae531b43afaf8fb
+F embedded/www/doc/files/cmdr_private.html dca1d6a689712f812b470b17cabc30da9f8cb5cf
+F embedded/www/doc/files/cmdr_util.html ddf173effa5860d296014c742e279ce8a1cb488a
+F embedded/www/doc/files/cmdr_validate.html 8350c16730deee46d3d561c3e4559fd15305a818
+F embedded/www/doc/files/cmdr_vcommon.html dc1cb31ef287bc2d9e956082cfbd23eedfb5201f
+F embedded/www/doc/files/cmdr_vtypes.html b8ad180e0f42196bfd8891c98ec04cdbd9104fd9
+F embedded/www/doc/toc.html a617909f4b6fc4bea7d9480ee9b8dd74448f4645
+F embedded/www/image/architecture.png cc2de5bd2868d4673e4b446017bb08e4380f48cc
+F embedded/www/image/erd.png 0598d354dcb85157f4517c7353f6a18c4623e61e
+F embedded/www/image/main-shell.png 1435cbb3cc704144d678f26ba2025849fce38b8f
+F embedded/www/image/mini-shell.png e89328f6aaf0ada55c555fd706dab232b6056ee8
+F embedded/www/image/pkg_dependencies.png fe73173b7c8f2b42f9efaa56b077f8175cf89381
+F embedded/www/index.html 3dca59c992a5d055ae749a4d8bdfe1948bd5621f
+F embedded/www/toc.html 662ffea4e7d5cc364ec22bba1c7eee1d31f09f98
+F examples/example 15ee99703d74c363b891a69eae53358787faea30 x
+F examples/examplep 6c7767e59b8ba2860431308b132ca8581c6b55c4 x
+F help.tcl 103528f10c83385c3b8df9d0cd5bdddecc81bcf2
+F help_json.tcl 05fafb8b1a718c716428ea6cd551d06f85c53a83
+F help_sql.tcl bae2ad6b46a0588c79e6156f3b6e2e038e4e2ce2
+F help_tcl.tcl 7434fa652323475b687a08fe50495ccfe803cf1c
+F officer.tcl bac7257406da9531ee4d1cee57ae1e9f8227fd70
+F parameter.tcl 96e43e3be8ab2de93a473cccacd60a2edb12b4f8
+F private.tcl 7daf44cf03b10577e4315a9e270336a920ec866e
+F tests/cmdr.test dd72b4d06cf2cc325394070e30c86ef588ff91a5
+F tests/help.tests 08293ec031d69d644975eaa8b8ed1bcde33dd51a
+F tests/main.tests 63620c4bbe60c661a2da6d1b657726fe0b34dbd8
+F tests/officer.tests 786e9381032b326a2bcc37e9d9532cab29e4a826
+F tests/parameter.tests c58faf3017b31f1ec50488d61da8c65392c5bc1b
+F tests/private.tests 584c6b46c0dc866e6a4c348649d7e6e4be294d95
+F tests/runtime.tests d70ba7b65c62503ee90ec9fbeec5eefd27dc4c0f
+F tests/support.tcl f37dafb2311be7b4ff7d8bb5e430fec10b4534cb
+F util.tcl 7b70aba451c56d92b21dea871879fb4fb9435f66
+F validate.tcl 38d5d0ba118d54175c850878280e424716d9c0ae
+F vcommon.tcl b071f71213f44eb70f6ddee1627d0c08a4a43bc4
+P 7e77c5a0bebbb3a01ec2931f5988aa7899a7e3c3
+R 4a81af1b100bd826f5b1af03f37c2f95
+U andreask
+Z 828b36eed0fabba9dd62e726f87fb7b9
+D 2014-02-13T18:33:30.142
+J icomment It\sisn't\sa\sproblem\swith\sthose\sfive\scontrol\scharacters\swhich\shave\sbackslash-letter\sescape,\sbut\swith\sthe\srest\sfrom\sranges\s\\u0000-\\u001F\sand\s\\u007F-\\u009F.\sCurrently\sthey\sare\sjust\sinserted\sinto\sstring.\r\n\r\nSimply\sbuilding\sfull\smap\sfor\ssubstitutions\ssolves\sthe\sproblem:\r\n\r\n\s\s\s\svariable\squotes\s\\\r\n\t[list\s"\\""\s"\\\\\\""\s\\\\\s\\\\\\\\\s\\b\s\\\\b\s\\f\s\\\\f\s\\n\s\\\\n\s\\r\s\\\\r\s\\t\s\\\\t\s\\\r\n\t\s\s\s\s\\x00\s\\\\u0000\s\\x01\s\\\\u0001\s\\x02\s\\\\u0002\s\\x03\s\\\\u0003\s\\\r\n\t\s\s\s\s\\x04\s\\\\u0004\s\\x05\s\\\\u0005\s\\x06\s\\\\u0006\s\\x07\s\\\\u0007\s\\\r\n\t\s\s\s\s\\x0b\s\\\\u000b\s\\x0e\s\\\\u000e\s\\x0f\s\\\\u000f\s\\x10\s\\\\u0010\s\\\r\n\t\s\s\s\s\\x11\s\\\\u0011\s\\x12\s\\\\u0012\s\\x13\s\\\\u0013\s\\x14\s\\\\u0014\s\\\r\n\t\s\s\s\s\\x15\s\\\\u0015\s\\x16\s\\\\u0016\s\\x17\s\\\\u0017\s\\x18\s\\\\u0018\s\\\r\n\t\s\s\s\s\\x19\s\\\\u0019\s\\x1a\s\\\\u001a\s\\x1b\s\\\\u001b\s\\x1c\s\\\\u001c\s\\\r\n\t\s\s\s\s\\x1d\s\\\\u001d\s\\x1e\s\\\\u001e\s\\x1f\s\\\\u001f\s\\x7f\s\\\\u007f\s\\\r\n\t\s\s\s\s\\x80\s\\\\u0080\s\\x81\s\\\\u0081\s\\x82\s\\\\u0082\s\\x83\s\\\\u0083\s\\\r\n\t\s\s\s\s\\x84\s\\\\u0084\s\\x85\s\\\\u0085\s\\x86\s\\\\u0086\s\\x87\s\\\\u0087\s\\\r\n\t\s\s\s\s\\x88\s\\\\u0088\s\\x89\s\\\\u0089\s\\x8a\s\\\\u008a\s\\x8b\s\\\\u008b\s\\\r\n\t\s\s\s\s\\x8c\s\\\\u008c\s\\x8d\s\\\\u008d\s\\x8e\s\\\\u008e\s\\x8f\s\\\\u008f\s\\\r\n\t\s\s\s\s\\x90\s\\\\u0090\s\\x91\s\\\\u0091\s\\x92\s\\\\u0092\s\\x93\s\\\\u0093\s\\\r\n\t\s\s\s\s\\x94\s\\\\u0094\s\\x95\s\\\\u0095\s\\x96\s\\\\u0096\s\\x97\s\\\\u0097\s\\\r\n\t\s\s\s\s\\x98\s\\\\u0098\s\\x99\s\\\\u0099\s\\x9a\s\\\\u009a\s\\x9b\s\\\\u009b\s\\\r\n\t\s\s\s\s\\x9c\s\\\\u009c\s\\x9d\s\\\\u009d\s\\x9e\s\\\\u009e\s\\x9f\s\\\\u009f\s]
+J login anonymous
+J mimetype text/plain
+J username Hermitifier
+K d0bbe696b04c2c67433ceaccb34d707231a18f0d
+U anonymous
+Z 7767766d291ee6c33e3d95750a8464bb
+A ftp.patch eb0b15d5981300c3c13b90ab4d3e7cd18c36095a 968bb825771764b576b649eea103fe5982c6e4a6
+C Fixes\svariable\sname\sfrom\slower\sto\supper\scase\sin\sWaitDataConn
+D 2014-02-17T17:13:43.579
+U anonymous
+Z c1f155535f0f516381d61e8c5722cdd7
+A tklib-0.6.tar.bz2 Downloads 6a397dec6188148cf6a6fe290cf2bd92a9190c42
+C Tklib\s0.6\sRelease,\sMarch\s25,\sbzip2\scompressed\starball.\r\n
+D 2013-03-26T03:02:29.233
+U aku
+Z 67b549ea561d99e4bab4fc7714a820c5

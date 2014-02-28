@@ -38,11 +38,11 @@ proc ::fx::manifest::parse {manifest args} {
 
     # Map from cards to dictionary elements, and manifest types.
     ##                             Type
-    # A     attachment             attachment
+    # A     name,target,attachment             attachment
     # B n/a                        checkin
     # C     comment
     # D     when
-    # E     when-event
+    # E     when-event,eventid
     # F n/a                        checkin
     # J     field - sub dictionary
     # K     ticket                 ticket
@@ -52,13 +52,19 @@ proc ::fx::manifest::parse {manifest args} {
     # P n/a
     # Q n/a                        checkin
     # R n/a                        checkin
-    # T n/a
+    # T n/a [+*_]tag uuid ?value?         - event|control
     # U     user
-    # W n/a
+    # W n/a -- Special parsing required to find end of card.
     # Z n/a
 
     foreach line [split $manifest \n] {
-	if {[regexp {^A (.*)$} $line -> m(attachment)]} {
+	if {[regexp {^A (.*) (.*) (.*)$} $line -> m(aname) m(target) m(attachment)]} {
+	    # Attachment added - Target = uuid of { event, ticket }, or wiki page name
+	    set m(type) attachment
+	    continue
+	}
+	if {[regexp {^A (.*) (.*)$} $line -> m(aname) m(target)]} {
+	    # Attachment removed - Target = uuid of { event, ticket }, or wiki page name
 	    set m(type) attachment
 	    continue
 	}
@@ -71,7 +77,7 @@ proc ::fx::manifest::parse {manifest args} {
 	    set m(epoch) [Epoch $m(when)
 	    continue
 	}
-	if {[regexp {^E (.*)$} $line -> m(when-event)]} {
+	if {[regexp {^E (.*) (.*)$} $line -> m(when-event) m(eventid)]} {
 	    set m(epoch-event) [Epoch $m(when-event)
 	    continue
 	}
@@ -101,7 +107,7 @@ proc ::fx::manifest::parse {manifest args} {
 	# P ignored
 	# Q ignored
 	# R ignored
-	# T ignored
+	# T ignored -- Parse for main content of control artifacts.
 	if {[regexp {^U (.*)$} $line -> m(user)]} continue
 	# W ignored - for now
 	# Z ignored
