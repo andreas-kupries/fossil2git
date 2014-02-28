@@ -597,6 +597,91 @@ cmdr create fx::fx [file tail $::argv0] {
 	} [fx::call note deliver]
     }
 
+    officer test {
+	description {
+	    Various commands to test the system and its configuration.
+	}
+
+	private touch {
+	    section Testing
+	    description {
+		Touch the specified artifact to force generation of
+		a notification for it, even if such a notification
+		was sent already in the past.
+	    }
+	    input uuid {
+		Fossil id of the artifact to touch.
+	    } {
+		#validate [fx::vt uuid] -- TODO
+	    }
+	} [fx::call note test-touch]
+
+	private touch-all {
+	    section Testing
+	    description {
+		Touch all events in the timeline.
+	    }
+	} [fx::call note test-touch-all]
+
+	# TODO: inverted operation: untouch|hide => prevent future notifications.
+
+	private mail-setup {
+	    section Testing
+	    description {
+		Generate a test mail and send it using the current
+		mail configuration.
+	    }
+	} [fx::call note test-mail-config]
+
+	private mail-for {
+	    section Testing
+	    description {
+		Generate the notification mail for the specified artifact,
+		and print it to stdout.
+	    }
+	    input uuid {
+		Fossil id of the artifact to generate the notification
+		mail for.
+	    } {
+		#validate [fx::vt uuid] -- TODO
+	    }
+	} [fx::call note test-mail-gen]
+
+	private mail-receivers {
+	    section Testing
+	    description {
+		Analyse the specified artifact and determine the set
+		of mail addresses to send a notification to, fixed
+		and field-based.
+	    }
+	    input uuid {
+		Fossil id of the artifact to inspect.
+	    } {
+		#validate [fx::vt uuid] -- TODO
+	    }
+	} [fx::call note test-mail-receivers]
+
+	private manifest-parse {
+	    section Testing
+	    description {
+		Parse the specified artifact as manifest and print the
+		resulting array/dictionary to stdout.
+	    }
+	    input uuid {
+		Fossil id of the artifact to parse.
+	    } {
+		#validate [fx::vt uuid] -- TODO
+	    }
+	} [fx::call note test-parse]
+    }
+
+    officer debug {
+	undocumented
+	description {
+	    Various commands to help debugging the system and its configuration.
+	}
+    }
+
     # TODO - mgmt of mirrors, fossil and git (export)
 }
 

@@ -17,7 +17,7 @@ package require Tcl 8.5
 package require fx::fossil
 
 namespace eval ::fx::seen {
-    namespace export not touch drop reset
+    namespace export not mark unmark reset
     namespace ensemble create
 
     namespace import ::fx::fossil
@@ -51,7 +51,7 @@ proc ::fx::seen::not {script} {
     return
 }
 
-proc ::fx::seen::touch {id} {
+proc ::fx::seen::mark {id} {
     # TODO dry run
 
     Init
@@ -62,7 +62,7 @@ proc ::fx::seen::touch {id} {
     return
 }
 
-proc ::fx::seen::drop {uuid} {
+proc ::fx::seen::unmark {uuid} {
     # TODO dry run
 
     Init

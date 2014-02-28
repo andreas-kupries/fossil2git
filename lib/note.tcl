@@ -30,7 +30,9 @@ namespace eval ::fx::note {
     namespace export \
 	mail-config-show mail-config-set mail-config-unset \
 	route-add route-drop route-list route-field-add \
-	route-field-drop deliver event-list field-list
+	route-field-drop deliver event-list field-list \
+	test-touch test-touch-all test-mail-gen test-mail-config \
+	test-mail-receivers test-parse
     namespace ensemble create
 
     namespace import ::fx::fossil
@@ -44,6 +46,86 @@ namespace eval ::fx::note {
 
     namespace import ::fx::validate::event-type
     namespace import ::fx::validate::mail-config
+}
+
+# # ## ### ##### ######## ############# ######################
+
+proc ::fx::note::test-touch {config} {
+    seen unmark [$config @uuid]
+    return
+}
+
+proc ::fx::note::test-touch-all {config} {
+    seen reset
+    return
+}
+
+proc ::fx::note::test-mail-gen {config} {
+
+    # uuid ... get artifact, parse it, dispatch to generator, print result
+
+    set pname [config get-with-default \
+		   project-name \
+		   [file rootname [file tail [fossil repository-location]]]]
+
+    set ploc  [config get-with-default \
+		   fx-aku-note-project-location \
+		   {Location not known}]
+
+    set m [manifest parse \
+		     [fossil get-manifest [$config @uuid]] \
+		     self     $uuid \
+		     project  $pname \
+		     location $ploc]
+
+    # dispatch by type... collect output, print
+
+    puts [generator [dict get $m type] $m]
+}
+
+proc ::fx::note::test-mail-config {config} {
+
+    # invoke mailer with a fixed corpus
+
+}
+
+proc ::fx::note::test-mail-receivers {config} {
+
+    foreach {event routes} [RouteMap] {
+	# TODO: fake parameter for message generation in case of errors.
+	set e [event-type validate ... $event]
+	lappend map $e [list $event [lsort -unique $routes]]
+    }
+
+    set m [manifest parse \
+	       [fossil get-manifest [$config @uuid]] \
+	       self $uuid]
+
+    lassign [dict get $map [dict get $m $type]] ex routes
+
+    set recv [Receivers $routes $m]
+
+    puts [join $recv \n]
+    return
+}
+
+proc ::fx::note::test-parse {config} {
+
+    set pname [config get-with-default \
+		   project-name \
+		   [file rootname [file tail [fossil repository-location]]]]
+
+    set ploc  [config get-with-default \
+		   fx-aku-note-project-location \
+		   {Location not known}]
+
+    array set m [manifest parse \
+		     [fossil get-manifest [$config @uuid]] \
+		     self     $uuid \
+		     project  $pname \
+		     location $ploc]
+    parray m
+    return
 }
 
 # # ## ### ##### ######## ############# ######################
