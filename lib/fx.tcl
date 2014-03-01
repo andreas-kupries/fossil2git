@@ -446,11 +446,12 @@ cmdr create fx::fx [file tail $::argv0] {
 	# mail configuration, especially the mandatory fields.
 
 	# dump  uuid        | 'fossil artifact'
-	# unsee uuid        | as-is
+	# unsee uuid        | test touch(-all)
 	#                   |
-	#                   | parse-artifact uuid
-	#                   | mail-for-artifact uuid
-	#                   | receivers-for-artifact uuid
+	#                   | test mail-setup
+	#                   | test manifest-parse uuid
+	#                   | test mail-for       uuid
+	#                   | test mail-receivers uuid
 
 	officer config {
 	    description {
@@ -631,6 +632,9 @@ cmdr create fx::fx [file tail $::argv0] {
 		Generate a test mail and send it using the current
 		mail configuration.
 	    }
+	    input destination {
+		The destination address to send the test mail to.
+	    } { }
 	} [fx::call note test-mail-config]
 
 	private mail-for {
