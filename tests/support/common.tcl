@@ -225,6 +225,29 @@ proc Capture {out err fail} {
 }
 
 # # ## ### ##### ######## ############# #####################
+## Process the artifact example archive
+
+proc stage-examples {} {
+    set archive [fileutil::cat --encoding binary [tmp]/support/example-manifests]
+
+    # strip header preventing interpretation as manifest or other special artifact.
+    regsub {^.*ZA} $archive {} archive
+
+    # split into the separate files.
+
+    regsub "Z (\[^\n\]*)\n" $archive "Z \\1\n\0" archive
+    set archive [split $archive \0]
+
+    in-ckout {
+	foreach a $archive {
+	    fileutil::writeFile -encoding binary [pid] $a
+	    run-core fossil test-content-put [pid]
+	    file delete [pid]
+	}
+    }
+}
+
+# # ## ### ##### ######## ############# #####################
 
 # Ok if the pattern is NOT matched.
 proc antiglob {pattern string} {

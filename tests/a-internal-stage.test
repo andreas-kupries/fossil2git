@@ -22,5 +22,16 @@ test stage-1.0 {stage lifecycle} -setup {
     stage-close
 } -result {./.fossil ./ckout ./ckout/.fslckout ./source.fossil}
 
+test stage-1.1 {stage examples} -setup {
+    stage-open
+} -body {
+    stage-examples
+    in-ckout {
+	run-core fossil sqlite3 {select * from blob}
+    }
+} -cleanup {
+    stage-close
+} -result {}
+
 # # ## ### ##### ######## ############# #####################
 cleanupTests
