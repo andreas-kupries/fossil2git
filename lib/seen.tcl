@@ -17,7 +17,7 @@ package require Tcl 8.5
 package require fx::fossil
 
 namespace eval ::fx::seen {
-    namespace export not mark unmark reset
+    namespace export not-sent mark unmark reset
     namespace ensemble create
 
     namespace import ::fx::fossil
@@ -25,9 +25,9 @@ namespace eval ::fx::seen {
 
 # # ## ### ##### ######## ############# ######################
 
-proc ::fx::seen::not {script} {
+proc ::fx::seen::not-sent {script} {
     Init
-    upvar type type id id uuid uuid
+    upvar type type id id uuid uuid comment comment
 
     fossil repository transaction {
 	fossil repository eval {
@@ -35,6 +35,7 @@ proc ::fx::seen::not {script} {
 	    event.type  AS type,
 	    event.objid AS id,
 	    blob.uuid   AS uuid
+	    coalesce (event.ecomment, event.comment) AS comment
 	    FROM event, blob
 	    WHERE event.objid NOT IN (SELECT id
 				      FROM fx_aku_watch_seen)
