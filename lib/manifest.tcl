@@ -38,7 +38,7 @@ proc ::fx::manifest::parse {manifest args} {
 
     # Map from cards to dictionary elements, and manifest types.
     ##                             Type
-    # A     name,target,attachment             attachment
+    # A     name,target,attachment,operation             attachment
     # B n/a                        checkin
     # C     comment
     # D     when
@@ -54,67 +54,85 @@ proc ::fx::manifest::parse {manifest args} {
     # R n/a                        checkin
     # T n/a [+*_]tag uuid ?value?         - event|control
     # U     user
-    # W n/a -- Special parsing required to find end of card.
+    # W     text
     # Z n/a
 
-    foreach line [split $manifest \n] {
-	if {[regexp {^A (.*) (.*) (.*)$} $line -> m(aname) m(target) m(attachment)]} {
-	    # Attachment added - Target = uuid of { event, ticket }, or wiki page name
-	    set m(type) attachment
-	    continue
-	}
-	if {[regexp {^A (.*) (.*)$} $line -> m(aname) m(target)]} {
-	    # Attachment removed - Target = uuid of { event, ticket }, or wiki page name
-	    set m(type) attachment
-	    continue
-	}
-	# B - ignored
-	if {[regexp {^C (.*)$} $line -> m(comment)]} {
-	    Dearmor m(comment)
-	    continue
-	}
-	if {[regexp {^D (.*)$} $line -> m(when)]} {
-	    set m(epoch) [Epoch $m(when)
-	    continue
-	}
-	if {[regexp {^E (.*) (.*)$} $line -> m(when-event) m(eventid)]} {
-	    set m(epoch-event) [Epoch $m(when-event)
-	    continue
-	}
-	# F ignored
-	if {[regexp {^J (.*) (.*)$} $line -> fname value]} {
-	    Dearmor value
-	    dict set m(field) $fname $value
-	    continue
-	}
-	if {[regexp {^K (.*)$} $line -> m(ticket)]} {
-	    set m(type) ticket
-	    # TODO: Pull the current ticket state.
-	    # TODO: Unify with the fields to have everything proper for dynamic routing.
-	    # TODO: Changes in m(fields) overwrite the current settings.
-	    # TODO: Get title here as well.
-	    continue
-	}
-	if {[regexp {^L (.*)$} $line -> m(title)]} {
-	    set m(type) wiki
-	    continue
-	}
-	# M ignored, except for type information
-	if {[regexp {^M (.*)$} $line -> dummy]} {
-	    set m(type) cluster
-	}
-	if {[regexp {^N (.*)$} $line -> m(mimetype)]} continue
-	# P ignored
-	# Q ignored
-	# R ignored
-	# T ignored -- Parse for main content of control artifacts.
-	if {[regexp {^U (.*)$} $line -> m(user)]} continue
-	# W ignored - for now
-	# Z ignored
-
-	if {[regexp {^[BFQR] (.*)$} $line -> dummy]} {
-	    set m(type) checkin
-	    continue
+    while {[regexp "^(\[A-FJ-NP-RTUWZ\]) (\[^\n\]*)\n(.*)$" $manifest -> code data manifest]} {
+	switch -exact -- $code {
+	    A {
+		if {[regexp {^(.*) (.*) (.*)$} $data -> m(aname) m(target) m(attachment)]} {
+		    # Attachment added - Target = uuid of { event, ticket }, or wiki page name
+		    set m(type) attachment
+		    set m(operation) added
+		    continue
+		}
+		if {[regexp {(.*) (.*)$} $data -> m(aname) m(target)]} {
+		    # Attachment removed - Target = uuid of { event, ticket }, or wiki page name
+		    set m(type) attachment
+		    set m(operation) removed
+		    continue
+		}
+		# error - bad syntax
+	    }
+	    B -
+	    F -
+	    Q -
+	    R {
+		set m(type) checkin
+	    }
+	    C {
+		set m(comment) [Dearmor $data]
+	    }
+	    D {
+		set m(when) $data
+		set m(epoch) [Epoch $m(when)]
+	    }
+	    E {
+		if {[regexp {(.*) (.*)$} $data -> m(when-event) m(eventid)]} {
+		    set m(epoch-event) [Epoch $m(when-event)]
+		    continue
+		}
+		# error - bad syntax
+	    }
+	    J {
+		if {[regexp {(.*) (.*)$} $data -> fname value]} {
+		    dict set m(field) $fname [Dearmor $value]
+		    continue
+		}
+		# error - bad syntax
+	    }
+	    K {
+		set m(ticket) $data
+		set m(type) ticket
+		# TODO: Pull the current ticket state.
+		# TODO: Unify with the fields to have everything proper for dynamic routing.
+		# TODO: Changes in m(fields) overwrite the current settings.
+		# TODO: Get title here as well.
+	    }
+	    L {
+		set m(title) $line
+		set m(type) wiki
+	    }
+	    M {
+		set m(type) cluster
+	    }
+	    N {
+		set m(mimetype) $data
+	    }
+	    P {}
+	    T {}
+	    U {
+		set m(user) $data
+	    }
+	    W {
+		# line = number of characters to take
+		# we take on more, which the closing \n
+		set text [string range $manifest 0 $line]
+		incr line
+		set manifest [string range $manifest $line end]
+		set m(text)  [string range $text 0 end-1]
+	    }
+	    Z {}
 	}
     }
 
@@ -132,11 +150,10 @@ namespace eval ::fx::manifest {
     variable map [list \\s { } \\n \n \\t \t \\r \r]
 }
 
-proc ::fx::manifest::Dearmor {sv} {
-    upvar 1 $sv string
-    variable    map
+proc ::fx::manifest::Dearmor {s} {
+    variable map
     # Should introduce K here
-    set string [string map $map $string]
+    return [string map $map $s]
 }
 
 proc ::fx::manifest::Epoch {when} {
