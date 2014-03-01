@@ -23,16 +23,92 @@ namespace eval ::fx {
     namespace ensemble create
 }
 namespace eval ::fx::mailgen {
-    namespace export ticket wiki event checkin
+    namespace export test \
+	ticket wiki event commit control \
+	attachment
     namespace ensemble create
 }
 
 # # ## ### ##### ######## ############# ######################
-## TODO: wiki, event, commit, control
-## NOTE: Matches the external event types.
+## The generator commands match the artifact types, not the
+## timeline event types. For attachments we have a context
+## which tells the type of change artifact (ticket, wiki, event)
+## to configure the mail in detail.
+##
+## TODO: test, wiki, event, commit, control, attachment.
+
+proc ::fx::mailgen::test {sender} {
+    Begin
+    Headers \
+	$sender \
+	"FX mail configuration test mail" \
+	[clock format [clock seconds] -gmt 1]
+    Body
+    # empty body?
+    Done
+}
+
+proc ::fx::mailgen::artifact {m} {
+    # Dynamic dispatch by artifact type
+    return [[dict get $m type] $m]
+}
+
+proc ::fx::mailgen::event {m} {
+    # General
+    #  - context == 'event'
+    #  - location
+    #  - project
+    #  - self     -- event change id
+    #  - tcomment == card.comment?
+    # Cards|Dict
+    # C - comment
+    # D - when       ==> date of change = notification => maildate
+    # E - when-event -- event-date 
+    #     eventid    -- event id (over all changes)
+    # N - mimetype => optional, for comment
+    # P - /
+    # T - / - event tags - should have?
+    # U - user
+    # W - text
+    # Z - /
+
+    # Note: self    = uuid of the control artifact describing the event (change).
+    #       eventid = uuid of the event itself
+    # Same difference like for tickets with ticket change uuid and ticket uuid.
+
+    dict with m {}
+    if {![info exists mimetype]} {
+	set mimetype text/x-fossil
+    }
+
+    # Conversion of x-fossil to plain text ?
+    # => tcomment, comment, event text
+
+    Begin
+    Headers ?sender \
+	"\[$project\] Event $tcomment" \
+	[clock format $when -gmt 1]
+    + "X-Fossil-FX-Project: $project"
+    Body
+    # Show: tags?
+    + "Notification for $project Event "
+    + "  \[$tcomment\]"
+    +T Project    $project
+    +T Repository $location
+    +T Event      $location/event/$$eventid
+    +T On         [clock format ${when-event} -gmt 1]
+    +T By         $user
+
+    # Text may not exist, artifact may contain only data/tag changes
+    # for the event in question.
+    if {[info exists $text]} {
+	+ ""
+	+ [Reformat $text]
+    }
+    Done
+}
 
 proc ::fx::mailgen::ticket {ticket} {
-
     # Information needed, coming with ticket.
     # - project  : Name of project
     # - location : Project location (repository url -- config)
@@ -64,25 +140,20 @@ proc ::fx::mailgen::ticket {ticket} {
     }
 
     # Headers
-    lappend lines "From:    $sender"
-    lappend lines "Subject: $subject"
-    lappend lines "Date:    $maildate"
-    lappend lines "X-Fossil-Ticket-Note: $project"
-    lappend lines "X-Tool-Origin:        http://core.tcl.tk/akupries/fx" ; # TODO make this ready
-
-    # Separator Header/Body
-    lappend lines ""
-
+    Begin
+    Headers $sender $subject $maildate
+    + "X-Fossil-FX-Project: $project"
+    Body
     # Body, Intro
-    lappend lines "Repository: $location"
-    lappend lines ""
-    lappend lines "$type Notification For"
-    lappend lines "  \[$title\]"
-    lappend lines "  Ticket   $location/tktview?name=$ticket"
-    lappend lines "  Artifact $alink"
-    lappend lines "  On       $cleaniso"
-    lappend lines "  By       $user"
-    lappend lines ""
+    + "Repository: $location"
+    + ""
+    + "$type Notification For"
+    + "  \[$title\]"
+    + "  Ticket   $location/tktview?name=$ticket"
+    + "  Artifact $alink"
+    + "  On       $cleaniso"
+    + "  By       $user"
+    + ""
 
     # Body, Table, Changed fields.
     struct::matrix M
@@ -122,23 +193,64 @@ proc ::fx::mailgen::ticket {ticket} {
     }
 
     if {[M rows]} {
-	lappend lines "Changed Fields"
-	lappend lines [textutil::adjust::indent \
-			   [M format 2string] \
-			   {  }]
-	lappend lines ""
+	+ "Changed Fields"
+	+ [textutil::adjust::indent \
+	       [M format 2string] \
+	       {  }]
+	+ ""
     }
     M destroy
 
-    return [join $lines \n]
-
-    return
+    Done
 }
 
 # # ## ### ##### ######## ############# ######################
 
+proc ::fx::mailgen::Begin {} {
+    upvar 1 lines lines
+    set     lines {}
+    return
+}
 
-proc  ::fx::mailgen::Reformat {s} {
+proc ::fx::mailgen::Done {} {
+    upvar 1 lines lines T T
+    catch { $T destroy }
+    return -code return [join $lines \n]
+}
+
+proc ::fx::mailgen::+T {field value} {
+    upvar 1 T T
+    if {![info exists T]} {
+	set T [struct::matrix TABLE]
+	$T add columns 2
+    }
+    $T add row [list $field $value]
+    return
+}
+
+proc ::fx::mailgen::+ {line} {
+    upvar 1 lines lines
+    lappend lines $line
+    return
+}
+
+proc ::fx::mailgen::Headers {sender subject date} {
+    upvar 1 lines lines
+    + "From:    $sender"
+    + "Subject: $subject"
+    + "Date:    $date"
+    + "X-Fossil-FX-Note:"
+    + "X-Tool-Origin: http://core.tcl.tk/akupries/fx" ; # TODO make this ready
+    return
+}
+
+proc ::fx::mailgen::Body {} {
+    upvar 1 lines lines
+    + ""
+    return
+}
+
+proc ::fx::mailgen::Reformat {s} {
     # split into paragraphs. may contain sequences of
     # empty paragraphs.
     set paragraphs {}
