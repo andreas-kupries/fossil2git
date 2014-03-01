@@ -61,44 +61,36 @@ proc ::fx::note::test-touch-all {config} {
 }
 
 proc ::fx::note::test-mail-gen {config} {
+    # TODO: either handle missing context in the mailgen, or
+    # auto-determine a context here, or let the user specify it.
 
-    # uuid ... get artifact, parse it, dispatch to generator, print result
-
-    set pname [config get-with-default \
-		   project-name \
-		   [file rootname [file tail [fossil repository-location]]]]
-
-    set ploc  [config get-with-default \
-		   fx-aku-note-project-location \
-		   {Location not known}]
-
-    set m [manifest parse \
-		     [fossil get-manifest [$config @uuid]] \
-		     self     $uuid \
-		     project  $pname \
-		     location $ploc]
-
-    # dispatch by type... collect output, print
-
-    puts [generator [dict get $m type] $m]
+    set uuid [$config @uuid]
+    puts [mail-gen artifact \
+	      [manifest parse \
+		   [fossil get-manifest $uuid] \
+		   self $uuid \
+		   {*}[ProjectInfo]]]
+    return
 }
 
 proc ::fx::note::test-mail-config {config} {
-
-    # invoke mailer with a fixed corpus
-
+    mailer send \
+	[mailer get-config] \
+	[$config @destination] \
+	[mail-gen test]
+    return
 }
 
 proc ::fx::note::test-mail-receivers {config} {
-
     foreach {event routes} [RouteMap] {
 	# TODO: fake parameter for message generation in case of errors.
 	set e [event-type validate ... $event]
 	lappend map $e [list $event [lsort -unique $routes]]
     }
 
+    set uuid [$config @uuid]
     set m [manifest parse \
-	       [fossil get-manifest [$config @uuid]] \
+	       [fossil get-manifest $uuid] \
 	       self $uuid]
 
     lassign [dict get $map [dict get $m $type]] ex routes
@@ -110,20 +102,12 @@ proc ::fx::note::test-mail-receivers {config} {
 }
 
 proc ::fx::note::test-parse {config} {
-
-    set pname [config get-with-default \
-		   project-name \
-		   [file rootname [file tail [fossil repository-location]]]]
-
-    set ploc  [config get-with-default \
-		   fx-aku-note-project-location \
-		   {Location not known}]
-
-    array set m [manifest parse \
-		     [fossil get-manifest [$config @uuid]] \
-		     self     $uuid \
-		     project  $pname \
-		     location $ploc]
+    set uuid [$config @uuid]
+    array set m \
+	[manifest parse \
+	     [fossil get-manifest $uuid] \
+	     self $uuid \
+	     {*}[ProjectInfo]]
     parray m
     return
 }
@@ -353,16 +337,32 @@ proc ::fx::note::route-deliver {config} {
     set mc [mailer get-config]
 
     # Other general configuration identical across all notifications.
-    set pname [config get-with-default \
-		   project-name \
-		   [file rootname [file tail [fossil repository-location]]]]
+    set pinfo [ProjectInfo]
 
-    set ploc  [config get-with-default \
-		   fx-aku-note-project-location \
-		   {Location not known}]
+    # Timeline event types, and associated artifact types.
+    #
+    # checkin ci -- manifest
+    # control g  -- control
+    # event   e  -- event
+    # ticket  t  -- ticket change, attachment
+    # wiki    w  -- wiki page, attachment
+    #
+    # Note how the attachment are not their own type of timeline
+    # event, but are categorized underneath the associated changed
+    # artifact, i.e. ticket or wiki.
+    #
+    # As events can have attachments as well I suspect that these
+    # are handled under 'e' too, assuming consistency.
 
-    seen not {
-	# type, id, uuid
+    # Mail dispatch (and receivers) are done by timeline event type.
+    # Mail generation is done by artifact type, with influences by the
+    # changed artifact in case of attachments (different references to
+    # the changed artifact). This is provided by the 'context', holding
+    # the type of timeline event <=> type of changed artifact.
+
+    seen not-sent {
+	# iter variables: type, id, uuid, comment
+	#
 	# TODO: no mail and such when suspended.
 
 	if {[dict exists $map $type]} {
@@ -371,15 +371,16 @@ proc ::fx::note::route-deliver {config} {
 
 	    set m [manifest parse \
 		       [fossil get-manifest $uuid] \
+		       tcomment $comment \
 		       self     $uuid \
-		       project  $pname \
-		       location $ploc]
+		       context  $ex   \
+		       {*}$pinfo]
 
 	    set recv [Receivers $routes $m]
 
 	    if {[llength $recv]} {
 		mailer send $mc $recv \
-		    [::fx::mailgen $ex $m]
+		    [mailgen artifact $m]
 	    }
 	}
         seen touch $id
@@ -389,6 +390,18 @@ proc ::fx::note::route-deliver {config} {
 
 # # ## ### ##### ######## ############# ######################
 ## Receiver collection
+
+proc ::fx::note::ProjectInfo {} {
+    set name [config get-with-default \
+		  project-name \
+		  [file rootname [file tail [fossil repository-location]]]]
+
+    set location  [config get-with-default \
+		       fx-aku-note-project-location \
+		       {Location not known}]
+
+    return [dict create project $name location $location]
+}
 
 proc ::fx::note::Receivers {routes manifest} {
     set recv {}
