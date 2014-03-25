@@ -1,0 +1,51 @@
+AZ -- This header prevent misinterpretation of this file's contents as
+   -- a proper manifest or other special artifact -- ZA
+D 2014-02-12T06:06:17.109
+L cmdr
+P b90b4795de33044f549018bde02b522d4b1a95ae
+U aku
+W 1170
+A framework for command line parsing and dispatch (Speak: Commander).
+
+<h2>Feedback</h2>
+
+<ul>
+<p>Please go to and use our <a href="reportlist">Trackers</a>.
+They are for Bugs, Patches, and Ideas &amp; Feature Requests.</p>
+</ul>
+
+<h2>Releases</h2>
+
+<ul>
+<p>Current:
+<b>1.1 (Feb 11, 2014)</b>
+<a href="event/e2adcf270058a1ff">Details</a>
+</p>
+<p>[Past Releases]</p>
+<p>[Development Snapshots]</p>
+</ul>
+
+<h2>Instructions</h2>
+<ul><p>
+<a href="doc/trunk/embedded/www/doc/files/cmdr_license.html">BSD Licensed</a>
+
+<a href="doc/trunk/embedded/www/doc/files/cmdr_howto_get_sources.html">How To Get The Sources</a>
+
+<a href="doc/trunk/embedded/www/doc/files/cmdr_howto_installation.html">How To Build And Install The Packages</a>
+
+<a href="doc/trunk/embedded/www/doc/files/cmdr_howto_development.html">The Developer's Guide</a>
+</p></ul>
+
+<h2>Documentation</h2>
+<ul><p>
+<a href="doc/trunk/embedded/www/doc/files/cmdr_introduction.html">User Introduction</a>
+
+<a href="doc/trunk/embedded/www/toc.html">Command Reference</a>
+</p></ul>
+
+<h2>Contact</h2>
+<ul><p>
+<a href="mailto:akupries@shaw.ca">Andreas Kupries @shaw.ca</a>
+</p></ul>
+
+Z 73c1fa68043c00fb74f2bbcda2eb512a

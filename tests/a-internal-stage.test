@@ -25,13 +25,15 @@ test stage-1.0 {stage lifecycle} -setup {
 test stage-1.1 {stage examples} -setup {
     stage-open
 } -body {
-    stage-examples
+    stage-manifests
     in-ckout {
-	run-core fossil sqlite3 {select * from blob}
+	run-core fossil sqlite3 << {
+	    select * from blob ;
+	}
     }
 } -cleanup {
     stage-close
-} -result {}
+} -match glob -result [viewFile [tmp]/support/manifests.txt]
 
 # # ## ### ##### ######## ############# #####################
 cleanupTests

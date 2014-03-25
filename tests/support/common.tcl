@@ -227,24 +227,22 @@ proc Capture {out err fail} {
 # # ## ### ##### ######## ############# #####################
 ## Process the artifact example archive
 
-proc stage-examples {} {
-    set archive [fileutil::cat --encoding binary [tmp]/support/example-manifests]
+proc stage-manifests {} {
+    foreach f [lsort -dict [glob [tmp]/support/manifests/*]] {
+	set archive [fileutil::cat -translation binary -encoding binary $f]
 
-    # strip header preventing interpretation as manifest or other special artifact.
-    regsub {^.*ZA} $archive {} archive
+	# strip the header preventing interpretation of the example as
+	# manifest or other special artifact within the fx repository.
+	regsub {^.*ZA} $archive {} archive
 
-    # split into the separate files.
-
-    regsub "Z (\[^\n\]*)\n" $archive "Z \\1\n\0" archive
-    set archive [split $archive \0]
-
-    in-ckout {
-	foreach a $archive {
-	    fileutil::writeFile -encoding binary [pid] $a
-	    run-core fossil test-content-put [pid]
-	    file delete [pid]
+	# save manifest into transient file and put into the repository.
+	in-ckout {
+	    fileutil::writeFile -encoding binary [pid].ar $archive
+	    run-core fossil test-content-put [pid].ar
+	    file delete [pid].ar
 	}
     }
+    return
 }
 
 # # ## ### ##### ######## ############# #####################
