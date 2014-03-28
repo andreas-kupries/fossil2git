@@ -596,6 +596,55 @@ cmdr create fx::fx [file tail $::argv0] {
 	    }
 	    use .all
 	} [fx::call note deliver]
+
+	private mark-pending {
+	    section Notifications Control
+	    description {
+		Mark the specified artifact as having not been notified before,
+		thus forcing the generation of a notification for it on the next
+		invokation of "deliver".
+	    }
+	    input uuid {
+		Fossil id of the artifact to touch.
+	    } {
+		#validate [fx::vt uuid] -- TODO
+	    }
+	} [fx::call note mark-pending]
+
+	private mark-notified {
+	    section Notifications Control
+	    description {
+		Mark the specified artifact as having been notified before, thus
+		preventing generation of a notification for it on the next
+		invokation of "deliver".
+	    }
+	    input uuid {
+		Fossil id of the artifact to hide.
+	    } {
+		#validate [fx::vt uuid] -- TODO
+	    }
+	} [fx::call note mark-notified]
+
+	private mark-pending-all {
+	    section Notifications Control
+	    description {
+		Mark all events in the timeline as requiring a notification.
+	    }
+	} [fx::call note mark-pending-all]
+
+	private mark-notified-all {
+	    section Notifications Control
+	    description {
+		Mark all events in the timeline as not requiring a notification.
+	    }
+	} [fx::call note mark-notified-all]
+
+	private show-pending {
+	    section Notifications Control
+	    description {
+		Show all events in the timeline marked as pending.
+	    }
+	} [fx::call note show-pending]
     }
 
     officer test {
@@ -603,26 +652,6 @@ cmdr create fx::fx [file tail $::argv0] {
 	    Various commands to test the system and its configuration.
 	}
 
-	private touch {
-	    section Testing
-	    description {
-		Touch the specified artifact to force generation of
-		a notification for it, even if such a notification
-		was sent already in the past.
-	    }
-	    input uuid {
-		Fossil id of the artifact to touch.
-	    } {
-		#validate [fx::vt uuid] -- TODO
-	    }
-	} [fx::call note test-touch]
-
-	private touch-all {
-	    section Testing
-	    description {
-		Touch all events in the timeline.
-	    }
-	} [fx::call note test-touch-all]
 
 	# TODO: inverted operation: untouch|hide => prevent future notifications.
 

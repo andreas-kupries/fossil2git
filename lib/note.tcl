@@ -31,8 +31,10 @@ namespace eval ::fx::note {
 	mail-config-show mail-config-set mail-config-unset \
 	route-add route-drop route-list route-field-add \
 	route-field-drop deliver event-list field-list \
-	test-touch test-touch-all test-mail-gen test-mail-config \
-	test-mail-receivers test-parse
+	mark-pending mark-notified mark-pending-all mark-notified-all \
+	show-pending test-parse test-mail-gen test-mail-config \
+	test-mail-receivers
+
     namespace ensemble create
 
     namespace import ::fx::fossil
@@ -50,13 +52,32 @@ namespace eval ::fx::note {
 
 # # ## ### ##### ######## ############# ######################
 
-proc ::fx::note::test-touch {config} {
-    seen unmark [$config @uuid]
+proc ::fx::note::mark-pending {config} {
+    seen mark-pending [$config @uuid]
     return
 }
 
-proc ::fx::note::test-touch-all {config} {
-    seen reset
+proc ::fx::note::mark-pending-all {config} {
+    seen mark-pending-all
+    return
+}
+
+proc ::fx::note::mark-notified {config} {
+    seen mark-notified [$config @uuid]
+    return
+}
+
+proc ::fx::note::mark-notified-all {config} {
+    seen mark-notified-all
+    return
+}
+
+proc ::fx::note::show-pending {config} {
+    [table t {Id Type UUID Comment} {
+	seen forall-pending type id uuid comment {
+	    $t add $id $type $uuid $comment
+	}
+    }] show
     return
 }
 
@@ -360,9 +381,7 @@ proc ::fx::note::route-deliver {config} {
     # the changed artifact). This is provided by the 'context', holding
     # the type of timeline event <=> type of changed artifact.
 
-    seen not-sent {
-	# iter variables: type, id, uuid, comment
-	#
+    seen forall-pending type id uuid comment {
 	# TODO: no mail and such when suspended.
 
 	if {[dict exists $map $type]} {

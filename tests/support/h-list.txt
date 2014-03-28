@@ -26,6 +26,10 @@ fx config available [OPTIONS]
     fx note deliver [OPTIONS]
     fx note exit [OPTIONS]
     fx note help [OPTIONS] [<cmdname>...]
+    fx note mark-notified [OPTIONS] <uuid>
+    fx note mark-notified-all [OPTIONS]
+    fx note mark-pending [OPTIONS] <uuid>
+    fx note mark-pending-all [OPTIONS]
     fx note route add [OPTIONS] <event> <to>...
     fx note route drop [OPTIONS] <event> [<to>...]
     fx note route events [OPTIONS]
@@ -39,6 +43,7 @@ fx config available [OPTIONS]
     fx note route help [OPTIONS] [<cmdname>...]
     fx note route list [OPTIONS]
     fx note routes [OPTIONS]
+    fx note show-pending [OPTIONS]
     fx report add [OPTIONS] <title> [<spec>]
     fx report delete [OPTIONS] <id>
     fx report exit [OPTIONS]
@@ -46,4 +51,10 @@ fx config available [OPTIONS]
     fx report help [OPTIONS] [<cmdname>...]
     fx report list [OPTIONS]
     fx repository [OPTIONS]
+    fx test exit [OPTIONS]
+    fx test help [OPTIONS] [<cmdname>...]
+    fx test mail-for [OPTIONS] <uuid>
+    fx test mail-receivers [OPTIONS] <uuid>
+    fx test mail-setup [OPTIONS] <destination>
+    fx test manifest-parse [OPTIONS] <uuid>
     fx version [OPTIONS]

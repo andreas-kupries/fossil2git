@@ -38,6 +38,22 @@ Notifications
                         destinations, for all new events (since the last
                         delivery)
 
+    Control
+        fx note mark-notified <uuid>    Mark the specified artifact as having
+                                        been notified before, thus preventing
+                                        generation of a notification for it on
+                                        the next invokation of "deliver"
+        fx note mark-notified-all       Mark all events in the timeline as not
+                                        requiring a notification
+        fx note mark-pending <uuid>     Mark the specified artifact as having
+                                        not been notified before, thus forcing
+                                        the generation of a notification for it
+                                        on the next invokation of "deliver"
+        fx note mark-pending-all        Mark all events in the timeline as
+                                        requiring a notification
+        fx note show-pending            Show all events in the timeline marked
+                                        as pending
+
     Destinations
         fx note route add <event> <to>...       Add fixed mail destination for
                                                 the named event type
@@ -73,3 +89,17 @@ Reporting
     fx report get <id>                Retrieve the specified report definition
     fx report list                    List all reports defined in the
                                       repository
+
+Testing
+    fx test mail-for <uuid>             Generate the notification mail for the
+                                        specified artifact, and print it to
+                                        stdout
+    fx test mail-receivers <uuid>       Analyse the specified artifact and
+                                        determine the set of mail addresses to
+                                        send a notification to, fixed and
+                                        field-based
+    fx test mail-setup <destination>    Generate a test mail and send it using
+                                        the current mail configuration
+    fx test manifest-parse <uuid>       Parse the specified artifact as
+                                        manifest and print the resulting
+                                        array/dictionary to stdout

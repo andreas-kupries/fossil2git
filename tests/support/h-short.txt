@@ -96,6 +96,22 @@ fx note help [OPTIONS] [<cmdname>...]
     Retrieve help for a command or command set. Without arguments help for all
     commands is given. The default format is --full.
 
+fx note mark-notified [OPTIONS] <uuid>
+    Mark the specified artifact as having been notified before, thus
+    preventing generation of a notification for it on the next invokation of
+    "deliver".
+
+fx note mark-notified-all [OPTIONS]
+    Mark all events in the timeline as not requiring a notification.
+
+fx note mark-pending [OPTIONS] <uuid>
+    Mark the specified artifact as having not been notified before, thus
+    forcing the generation of a notification for it on the next invokation of
+    "deliver".
+
+fx note mark-pending-all [OPTIONS]
+    Mark all events in the timeline as requiring a notification.
+
 fx note route add [OPTIONS] <event> <to>...
     Add fixed mail destination for the named event type.
 
@@ -138,6 +154,9 @@ fx note route list [OPTIONS]
 fx note routes [OPTIONS]
     Show all mail destinations.
 
+fx note show-pending [OPTIONS]
+    Show all events in the timeline marked as pending.
+
 fx report add [OPTIONS] <title> [<spec>]
     Add a report definition to the repository.
 
@@ -159,6 +178,28 @@ fx report list [OPTIONS]
 
 fx repository [OPTIONS]
     Print the name of the repository we are working on.
+
+fx test exit [OPTIONS]
+    Exit the shell. No-op if not in a shell.
+
+fx test help [OPTIONS] [<cmdname>...]
+    Retrieve help for a command or command set. Without arguments help for all
+    commands is given. The default format is --full.
+
+fx test mail-for [OPTIONS] <uuid>
+    Generate the notification mail for the specified artifact, and print it to
+    stdout.
+
+fx test mail-receivers [OPTIONS] <uuid>
+    Analyse the specified artifact and determine the set of mail addresses to
+    send a notification to, fixed and field-based.
+
+fx test mail-setup [OPTIONS] <destination>
+    Generate a test mail and send it using the current mail configuration.
+
+fx test manifest-parse [OPTIONS] <uuid>
+    Parse the specified artifact as manifest and print the resulting
+    array/dictionary to stdout.
 
 fx version [OPTIONS]
     Print version and revision of the application.

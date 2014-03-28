@@ -17,29 +17,37 @@ package require Tcl 8.5
 package require fx::fossil
 
 namespace eval ::fx::seen {
-    namespace export not-sent mark unmark reset
+    namespace export forall-pending \
+	mark-notified mark-notified-all \
+	mark-pending mark-pending-all
     namespace ensemble create
 
     namespace import ::fx::fossil
 }
 
+namespace eval ::fx {
+    namespace export seen
+    namespace ensemble create
+}
+
 # # ## ### ##### ######## ############# ######################
 
-proc ::fx::seen::not-sent {script} {
+proc ::fx::seen::forall-pending {tv iv uv cv script} {
     Init
-    upvar type type id id uuid uuid comment comment
+    upvar 1 $tv type $iv id $uv uuid $cv comment
 
     fossil repository transaction {
 	fossil repository eval {
 	    SELECT
 	    event.type  AS type,
 	    event.objid AS id,
-	    blob.uuid   AS uuid
+	    blob.uuid   AS uuid,
 	    coalesce (event.ecomment, event.comment) AS comment
-	    FROM event, blob
+	    FROM  event, blob
 	    WHERE event.objid NOT IN (SELECT id
 				      FROM fx_aku_watch_seen)
-	    AND event.objid = blob.rid
+	    AND   event.objid = blob.rid
+	    ORDER BY event.objid
 	} {
 	    uplevel 1 $script
 	    # TODO? handle break, continue
@@ -52,18 +60,32 @@ proc ::fx::seen::not-sent {script} {
     return
 }
 
-proc ::fx::seen::mark {id} {
+proc ::fx::seen::mark-notified {uuid} {
     # TODO dry run
 
     Init
     fossil repository eval {
-	INSERT INTO fx_aku_watch_seen
-	VALUES ( :id )
+	INSERT OR IGNORE INTO fx_aku_watch_seen
+	  SELECT blob.rid
+	  FROM   blob
+	  WHERE  blob.uuid = :uuid
     }
     return
 }
 
-proc ::fx::seen::unmark {uuid} {
+proc ::fx::seen::mark-notified-all {} {
+    # TODO dry run
+
+    Init
+    fossil repository eval {
+	INSERT OR IGNORE INTO fx_aku_watch_seen
+	  SELECT event.objid
+	  FROM   event
+    }
+    return
+}
+
+proc ::fx::seen::mark-pending {uuid} {
     # TODO dry run
 
     Init
@@ -76,10 +98,11 @@ proc ::fx::seen::unmark {uuid} {
     return
 }
 
-proc ::fx::seen::reset {} {
+proc ::fx::seen::mark-pending-all {} {
     # TODO dry run
+    Init
     fossil repository eval {
-	DROP TABLE IF EXISTS fx_aku_watch_seen
+	DELETE FROM fx_aku_watch_seen
     }
     return
 }
@@ -91,11 +114,8 @@ proc ::fx::seen::Init {} {
 	CREATE TABLE IF NOT EXISTS
 	fx_aku_watch_seen
 	(
-	 id
-	   INTEGER
-	   PRIMARY KEY
-	   REFERENCES event ( objid )
-	 )
+	  id INTEGER PRIMARY KEY NOT NULL REFERENCES event ( objid )
+	)
     }
 
     # Disable further calls.
