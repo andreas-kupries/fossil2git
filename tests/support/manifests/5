@@ -1,5 +1,7 @@
-AZ -- This header prevent misinterpretation of this file's contents as
-   -- a proper manifest or other special artifact -- ZA
+AZ -- Prevent misinterpretation of this file's contents as manifest or other special artifact --
+ci
+officer - Extended class to accept the unique prefixes of the known command names for dispatch.
+ZA
 C officer\s-\sExtended\sclass\sto\saccept\sthe\sunique\sprefixes\sof\sthe\sknown\scommand\snames\sfor\sdispatch.
 D 2014-02-19T20:20:16.293
 F actor.tcl 99ff5c73d47846fc82a893815b8db971e4730d09

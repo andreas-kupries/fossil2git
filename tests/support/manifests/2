@@ -1,5 +1,7 @@
-AZ -- This header prevent misinterpretation of this file's contents as
-   -- a proper manifest or other special artifact -- ZA
+AZ -- Prevent misinterpretation of this file's contents as manifest or other special artifact --
+w
+A framework for command line parsing and dispatch (Speak: Commander).
+ZA
 D 2014-02-12T06:06:17.109
 L cmdr
 P b90b4795de33044f549018bde02b522d4b1a95ae

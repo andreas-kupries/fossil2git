@@ -1,5 +1,7 @@
-AZ -- This header prevent misinterpretation of this file's contents as
-   -- a proper manifest or other special artifact -- ZA
+AZ -- Prevent misinterpretation of this file's contents as manifest or other special artifact --
+g
+
+ZA
 D 2013-12-02T17:50:40.417
 T +sym-release-1-0 2e15301ff511496523bfb39dab5b6c0b84c05bec
 U aku

@@ -1,0 +1,9 @@
+ci|*|1|||||*||initial empty check-in||*
+e|*|2||||||<b>Cmdr 1.1 Release</b> on February 11, 2014|||*
+w|*|3||||||A framework for command line parsing and dispatch (Speak: Commander).|||*
+g|*|4||||||Tweaked documented titles for...|||*
+g|*|5|||||||||*
+ci|*|6||||||officer - Extended class to accept the unique prefixes of the known command names for dispatch.|||*
+t|*|7||||||It isn't a problem with those five...|||*
+t|*|8||||||Fixes variable name from lower to upper case in WaitDataConn|||*
+e|*|9||||||Tklib 0.6 Release, March 25, bzip2 compressed tarball.|||*

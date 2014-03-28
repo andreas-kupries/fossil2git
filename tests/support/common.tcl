@@ -81,6 +81,10 @@ proc in-ckout {script} {
     uplevel 1 [list indir [the-ckout] $script]
 }
 
+proc on-stage {script} {
+    uplevel 1 [list indir [the-ckout] $script]
+}
+
 proc withenv {script args} {
     global env
     set saved [array get env]
@@ -228,21 +232,46 @@ proc Capture {out err fail} {
 ## Process the artifact example archive
 
 proc stage-manifests {} {
+    set id 2
     foreach f [lsort -dict [glob [tmp]/support/manifests/*]] {
 	set archive [fileutil::cat -translation binary -encoding binary $f]
 
 	# strip the header preventing interpretation of the example as
 	# manifest or other special artifact within the fx repository.
-	regsub {^.*ZA} $archive {} archive
+	regexp "^(.*)ZA\n(.*)$" $archive -> header archive
+	lassign	[split $header \n] _ etype ecomment
 
 	# save manifest into transient file and put into the repository.
 	in-ckout {
 	    fileutil::writeFile -encoding binary [pid].ar $archive
 	    run-core fossil test-content-put [pid].ar
 	    file delete [pid].ar
+	    if 1 {run-core fossil sqlite3 << [subst {
+		INSERT INTO event VALUES (
+		  "$etype",
+		  julianday('now'),         -- mtime
+		  $id,         -- objid
+		  NULL,        -- tagid
+		  NULL,        -- uid/user
+		  NULL,        -- bgcolor
+		  NULL,        -- euser
+		  NULL,        -- user
+		  "$ecomment", -- ecomment
+		  NULL,        -- comment
+		  NULL,        -- brief
+		  julianday('now')         -- omtime
+		);
+	    }]}
 	}
+	incr id
     }
+    # Regenerate the derived tables
+    #run-core fossil rebuild
     return
+}
+
+proc the-manifests {} {
+    return [split [string trim [fileutil::cat [tmp]/support/manifests-uuid.txt]] \n]
 }
 
 # # ## ### ##### ######## ############# #####################

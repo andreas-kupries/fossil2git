@@ -1,5 +1,7 @@
-AZ -- This header prevent misinterpretation of this file's contents as
-   -- a proper manifest or other special artifact -- ZA
+AZ -- Prevent misinterpretation of this file's contents as manifest or other special artifact --
+g
+Tweaked documented titles for...
+ZA
 D 2013-11-27T07:57:19.938
 T +comment dbd259771bf9a7298e07938fb551ae244f56d4ad Tweaked\sdocumented\stitles\sfor\sbetter\smarking\sof\sinternals.\sFixed\sa\sfew\sissues\swith\svalidation\stypes,\smainly\sshuffling\stext\sblocks\saround,\splus\sfix\sin\sAPI\sdocumentation.\r\n
 U aku
