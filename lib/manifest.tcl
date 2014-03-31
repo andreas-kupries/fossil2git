@@ -60,16 +60,16 @@ proc ::fx::manifest::parse {manifest args} {
     while {[regexp "^(\[A-FJ-NP-RTUWZ\]) (\[^\n\]*)\n(.*)$" $manifest -> code data manifest]} {
 	switch -exact -- $code {
 	    A {
-		if {[regexp {^(.*) (.*) (.*)$} $data -> m(aname) m(target) m(attachment)]} {
+		if {[regexp {^(.*) (.*) (.*)$} $data -> m(attachment,path) m(target) m(attachment,uuid)]} {
 		    # Attachment added - Target = uuid of { event, ticket }, or wiki page name
 		    set m(type) attachment
-		    set m(operation) added
+		    set m(attachment,op) added
 		    continue
 		}
-		if {[regexp {(.*) (.*)$} $data -> m(aname) m(target)]} {
+		if {[regexp {(.*) (.*)$} $data -> m(attachment,path) m(target)]} {
 		    # Attachment removed - Target = uuid of { event, ticket }, or wiki page name
 		    set m(type) attachment
-		    set m(operation) removed
+		    set m(attachment,op) removed
 		    continue
 		}
 		# error - bad syntax
@@ -106,11 +106,11 @@ proc ::fx::manifest::parse {manifest args} {
 		set m(type) ticket
 		# TODO: Pull the current ticket state.
 		# TODO: Unify with the fields to have everything proper for dynamic routing.
-		# TODO: Changes in m(fields) overwrite the current settings.
+		# TODO: Changes in m(field) overwrite the current settings.
 		# TODO: Get title here as well.
 	    }
 	    L {
-		set m(title) $line
+		set m(title) $data
 		set m(type) wiki
 	    }
 	    M {
@@ -125,11 +125,11 @@ proc ::fx::manifest::parse {manifest args} {
 		set m(user) $data
 	    }
 	    W {
-		# line = number of characters to take
-		# we take on more, which the closing \n
-		set text [string range $manifest 0 $line]
-		incr line
-		set manifest [string range $manifest $line end]
+		# data = number of characters to take
+		# we take one more, which is the closing \n
+		set text [string range $manifest 0 $data]
+		incr data
+		set manifest [string range $manifest $data end]
 		set m(text)  [string range $text 0 end-1]
 	    }
 	    Z {}
