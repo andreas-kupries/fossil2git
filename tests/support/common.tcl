@@ -243,7 +243,7 @@ proc stage-manifests {} {
 
 	# save manifest into transient file and put into the repository.
 	in-ckout {
-	    fileutil::writeFile -encoding binary [pid].ar $archive
+	    fileutil::writeFile -translation binary -encoding binary [pid].ar $archive
 	    run-core fossil test-content-put [pid].ar
 	    file delete [pid].ar
 	    if 1 {run-core fossil sqlite3 << [subst {
