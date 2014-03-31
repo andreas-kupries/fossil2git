@@ -129,6 +129,13 @@ proc ::fx::note::test-parse {config} {
 	     [fossil get-manifest $uuid] \
 	     self $uuid \
 	     {*}[ProjectInfo]]
+    # unpack sub-dictionary for nicer printing.
+    if {[info exists m(field)]} {
+	foreach {k v} $m(field) {
+	    set m(field,$k) $v
+	}
+	unset m(field)
+    }
     parray m
     return
 }
@@ -399,7 +406,7 @@ proc ::fx::note::route-deliver {config} {
 
 	    if {[llength $recv]} {
 		mailer send $mc $recv \
-		    [mailgen artifact $m]
+		    [mail-gen artifact $m]
 	    }
 	}
         seen touch $id
