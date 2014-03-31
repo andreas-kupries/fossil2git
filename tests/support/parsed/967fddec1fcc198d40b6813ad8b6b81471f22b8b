@@ -1,0 +1,24 @@
+m(comment)     = Cmdr 1.1 Release
+m(epoch)       = 1392185132
+m(epoch-event) = 1392185100
+m(eventid)     = e2adcf270058a1ffb63308d924fb4ebf1c7bacf4
+m(location)    = http://bogus.testsuite.somewhere
+m(project)     = source
+m(self)        = 967fddec1fcc198d40b6813ad8b6b81471f22b8b
+m(text)        = <b>Cmdr 1.1 Release</b> on February 11, 2014
+
+Archives of the release are available as:
+
+<ul>
+<li> <a href="zip/Cmdr-1.1.zip?uuid=cmdr-1-1">Zip Snapshot Archive</a>
+</li>
+<li> <a href="tarball/Cmdr-1.1.tar.gz?uuid=cmdr-1-1">Tar.gz Snapshot Archive</a>
+</li>
+<li> <a href="doc/cmdr-1-1/embedded/www/toc.html">Documentation (Online)</a>
+</li>
+</ul>
+
+m(type)        = control
+m(user)        = aku
+m(when)        = 2014-02-12T06:05:32.820
+m(when-event)  = 2014-02-12T06:05:00

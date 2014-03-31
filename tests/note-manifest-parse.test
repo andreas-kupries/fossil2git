@@ -1,0 +1,52 @@
+# -*- tcl -*- tcl.tk//DSL tcltest//EN//2.0 tcl.tk//DSL tcltest//EN//2.0
+## (c) 2014 Andreas Kupries
+# # ## ### ##### ######## ############# #####################
+## client test - II - Manifest parsing
+## ... test manifest-parse
+
+kt check Tcl     8.5
+kt check tcltest 2
+
+# # ## ### ##### ######## ############# #####################
+
+kt source support/common.tcl
+
+# # ## ### ##### ######## ############# #####################
+## manifest-parse
+
+test test-manifest-parse-1.0 {client test manifest-parse, wrong args, too many} -setup {
+    stage-open
+} -body {
+    run test manifest-parse U X
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "wrong#args, too many*"
+
+test test-manifest-parse-1.1 {client test manifest-parse, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run test manifest-parse
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "wrong#args, not enough*"
+
+# # ## ### ##### ######## ############# #####################
+
+foreach m [the-manifests] {
+    test test-manifest-parse-2.$m {client test manifest-parse} -setup {
+	stage-open
+	stage-manifests
+	in-ckout {
+	    run note config set location http://bogus.testsuite.somewhere
+	}
+    } -body {
+	in-ckout {
+	    run test manifest-parse $m
+	}
+    } -cleanup {
+	stage-close
+    } -result [viewFile [tmp]/support/parsed/$m]
+}
+
+# # ## ### ##### ######## ############# #####################
+cleanupTests

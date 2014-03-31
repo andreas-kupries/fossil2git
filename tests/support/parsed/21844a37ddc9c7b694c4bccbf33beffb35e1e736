@@ -1,0 +1,51 @@
+m(epoch)    = 1392185177
+m(location) = http://bogus.testsuite.somewhere
+m(project)  = source
+m(self)     = 21844a37ddc9c7b694c4bccbf33beffb35e1e736
+m(text)     = A framework for command line parsing and dispatch (Speak: Commander).
+
+<h2>Feedback</h2>
+
+<ul>
+<p>Please go to and use our <a href="reportlist">Trackers</a>.
+They are for Bugs, Patches, and Ideas &amp; Feature Requests.</p>
+</ul>
+
+<h2>Releases</h2>
+
+<ul>
+<p>Current:
+<b>1.1 (Feb 11, 2014)</b>
+<a href="event/e2adcf270058a1ff">Details</a>
+</p>
+<p>[Past Releases]</p>
+<p>[Development Snapshots]</p>
+</ul>
+
+<h2>Instructions</h2>
+<ul><p>
+<a href="doc/trunk/embedded/www/doc/files/cmdr_license.html">BSD Licensed</a>
+
+<a href="doc/trunk/embedded/www/doc/files/cmdr_howto_get_sources.html">How To Get The Sources</a>
+
+<a href="doc/trunk/embedded/www/doc/files/cmdr_howto_installation.html">How To Build And Install The Packages</a>
+
+<a href="doc/trunk/embedded/www/doc/files/cmdr_howto_development.html">The Developer's Guide</a>
+</p></ul>
+
+<h2>Documentation</h2>
+<ul><p>
+<a href="doc/trunk/embedded/www/doc/files/cmdr_introduction.html">User Introduction</a>
+
+<a href="doc/trunk/embedded/www/toc.html">Command Reference</a>
+</p></ul>
+
+<h2>Contact</h2>
+<ul><p>
+<a href="mailto:akupries@shaw.ca">Andreas Kupries @shaw.ca</a>
+</p></ul>
+
+m(title)    = cmdr
+m(type)     = wiki
+m(user)     = aku
+m(when)     = 2014-02-12T06:06:17.109
