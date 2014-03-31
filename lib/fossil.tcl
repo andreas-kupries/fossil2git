@@ -207,7 +207,16 @@ proc ::fx::fossil::ticket-fields {} {
 proc ::fx::fossil::get-manifest {uuid} {
     variable fossil
     variable repo_location
-    return [exec {*}$fossil artifact $uuid -R $repo_location]
+
+    # Go through a temp file so that we can load the result with
+    # binary.  That is something 'exec' does not provide for its
+    # results, that is always auto.
+
+    exec > [pid].$uuid {*}$fossil artifact $uuid -R $repo_location
+
+    set archive [fileutil::cat -translation binary -encoding binary [pid].$uuid]
+    file delete [pid].$uuid
+    return $archive
 }
 
 # # ## ### ##### ######## ############# ######################
