@@ -72,7 +72,7 @@ proc ::fx::manifest::parse {manifest args} {
 		    set m(attachment,op) removed
 		    continue
 		}
-		# error - bad syntax
+		# error - bad syntax - ignored
 	    }
 	    B -
 	    F -
@@ -90,16 +90,17 @@ proc ::fx::manifest::parse {manifest args} {
 	    E {
 		if {[regexp {(.*) (.*)$} $data -> m(when-event) m(eventid)]} {
 		    set m(epoch-event) [Epoch $m(when-event)]
+		    set m(type) event
 		    continue
 		}
-		# error - bad syntax
+		# error - bad syntax - ignored
 	    }
 	    J {
 		if {[regexp {(.*) (.*)$} $data -> fname value]} {
 		    dict set m(field) $fname [Dearmor $value]
 		    continue
 		}
-		# error - bad syntax
+		# error - bad syntax - ignored
 	    }
 	    K {
 		set m(ticket) $data
@@ -120,7 +121,16 @@ proc ::fx::manifest::parse {manifest args} {
 		set m(mimetype) $data
 	    }
 	    P {}
-	    T {}
+	    T {
+		if {[regexp {(.*) (.*) (.*)$} $data -> tagname taguuid tagvalue]} {
+		    dict set m(tags) $tagname [list $taguuid = [Dearmor $tagvalue]]
+		    continue
+		} elseif {[regexp {(.*) (.*)$} $data -> tagname taguuid]} {
+		    dict set m(tags) $tagname [list $taguuid !]
+		    continue
+		}
+		# error - bad syntax - ignored
+	    }
 	    U {
 		set m(user) $data
 	    }
