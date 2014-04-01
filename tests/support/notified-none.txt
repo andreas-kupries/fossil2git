@@ -1,13 +1,13 @@
-+----+------+------------------------------------------+-------------------------------------------------------------------------------------------------+
-| Id | Type | UUID                                     | Comment                                                                                         |
-+----+------+------------------------------------------+-------------------------------------------------------------------------------------------------+
-| 1  | ci   | * | initial empty check-in                                                                          |
-| 2  | e    | 967fddec1fcc198d40b6813ad8b6b81471f22b8b | <b>Cmdr 1.1 Release</b> on February 11, 2014                                                    |
-| 3  | w    | 21844a37ddc9c7b694c4bccbf33beffb35e1e736 | A framework for command line parsing and dispatch (Speak: Commander).                           |
-| 4  | g    | 6b307dc1f438d7d3f249cb8158f7bbc020d24411 | Tweaked documented titles for...                                                                |
-| 5  | g    | d686c7ae2162a4bf49fcde74e55576285c69236c |                                                                                                 |
-| 6  | ci   | 434ada2661e8c6546ed369275eb69ec35fb12cc5 | officer - Extended class to accept the unique prefixes of the known command names for dispatch. |
-| 7  | t    | 73a310d962108ef88439afa4367e9e788752ca24 | It isn't a problem with those five...                                                           |
-| 8  | t    | 1a7612e1ada544729188da99f936209b6a36ea8f | Fixes variable name from lower to upper case in WaitDataConn                                    |
-| 9  | e    | 35db5321bb5fbf5336cf494590c46b040bee39d4 | Tklib 0.6 Release, March 25, bzip2 compressed tarball.                                          |
-+----+------+------------------------------------------+-------------------------------------------------------------------------------------------------+
++----+---------+------------------------------------------+-------------------------------------------------------------------------------------------------+
+| Id | Type    | UUID                                     | Comment                                                                                         |
++----+---------+------------------------------------------+-------------------------------------------------------------------------------------------------+
+| 1  | commit  | * | initial empty check-in                                                                          |
+| 2  | event   | 967fddec1fcc198d40b6813ad8b6b81471f22b8b | <b>Cmdr 1.1 Release</b> on February 11, 2014                                                    |
+| 3  | wiki    | 21844a37ddc9c7b694c4bccbf33beffb35e1e736 | A framework for command line parsing and dispatch (Speak: Commander).                           |
+| 4  | control | 6b307dc1f438d7d3f249cb8158f7bbc020d24411 | Tweaked documented titles for...                                                                |
+| 5  | control | d686c7ae2162a4bf49fcde74e55576285c69236c |                                                                                                 |
+| 6  | commit  | 434ada2661e8c6546ed369275eb69ec35fb12cc5 | officer - Extended class to accept the unique prefixes of the known command names for dispatch. |
+| 7  | ticket  | 73a310d962108ef88439afa4367e9e788752ca24 | It isn't a problem with those five...                                                           |
+| 8  | ticket  | 1a7612e1ada544729188da99f936209b6a36ea8f | Fixes variable name from lower to upper case in WaitDataConn                                    |
+| 9  | event   | 35db5321bb5fbf5336cf494590c46b040bee39d4 | Tklib 0.6 Release, March 25, bzip2 compressed tarball.                                          |
++----+---------+------------------------------------------+-------------------------------------------------------------------------------------------------+

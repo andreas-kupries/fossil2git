@@ -73,23 +73,53 @@ proc ::fx::note::mark-notified-all {config} {
 }
 
 proc ::fx::note::show-pending {config} {
+    global env
+    if {[info exists env(FX_COLUMNS)]} {
+	set w $env(FX_COLUMNS)
+	if {$w < 0} {
+	    set u -1
+	    set c -1
+	} else {
+	    set u [expr {$w*4/10}]
+	    set c [expr {$w*6/10}]
+	}
+    } else {
+	set w [linenoise columns]
+	incr w -6
+	incr w -7
+
+	set u [expr {$w*4/10}]
+	set c [expr {$w*6/10}]
+    }
+
     [table t {Id Type UUID Comment} {
 	seen forall-pending type id uuid comment {
-	    $t add $id $type $uuid $comment
+	    set type [event-type external $type]
+	    $t add $id $type \
+		[mailgen limit $u $uuid] \
+		[mailgen limit $c [lindex [split $comment \n] 0]]
 	}
     }] show
     return
 }
 
 proc ::fx::note::test-mail-gen {config} {
-    # TODO: either handle missing context in the mailgen, or
-    # auto-determine a context here, or let the user specify it.
+    # Context (event type, comment, etc. is automatically determined,
+    # similar to the code in deliver.
 
     set uuid [$config @uuid]
-    puts [mail-gen artifact \
+
+    set context [seen get-event $uuid]
+    dict with context {} ;# type, id, uuid, comment
+    set extype [event-type external $type]
+
+    puts [mailgen artifact \
 	      [manifest parse \
 		   [fossil get-manifest $uuid] \
-		   self $uuid \
+		   ecomment $comment \
+		   etype    $extype  \
+		   self     $uuid    \
+		   sender   [mailer get-sender] \
 		   {*}[ProjectInfo]]]
     return
 }
@@ -98,7 +128,7 @@ proc ::fx::note::test-mail-config {config} {
     mailer send \
 	[mailer get-config] \
 	[$config @destination] \
-	[mail-gen test]
+	[mailgen test [mailer get-sender]]
     return
 }
 
@@ -124,17 +154,34 @@ proc ::fx::note::test-mail-receivers {config} {
 
 proc ::fx::note::test-parse {config} {
     set uuid [$config @uuid]
+
+    # Context (event type, comment, etc. is automatically determined,
+    # similar to the code in deliver.
+
+    set context [seen get-event $uuid]
+    dict with context {} ;# type, id, uuid, comment
+    set extype [event-type external $type]
+
     array set m \
 	[manifest parse \
 	     [fossil get-manifest $uuid] \
-	     self $uuid \
+	     ecomment $comment \
+	     etype    $extype  \
+	     self     $uuid    \
 	     {*}[ProjectInfo]]
-    # unpack sub-dictionary for nicer printing.
+
+    # unpack sub-dictionaries for nicer printing.
     if {[info exists m(field)]} {
 	foreach {k v} $m(field) {
 	    set m(field,$k) $v
 	}
 	unset m(field)
+    }
+    if {[info exists m(tags)]} {
+	foreach {k v} $m(tags) {
+	    set m(tags,$k) $v
+	}
+	unset m(tags)
     }
     parray m
     return
@@ -362,18 +409,19 @@ proc ::fx::note::route-deliver {config} {
 	lappend map $e [list $event [lsort -unique $routes]]
     }
 
-    set mc [mailer get-config]
+    set mc   [mailer get-config]
+    set from [mailer get-sender]
 
     # Other general configuration identical across all notifications.
     set pinfo [ProjectInfo]
 
     # Timeline event types, and associated artifact types.
     #
-    # checkin ci -- manifest
-    # control g  -- control
-    # event   e  -- event
+    # checkin ci -- manifest (checkin)
+    # control g  -- control        (comment change, tag change on a checkin)
+    # event   e  -- event,         attachment
     # ticket  t  -- ticket change, attachment
-    # wiki    w  -- wiki page, attachment
+    # wiki    w  -- wiki page,     attachment
     #
     # Note how the attachment are not their own type of timeline
     # event, but are categorized underneath the associated changed
@@ -397,16 +445,17 @@ proc ::fx::note::route-deliver {config} {
 
 	    set m [manifest parse \
 		       [fossil get-manifest $uuid] \
-		       tcomment $comment \
-		       self     $uuid \
-		       context  $ex   \
+		       ecomment $comment \
+		       etype    $ex      \
+		       self     $uuid    \
+		       sender   $from    \
 		       {*}$pinfo]
 
 	    set recv [Receivers $routes $m]
 
 	    if {[llength $recv]} {
 		mailer send $mc $recv \
-		    [mail-gen artifact $m]
+		    [mailgen artifact $m]
 	    }
 	}
         seen touch $id
