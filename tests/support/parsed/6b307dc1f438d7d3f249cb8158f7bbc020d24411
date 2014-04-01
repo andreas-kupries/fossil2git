@@ -1,7 +1,11 @@
-m(epoch)    = 1385539039
-m(location) = http://bogus.testsuite.somewhere
-m(project)  = source
-m(self)     = 6b307dc1f438d7d3f249cb8158f7bbc020d24411
-m(type)     = control
-m(user)     = aku
-m(when)     = 2013-11-27T07:57:19.938
+m(ecomment)      = Edit [dbd259771bf9a729]: Edit check-in comment.
+m(epoch)         = 1385539039
+m(etype)         = control
+m(location)      = http://bogus.testsuite.somewhere
+m(project)       = source
+m(self)          = 6b307dc1f438d7d3f249cb8158f7bbc020d24411
+m(tags,+comment) = dbd259771bf9a7298e07938fb551ae244f56d4ad = {Tweaked documented titles for better marking of internals. Fixed a few issues with validation types, mainly shuffling text blocks around, plus fix in API documentation.
+}
+m(type)          = control
+m(user)          = aku
+m(when)          = 2013-11-27T07:57:19.938

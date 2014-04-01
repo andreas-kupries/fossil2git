@@ -1,7 +1,10 @@
-m(epoch)    = 1386006640
-m(location) = http://bogus.testsuite.somewhere
-m(project)  = source
-m(self)     = d686c7ae2162a4bf49fcde74e55576285c69236c
-m(type)     = control
-m(user)     = aku
-m(when)     = 2013-12-02T17:50:40.417
+m(ecomment)              = 
+m(epoch)                 = 1386006640
+m(etype)                 = control
+m(location)              = http://bogus.testsuite.somewhere
+m(project)               = source
+m(self)                  = d686c7ae2162a4bf49fcde74e55576285c69236c
+m(tags,+sym-release-1-0) = 2e15301ff511496523bfb39dab5b6c0b84c05bec !
+m(type)                  = control
+m(user)                  = aku
+m(when)                  = 2013-12-02T17:50:40.417

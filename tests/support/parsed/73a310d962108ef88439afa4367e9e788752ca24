@@ -1,4 +1,6 @@
+m(ecomment)       = Ticket [d0bbe696b0] <i>json::write string doesn't escape all control characters</i> status still Open with 4 other changes
 m(epoch)          = 1392316410
+m(etype)          = ticket
 m(field,icomment) = It isn't a problem with those five control characters which have backslash-letter escape, but with the rest from ranges \\u0000-\\u001F and \\u007F-\\u009F. Currently they are just inserted into string.
 
 Simply building full map for substitutions solves the problem:

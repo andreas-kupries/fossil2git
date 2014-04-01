@@ -1,6 +1,6 @@
 AZ -- Prevent misinterpretation of this file's contents as manifest or other special artifact --
 t
-Fixes variable name from lower to upper case in WaitDataConn
+Add attachment [/artifact/968bb825771764b5|ftp.patch] to ticket [eb0b15d5981300c3]
 ZA
 A ftp.patch eb0b15d5981300c3c13b90ab4d3e7cd18c36095a 968bb825771764b576b649eea103fe5982c6e4a6
 C Fixes\svariable\sname\sfrom\slower\sto\supper\scase\sin\sWaitDataConn

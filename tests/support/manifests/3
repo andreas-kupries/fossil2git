@@ -1,6 +1,6 @@
 AZ -- Prevent misinterpretation of this file's contents as manifest or other special artifact --
 g
-Tweaked documented titles for...
+Edit [dbd259771bf9a729]: Edit check-in comment.
 ZA
 D 2013-11-27T07:57:19.938
 T +comment dbd259771bf9a7298e07938fb551ae244f56d4ad Tweaked\sdocumented\stitles\sfor\sbetter\smarking\sof\sinternals.\sFixed\sa\sfew\sissues\swith\svalidation\stypes,\smainly\sshuffling\stext\sblocks\saround,\splus\sfix\sin\sAPI\sdocumentation.\r\n
