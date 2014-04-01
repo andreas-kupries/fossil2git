@@ -135,11 +135,13 @@ proc run-core {args} {
     try {
 	file delete $out $err
 	set env(HOME) [thehome]
+	set env(FX_COLUMNS) -1
 	set fail [catch {
 	    exec > $out 2> $err {*}$args
 	}]
     } finally {
-	set env(HOME) $here
+	set   env(HOME) $here
+	unset env(FX_COLUMNS)
     }
 
     Capture $out $err $fail
@@ -240,6 +242,7 @@ proc stage-manifests {} {
 	# manifest or other special artifact within the fx repository.
 	regexp "^(.*)ZA\n(.*)$" $archive -> header archive
 	lassign	[split $header \n] _ etype ecomment
+	set ecomment [string map {' ''} $ecomment]
 
 	# save manifest into transient file and put into the repository.
 	in-ckout {
@@ -248,7 +251,7 @@ proc stage-manifests {} {
 	    file delete [pid].ar
 	    if 1 {run-core fossil sqlite3 << [subst {
 		INSERT INTO event VALUES (
-		  "$etype",
+		  '$etype',
 		  julianday('now'),         -- mtime
 		  $id,         -- objid
 		  NULL,        -- tagid
@@ -256,7 +259,7 @@ proc stage-manifests {} {
 		  NULL,        -- bgcolor
 		  NULL,        -- euser
 		  NULL,        -- user
-		  "$ecomment", -- ecomment
+		  '$ecomment', -- ecomment
 		  NULL,        -- comment
 		  NULL,        -- brief
 		  julianday('now')         -- omtime
