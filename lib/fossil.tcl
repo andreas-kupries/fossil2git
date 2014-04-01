@@ -26,7 +26,8 @@ namespace eval ::fx::fossil {
 	repository repository-location \
 	repository-open repository-find \
 	fx-tables fx-enums fx-enum-items \
-	ticket-title ticket-fields get-manifest
+	ticket-title ticket-fields get-manifest \
+	branch-of changeset
     namespace ensemble create
 
     # Cached location of the repository we are working with.
@@ -217,6 +218,36 @@ proc ::fx::fossil::get-manifest {uuid} {
     set archive [fileutil::cat -translation binary -encoding binary [pid].$uuid]
     file delete [pid].$uuid
     return $archive
+}
+
+proc ::fx::fossil::branch-of {uuid} {
+    return [repository onecolumn {
+	SELECT tag.tagname
+	FROM blob, tagxref, tag
+	WHERE blob.uuid = :uuid
+	AND blob.rid = tagxref.rid
+	AND tagxref.tagtype > 0
+	AND tagxref.tagid = tag.tagid
+    }]
+}
+
+proc ::fx::fossil::changeset {uuid} {
+    set r {}
+    repository eval {
+        SELECT filename.name AS thepath,
+               CASE WHEN nullif(mlink.pid,0) is null THEN 'added'
+                    WHEN nullif(mlink.fid,0) is null THEN 'deleted'
+                    ELSE                                  'edited'
+               END AS theaction
+        FROM   mlink, filename, blob
+        WHERE  mlink.mid  = blob.rid
+	AND    blob.uuid = :uuid
+        AND    mlink.fnid = filename.fnid
+        ORDER BY filename.name
+    } {
+	dict lappend r $theaction $thepath
+    }
+    return $r
 }
 
 # # ## ### ##### ######## ############# ######################
