@@ -25,7 +25,7 @@ namespace eval ::fx {
     namespace ensemble create
 }
 namespace eval ::fx::mailer {
-    namespace export get-config send
+    namespace export get-config get-sender send
     namespace ensemble create
 
     namespace import ::fx::mgr::config
@@ -33,6 +33,10 @@ namespace eval ::fx::mailer {
 }
 
 # # ## ### ##### ######## ############# ######################
+
+proc ::fx::mailer::get-sender {} {
+    return [Get 0 sender]
+}
 
 proc ::fx::mailer::get-config {} {
     foreach {option listify setting} {
@@ -48,12 +52,12 @@ proc ::fx::mailer::get-config {} {
 
     lappend config -tlspolicy ::fx::mailer::TlsPolicy
 
-    # lappend config -header [list From [Get $db 0 sender] ]
+    # lappend config -header [list From [Get 0 sender] ]
     return $config
 }
 
 proc ::fx::mailer::Get {listify setting} {
-    set  v [config get-width-default \
+    set  v [config get-with-default \
 		[mail-config internal $setting] \
 		[mail-config default  $setting]]
     if {$listify} { set v [list $v] }
