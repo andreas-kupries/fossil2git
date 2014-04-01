@@ -1,0 +1,20 @@
+From:    tests@testsuite.somewhere
+Subject: [source] Commit by andreask - officer - Extended class to accept the unique prefixes of the known command names for dispatch.
+Date:    Wed Feb 19 20:20:16 GMT 2014
+X-Fossil-FX-Note:
+X-Tool-Origin: http://core.tcl.tk/akupries/fx
+X-Fossil-FX-Project-Name: source
+X-Fossil-FX-Project-Location: http://bogus.testsuite.somewhere
+
+Commit [434ada2661e8c6546ed369275eb69ec35fb12cc5]
+  By      andreask
+  For     source (branch: <unknown>)
+  On      2014-02-19T20:20:16.293
+  Details http://bogus.testsuite.somewhere/info/434ada2661e8c6546ed369275eb69ec35fb12cc5
+
+Description
+   officer - Extended class to accept the unique prefixes of the known
+   command names for dispatch.
+
+Changed Files
+   <unknown>

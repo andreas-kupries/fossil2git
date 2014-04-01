@@ -1,0 +1,19 @@
+From:    tests@testsuite.somewhere
+Subject: [source] Add attachment [/artifact/968bb825771764b5|ftp.patch] to ticket [eb0b15d5981300c3]
+Date:    Mon Feb 17 17:13:43 GMT 2014
+X-Fossil-FX-Note:
+X-Tool-Origin: http://core.tcl.tk/akupries/fx
+X-Fossil-FX-Project-Name: source
+X-Fossil-FX-Project-Location: http://bogus.testsuite.somewhere
+
+Added Attachment [968bb825771764b576b649eea103fe5982c6e4a6]
+  [ftp.patch]
+To
+  Ticket  http://bogus.testsuite.somewhere/tktview/eb0b15d5981300c3c13b90ab4d3e7cd18c36095a
+  By      anonymous
+  For     source
+  On      2014-02-17T17:13:43.579
+  Details http://bogus.testsuite.somewhere/ainfo/1a7612e1ada544729188da99f936209b6a36ea8f
+
+Description
+   Fixes variable name from lower to upper case in WaitDataConn
