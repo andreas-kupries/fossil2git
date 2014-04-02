@@ -117,16 +117,12 @@ proc ::fx::mailgen::attachment {m} {
     + "$op Attachment \[${attachment,uuid}\]"
     + "  \[${attachment,path}\]"
     + $verb
-    switch -exact $etype {
-	event  { +T Event  $location/event/$target			   }
-	ticket { +T Ticket $location/tktview/$target			   }
-	wiki   { +T Wiki   $location/wiki?[http::formatQuery name $target] }
-    }
-    +T By      $user
-    +T For     "$project"
-    +T On      $when
-    +T Details $location/ainfo/$self
-
+    +T [InfoText $etype] [InfoLink $etype $target]
+    +T By       $user
+    +T For      "$project"
+    +T On       $when
+    +T Details  [InfoLink attachment $self]
+    +T Contents [InfoLink blob ${attachment,uuid}]
     =T
 
     + ""
@@ -168,7 +164,7 @@ proc ::fx::mailgen::checkin {m} {
     +T By      $user
     +T For     "$project (branch: $branch)"
     +T On      $when
-    +T Details $location/info/$self
+    +T Details [InfoLink checkin $self]
     =T
 
     + ""
@@ -222,31 +218,29 @@ proc ::fx::mailgen::control {m} {
     +T By      $user
     +T For     "$project"
     +T On      $when
-    +T Details XXX
 
-    # Get modified artifact (ticket, etc.) out of the tags
-    # ... Have to pull the artifact and parse it to know its
-    # ... type.
+    # Rewrite tags :: dict( name -> (ref, action, ?value?) )
+    # into    map  :: dict( ref -> list( (name, action, ?value? )))
+    # for iteration and display per referenced artifact.
 
-    # ... go over the tags and remap by taguuid <=> uuid of the manifest
-    # we are changing through this control artifact.
+    dict for {tag data} $tags {
+	set ref [lindex $data 0]
+	dict lappend map $ref [lreplace $data 0 0 $tag]
+    }
 
-    if 0 {    switch -exact $etype {
-	event   { +T Event  $location/event/$se			   }
-	ticket  { +T Ticket $location/tktview/$target			   }
-	wiki    { +T Wiki   $location/wiki?[http::formatQuery name $target] }
-	checkin { +T Wiki   $location/info/$target] }
-    }}
+    # Show tag information per modified artifact.
+    foreach ref [lsort -dict [dict keys $map]] {
+	+ "$ref"
+	# TODO: pull artifact, determine type, display proper link
 
-    foreach tag [lsort -dict [dict keys $tags]] {
-	lassign [dict get $tags $tag] ref action value
+	foreach taginfo [dict get $map $ref] {
+	    lassign $taginfo tag action value
 
-	# see above, pull ref, parse, cache ...
-
-	if {$action eq "="} {
-	    +T "Tag $tag" [Reformat $value]
-	} else {
-	    +T "Tag $tag" ""
+	    if {$action eq "="} {
+		+T "Tag $tag" [Reformat $value]
+	    } else {
+		+T "Tag $tag" ""
+	    }
 	}
     }
 
@@ -285,7 +279,7 @@ proc ::fx::mailgen::event {m} {
     +T By         $user
     +T For        $project
     +T On         $when
-    +T Details    $location/event/$eventid
+    +T Details    [InfoLink event $eventid]
     +T "To occur" ${when-event}
 
     foreach tag [lsort -dict [dict keys $tags]] {
@@ -322,8 +316,6 @@ proc ::fx::mailgen::ticket {m} {
     dict with m {} ; # => data put into local variables.
     if {$etype ne "ticket"} { error "Unexpected etype \"$etype\" for ticket change" }
 
-    set alink "$location/tinfo?name=$self"
-
     Begin
     Headers $project $location $sender [Subject] $epoch
     Body
@@ -334,8 +326,8 @@ proc ::fx::mailgen::ticket {m} {
     +T By      $user
     +T For     $project
     +T On      $when
-    +T Details $alink
-    +T Ticket  $location/tktview/$ticket
+    +T Details [InfoLink tktchange $self]
+    +T Ticket  [InfoLink ticket $ticket]
     =T
 
     + ""
@@ -358,14 +350,6 @@ proc ::fx::mailgen::ticket {m} {
 	    mimetype {
 		# skip field (suppress in output)
 		continue
-	    }
-	    attachment::note {
-		# Pseudo field for attachments, description.
-		set v [reformat $v]
-	    }
-	    attachment::id {
-		# Pseudo field for attachments, id.
-		set v $location/artifact/$v
 	    }
 	    default  {
 		# keep, do nothing
@@ -406,7 +390,7 @@ proc ::fx::mailgen::wiki {m} {
     +T By      $user
     +T For     $project
     +T On      $when
-    +T Details $location/wiki?[http::formatQuery name $title]
+    +T Details [InfoLink wiki $title]
     =T
 
     # Text of page left out. Follow the "Details" link.
@@ -415,6 +399,29 @@ proc ::fx::mailgen::wiki {m} {
 }
 
 # # ## ### ##### ######## ############# ######################
+
+proc ::fx::mailgen::InfoText {type} {
+    # consider a dict for mapping.
+    switch -exact $type {
+	attachment { return Attachment }
+	checkin    { return Commit     }
+	event      { return Event      }
+	ticket     { return Ticket     }
+	wiki       { return Wiki       }
+    }
+}
+
+proc ::fx::mailgen::InfoLink {type detail} {
+    switch -exact $type {
+	attachment { return $location/ainfo/$detail }
+	blob       { return $location/artifact/$detail }
+	checkin    { return $location/info/$detail		       	 }
+	event      { return $location/event/$detail			 }
+	ticket     { return $location/tktview/$detail			 }
+	tktchange  { return $location/tinfo?name=$detail	       	 }
+	wiki       { return $location/wiki?[http::formatQuery name $detail] }
+    }
+}
 
 proc ::fx::mailgen::Begin {} {
     upvar 1 lines lines
