@@ -209,9 +209,9 @@ proc ::fx::fossil::get-manifest {uuid} {
     variable fossil
     variable repo_location
 
-    # Go through a temp file so that we can load the result with
-    # binary.  That is something 'exec' does not provide for its
-    # results, that is always auto.
+    # We go through a temp file so that we can load the result with
+    # proper binary translation. That is something 'exec' does not
+    # provide for its results, that is always auto.
 
     exec > [pid].$uuid {*}$fossil artifact $uuid -R $repo_location
 
