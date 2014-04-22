@@ -7,7 +7,7 @@
 # Meta author      {Andreas Kupries}
 # Meta category    ?
 # Meta description ?
-# Meta location    http:/core.tcl.tk/akupries/fossil2git
+# Meta location    http:/core.tcl.tk/akupries/fx
 # Meta platform    tcl
 # Meta require     sqlite3
 # Meta require     cmdr
@@ -258,6 +258,14 @@ cmdr create fx::fx [file tail $::argv0] {
 		validate [fx::vt setting]
 	    }
 	}
+	common .setting-list {
+	    input setting {
+		The names of the configuration settings to work with.
+	    } {
+		list
+		validate [fx::vt setting]
+	    }
+	}
 
 	private available {
 	    section Configuration
@@ -303,7 +311,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		Remove the specified local configuration setting.
 		This sets it back to the system default.
 	    }
-	    use .setting
+	    use .setting-list
 	} [fx::call config unset]
 
 	# Standard fossil cli configuration commands, implement maybe.
@@ -571,6 +579,11 @@ cmdr create fx::fx [file tail $::argv0] {
 		    The part of the mail setup to (re)configure.
 		} { validate [fx::vt mail-config] }
 	    }
+	    common .key-list {
+		input key {
+		    The parts of the mail setup to (re)configure.
+		} { list ; validate [fx::vt mail-config] }
+	    }
 	    private set {
 		section Notifications {Mail setup}
 		description {
@@ -590,7 +603,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		    to its default.
 		}
 		use .global
-		use .key
+		use .key-list
 	    } [fx::call note mail-config-unset]
 
 	    private export {

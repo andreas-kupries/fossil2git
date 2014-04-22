@@ -330,18 +330,17 @@ proc ::fx::note::mail-config-set {config} {
 }
 
 proc ::fx::note::mail-config-unset {config} {
-    set name   [$config @key]
     set global [$config @global]
 
-    puts -nonewline "Unsetting [mail-config external $name]"
-
-    if {$global} {
-	config unset-global $name
-    } else {
-	config unset-local $name
+    foreach name [$config @key] {
+	puts -nonewline "Unsetting [mail-config external $name]"
+	if {$global} {
+	    config unset-global $name
+	} else {
+	    config unset-local $name
+	}
+	puts ""
     }
-
-    puts ""
     return
 }
 

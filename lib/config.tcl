@@ -120,7 +120,6 @@ proc ::fx::config::set {config} {
 }
 
 proc ::fx::config::unset {config} {
-    ::set name   [$config @setting]
     ::set global [$config @global]
 
     if {$global} {
@@ -130,18 +129,20 @@ proc ::fx::config::unset {config} {
     }
     # TODO: Reformat r to show relative to cwd
 
-    puts -nonewline "Unsetting $r (${name})"
+    foreach name [$config @setting] {
+	puts -nonewline "Unsetting $r (${name})"
 
-    # This one of two places has to distinguish global/local on get
-    # based on the user's choice, instead of the regular heuristics
-    # (local, global, default|error).
-    if {$global} {
-	config unset-global $name $value
-    } else {
-	config unset-local $name $value
+	# This one of two places has to distinguish global/local on get
+	# based on the user's choice, instead of the regular heuristics
+	# (local, global, default|error).
+	if {$global} {
+	    config unset-global $name $value
+	} else {
+	    config unset-local $name $value
+	}
+
+	puts ""
     }
-
-    puts ""
     return
 }
 
