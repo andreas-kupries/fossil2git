@@ -23,13 +23,16 @@ package require fx::seen
 package require fx::table
 package require fx::validate::event-type
 package require fx::validate::mail-config
+package require fx::validate::ticket-field
+package require interp
 
 # # ## ### ##### ######## ############# ######################
 
 namespace eval ::fx::note {
     namespace export \
 	mail-config-show mail-config-set mail-config-unset \
-	route-add route-drop route-list route-field-add \
+	mail-config-export mail-config-import route-export \
+	route-import route-add route-drop route-list route-field-add \
 	route-field-drop deliver event-list field-list \
 	mark-pending mark-notified mark-pending-all mark-notified-all \
 	show-pending test-parse test-mail-gen test-mail-config \
@@ -48,6 +51,7 @@ namespace eval ::fx::note {
 
     namespace import ::fx::validate::event-type
     namespace import ::fx::validate::mail-config
+    namespace import ::fx::validate::ticket-field
 }
 
 # # ## ### ##### ######## ############# ######################
@@ -100,6 +104,7 @@ proc ::fx::note::show-pending {config} {
 		[mailgen limit $c [lindex [split $comment \n] 0]]
 	}
     }] show
+    puts @[fossil repository-location]
     return
 }
 
@@ -119,7 +124,6 @@ proc ::fx::note::test-mail-gen {config} {
 		   ecomment $comment \
 		   etype    $extype  \
 		   self     $uuid    \
-		   sender   [mailer get-sender] \
 		   {*}[ProjectInfo]]]
     return
 }
@@ -128,37 +132,61 @@ proc ::fx::note::test-mail-config {config} {
     mailer send \
 	[mailer get-config] \
 	[$config @destination] \
-	[mailgen test [mailer get-sender]]
+	[mailgen test]
     return
 }
 
 proc ::fx::note::test-mail-receivers {config} {
-    foreach {event routes} [RouteMap] {
-	# TODO: fake parameter for message generation in case of errors.
-	set e [event-type validate ... $event]
-	lappend map $e [list $event [lsort -unique $routes]]
+    set uuid [$config @uuid]
+
+    set map [RouteMap]
+    dict for {event __} $map {
+	# Note: We are checking the validity of the events found in
+	# the route map. It is stored in a place where it can be
+	# manipulated, accidental or intentional.
+	event-type validate [$config @event self] $event
     }
 
-    set uuid [$config @uuid]
+    #array set xx $map ; parray xx
+
+    # Get the timeline's information about the event, deduce its type,
+    # and use that to choose the set of routes to follow.
+
+    set context [seen get-event $uuid]
+    dict with context {} ;# type, id, uuid, comment
+
+    set extype [event-type external $type]
+    set routes [dict get $map $extype]
+
+    #puts <$routes>
+
+    # Next, get the event's manifest and use it to deduce and add the
+    # dynamic routes
     set m [manifest parse \
 	       [fossil get-manifest $uuid] \
-	       self $uuid]
+	       etype $extype  \
+	       self  $uuid]
 
-    lassign [dict get $map [dict get $m $type]] ex routes
+    #array set mm $m ; parray mm
 
     set recv [Receivers $routes $m]
 
-    puts [join $recv \n]
+    [table t Destination {
+	foreach dest $recv {
+	    $t add $dest
+	}
+    }] show
     return
 }
 
 proc ::fx::note::test-parse {config} {
     set uuid [$config @uuid]
 
-    # Context (event type, comment, etc. is automatically determined,
-    # similar to the code in deliver.
+    # Context (event type, comment, etc. is all automatically
+    # determined, similar to the code in deliver.
 
     set context [seen get-event $uuid]
+
     dict with context {} ;# type, id, uuid, comment
     set extype [event-type external $type]
 
@@ -170,7 +198,7 @@ proc ::fx::note::test-parse {config} {
 	     self     $uuid    \
 	     {*}[ProjectInfo]]
 
-    # unpack sub-dictionaries for nicer printing.
+    # Unpack the sub-dictionaries for nicer printing.
     if {[info exists m(field)]} {
 	foreach {k v} $m(field) {
 	    set m(field,$k) $v
@@ -183,13 +211,77 @@ proc ::fx::note::test-parse {config} {
 	}
 	unset m(tags)
     }
+
+    # TODO: Show as nice table.
     parray m
     return
 }
 
 # # ## ### ##### ######## ############# ######################
 
+proc ::fx::note::mail-config-export {config} {
+    set chan      [$config @output]
+    set useglobal [$config @global]
+
+    # Retrieve and assemble semi-table.
+    foreach k [mail-config all] {
+	# NOTE: k :: mail-config external (string) rep.
+	set v [config get-extended-with-default \
+		   [mail-config internal $k] \
+		   [mail-config default  $k]]
+
+	lassign $v isglobal mtime v
+
+	# Ignore defaults
+	if {$isglobal < 0} continue
+
+	# Ignore values specified by the unwanted section
+	if {(!$useglobal && $isglobal) ||
+	    ($useglobal && !$isglobal)} continue
+	puts $chan [list mail-config $k $v]
+    }
+    return
+}
+
+proc ::fx::note::mail-config-import {config} {
+    set global [$config @global]
+    set input  [$config @import]
+
+    set data [read $input]
+    $config @import forget
+
+    # Run the import script in a safe interpreter with just the import
+    # commands. This generates internal data structures from which we
+    # then create the enumerations by looping back through the cmdr
+    # hierarchy. This automatically gives us all the validation needed.
+    # We catch issues and report them, but do not abort importing.
+
+    variable imported {}
+
+    set i [interp::createEmpty]
+    $i alias mail-config ::fx::note::IMConfig [$config @mailconfig self]
+    $i eval $data
+    interp delete $i
+
+    foreach {key value} $imported {
+	# Note: The key is the internal rep.
+	try {
+	    ConfigSet $global $key $value Importing { OK}
+	} on error {e o} {
+	    puts $e
+	}
+    }
+    return
+}
+
+proc ::fx::note::IMConfig {p key value} {
+    variable imported
+    lappend  imported [mail-config validate $p $key] $value
+    return
+}
+
 proc ::fx::note::mail-config-show {config} {
+    # Retrieve and assemble semi-table.
     foreach k [mail-config all] {
 	set v [config get-extended-with-default \
 		   [mail-config internal $k] \
@@ -198,22 +290,25 @@ proc ::fx::note::mail-config-show {config} {
 	lassign $v isglobal mtime v
 
 	if {$isglobal < 0} {
-	    set origin Default
+	    set origin D
 	} elseif {$isglobal} {
-	    set origin Global
+	    set origin G
 	} else {
-	    set origin Repository
+	    set origin R
 	}
 
 	set mtime [expr {($mtime ne {})
 			 ? [clock format $mtime]
 			 : "" }]
-	lappend k $v $origin $mtime
-	lappend data $k
+	lappend k $v $mtime
+	lappend data [linsert $k 0 $origin]
     }
 
-    [table t {Key Value Origin Last-Changed} {
-	foreach item [lsort -dict -index 0 $data] {
+    # Format and show the semi-table.
+
+    puts @[fossil repository-location]
+    [table t {{} Key Value Last-Changed} {
+	foreach item [lsort -dict -index 1 $data] {
 	    $t add {*}$item
 	}
     }] show
@@ -230,19 +325,7 @@ proc ::fx::note::mail-config-set {config} {
 
     # TODO: type validation per chosen setting.
 
-    puts -nonewline "Setting [mail-config external $name]: "
-
-    if {$global} {
-	config set-global $name $value
-	set current [config get-global $name]
-	set suffix  " (global)"
-    } else {
-	config set-local $name $value
-	set current [config get-local $name]
-	set suffix  {}
-    }
-
-    puts '$current'$suffix
+    ConfigSet $global $name $value
     return
 }
 
@@ -262,28 +345,149 @@ proc ::fx::note::mail-config-unset {config} {
     return
 }
 
+
+proc ::fx::note::ConfigSet {global name value {prefix Setting} {gsuffix {}}} {
+    puts -nonewline "$prefix [mail-config external $name]: "
+    flush stdout
+
+    if {$global} {
+	config set-global $name $value
+	set current [config get-global $name]
+	set suffix  " (global)"
+    } else {
+	config set-local $name $value
+	set current [config get-local $name]
+	set suffix  {}
+    }
+
+    puts '$current'$suffix$gsuffix
+    flush stdout
+    return
+}
+
 # # ## ### ##### ######## ############# ######################
 
 proc ::fx::note::route-list {config} {
-    # @repository(-db)
-
     # Retrieve data, and restructure for table.
-    set data {}
-    dict for {event routes} [RouteMap] {
+    set map [RouteMap]
+    dict for {event routes} $map {
+	# Note: We are checking the validity of the events found in
+	# the route map. It is stored in a place where it can be
+	# manipulated, accidental or intentional.
+	event-type validate [$config @event self] $event
+
+	set new {}
 	foreach route $routes {
 	    lassign $route static destination
 	    if {!$static} {
 		set destination <${destination}>
 	    }
-	    lappend data [list $event $destination]
+	    lappend new $destination
 	}
+	dict set map $event [lsort -dict $new]
     }
 
+    # Now print nicely.
+    puts @[fossil repository-location]
     [table t {Event Route} {
-	foreach item [lsort -dict -index 0 [lsort -dict -index 1 $data]] {
-	    $t add {*}$item
+	foreach event [lsort -dict [dict keys $map]] {
+	    $t add $event [join [dict get $map $event] \n]
 	}
     }] show
+    return
+}
+
+proc ::fx::note::route-export {config} {
+    set chan [$config @output]
+    dict for {event routes} [RouteMap] {
+	# Note: We are checking the validity of the events found in
+	# the route map. It is stored in a place where it can be
+	# manipulated, accidental or intentional.
+	event-type validate [$config @event self] $event
+
+	foreach route $routes {
+	    lassign $route static destination
+	    if {$static} {
+		puts $chan [list route $event $destination]
+	    } else {
+		puts $chan [list field $destination]
+	    }
+	}
+    }
+    return
+}
+
+proc ::fx::note::route-import {config} {
+    set extend [$config @extend]
+    set input  [$config @import]
+
+    set data [read $input]
+    $config @import forget
+
+    # Run the import script in a safe interpreter with just the import
+    # commands. This generates internal data structures from which we
+    # then create the enumerations by looping back through the cmdr
+    # hierarchy. This automatically gives us all the validation needed.
+    # We catch issues and report them, but do not abort importing.
+
+    variable routes {}
+    variable fields {}
+
+    set i [interp::createEmpty]
+    $i alias route ::fx::note::IRoute [$config @event self]
+    $i alias field ::fx::note::IField [$config @field self]
+
+    $i eval $data
+    interp delete $i
+
+    set changes 0
+    if {!$extend} {
+	puts "Import replaces the existing routing ..."
+	incr changes
+	# Inlined drop of all routes and fields.
+	RouteDrop fx-aku-note-send2-* *
+	RouteDrop fx-aku-note-field *	     
+    } else {
+	puts "Import extends the existing routing ..."
+    }
+
+    puts "New routes ..."
+    foreach {event destination} $routes {
+	# Inlined route-add.
+	set e [event-type external $event]
+	if {![RouteAdd \
+		  fx-aku-note-send2-${e} \
+		  $destination]
+	} continue
+	WatchMe [$config @repository]
+    }
+
+    puts "New fields ..."
+    foreach field $fields {
+	# Inlined route-field-add.
+	if {![RouteAdd fx-aku-note-field $field]
+	} continue
+	incr changes
+	WatchMe [$config @repository]
+    }
+
+    if {$changes} {
+	seen set-watched-fields [Fields]
+    }
+
+    puts OK
+    return
+}
+
+proc ::fx::note::IRoute {p event destination} {
+    variable routes
+    lappend  routes [event-type validate $p $event] $destination
+    return
+}
+
+proc ::fx::note::IField {p destination} {
+    variable fields
+    lappend  fields [ticket-field validate $p $destination]
     return
 }
 
@@ -322,11 +526,8 @@ proc ::fx::note::route-drop {config} {
 
 proc ::fx::note::event-list {config} {
     # @repository-db
-
-    set columns [event-type all]
-
     [table t Event {
-	foreach col [lsort -dict $columns] {
+	foreach col [lsort -dict [event-type all]] {
 	    $t add $col
 	}
     }] show
@@ -336,10 +537,9 @@ proc ::fx::note::event-list {config} {
 proc ::fx::note::field-list {config} {
     # @repository-db
 
-    set columns [fossil ticket-fields]
-
+    puts @[fossil repository-location]
     [table t Field {
-	foreach col [lsort -dict $columns] {
+	foreach col [lsort -dict [fossil ticket-fields]] {
 	    # Ignore system columns.
 	    if {[string match tkt_* $col]} continue
 	    $t add $col
@@ -355,6 +555,8 @@ proc ::fx::note::route-field-add {config} {
 	     [$config @field]]
     } return
 
+    seen set-watched-fields [Fields]
+
     WatchMe [$config @repository]
     return
 }
@@ -363,10 +565,12 @@ proc ::fx::note::route-field-drop {config} {
     # @field (list), @repository(-db)
     if {![RouteDrop \
 	     fx-aku-note-field \
-	     [$config @field]] ||
-	[HasRoutes]
+	     [$config @field]]
     } return
 
+    seen set-watched-fields [Fields]
+
+    if {[HasRoutes]} return
     RemoveMe [$config @repository]
     return
 }
@@ -379,14 +583,14 @@ proc ::fx::note::route-deliver {config} {
     # @repository, @global, /... ?? --all how ?
 
     if {[$config @all]} {
-	# -- TODO -- Encapsulate conversions ...
+	# TODO: Encapsulate conversions (repo list) ...
 	config get-list-global {
 	    # name, value, mtime
 	    if {![string match fx-aku-note-watch:* $name]} continue
-	    # Run deliver on the named repository.
-	    # Recursive call through cli
+	    # Run single-repository deliver on the named repository.
+	    # Recursive call through the cli
 	    regsub {^fx-aku-note-watch:} $name {} name
-	    fx do deliver -R $name
+	    [$config context root] do deliver -R $name
 	}
 	return
     }
@@ -403,14 +607,15 @@ proc ::fx::note::route-deliver {config} {
     #   Send mail
     #   Remember as seen
 
-    foreach {event routes} [RouteMap] {
-	# TODO: fake parameter for message generation in case of errors.
-	set e [event-type validate ... $event]
-	lappend map $e [list $event [lsort -unique $routes]]
+    set map [RouteMap]
+    dict for {event __} $map {
+	# Note: We are checking the validity of the events found in
+	# the route map. It is stored in a place where it can be
+	# manipulated, accidental or intentional.
+	event-type validate [$config @event self] $event
     }
 
-    set mc   [mailer get-config]
-    set from [mailer get-sender]
+    set mc [mailer get-config]
 
     # Other general configuration identical across all notifications.
     set pinfo [ProjectInfo]
@@ -438,21 +643,19 @@ proc ::fx::note::route-deliver {config} {
 
     seen forall-pending type id uuid comment {
 	# TODO: no mail and such when suspended.
+	# TODO: Dry run for testing.
 
 	if {[dict exists $map $type]} {
 	    # May have routes for the event, process the artifact.
-	    lassign [dict get $map $type] ex routes
 
 	    set m [manifest parse \
 		       [fossil get-manifest $uuid] \
 		       ecomment $comment \
 		       etype    $ex      \
 		       self     $uuid    \
-		       sender   $from    \
 		       {*}$pinfo]
 
-	    set recv [Receivers $routes $m]
-
+	    set recv [Receivers [dict get $map $type] $m]
 	    if {[llength $recv]} {
 		mailer send $mc $recv \
 		    [mailgen artifact $m]
@@ -481,27 +684,76 @@ proc ::fx::note::ProjectInfo {} {
 proc ::fx::note::Receivers {routes manifest} {
     set recv {}
     set compress 0
+
     # NOTE: The caller made sure that all route lists have unique
-    # elements.
+    # elements. The expansion here may break this - See dynamic routing.
+
+    if {[dict exists $manifest field]} {
+	set field [dict get $manifest field]
+    } else {
+	set field {}
+    }
+    #array set ff $field ; parray ff
+
+    set mtime [dict get $manifest epoch]
+
+    #puts mtime=$mtime
 
     foreach route $routes {
 	lassign $route static dest
 
+	# Static route, pass into output, nothing else to do.
 	if {$static} {
 	    lappend recv $dest
-	} else {
-	    # dynamic route, go through the specified field to determine actual destination.
-	    # TODO dynamic routing
-	    #lappend recv ...
-	    incr compress
+	    continue
 	}
+
+	#puts dynamic|$dest
+
+	# Dynamic route. Two sources for addresses:
+	# - Current value as per the ticket change under consideration
+	# - Previous value of the field as per the cached timeseries.
+	# Both values can be empty.
+	# Note that if the ticket change does not contain the field
+	# then the timeseries value is the current one.
+
+	if {[dict exists $field $dest]} {
+	    +R [dict get $field $dest]
+	}
+
+	+R [seen get-field [dict get $manifest ticket] $dest $mtime]
     }
 
     if {$compress} {
 	# Dynamic fields may have introduced duplicate destinations.
 	set recv [lsort -unique $recv]
     }
+
+    # TODO: Check list against a table of bad addresses and ignore these.
+    # should possibly noted in a log.
+
     return $recv
+}
+
+proc ::fx::note::+R {val} {
+    upvar 1 recv recv compress compress
+    #set val [uplevel 1 $sourcecmd]
+    if {$val eq {}} return
+
+    #puts \tconcealed=$val
+
+    set val [fossil reveal $val]
+    #puts \trevealed_=$val
+    if {$val eq {}} return
+
+    set val [fossil user-info $val]
+    #puts \tuserinfo_=$val
+    if {$val eq {}} return
+
+    #puts \tadded____=$val
+    lappend recv $val
+    incr compress
+    return
 }
 
 # # ## ### ##### ######## ############# ######################
@@ -548,6 +800,20 @@ proc ::fx::note::HasRoutes {} {
 		   [config has-glob fx-aku-note-field:*]      }]
 }
 
+proc ::fx::note::Fields {} {
+    # TODO: config get-glob (get-keys-glob) ...
+    set settings [config get-list]
+    set fields {}
+    dict for {k __} $settings {
+	# dynamic route through ticket field
+	if {![string match fx-aku-note-field:* $k]} continue
+
+	regsub {^fx-aku-note-field:} $k {} field
+	lappend fields $field
+    }
+    return $fields
+}
+
 proc ::fx::note::RouteMap {} {
     # @repository(-db)
 
@@ -568,7 +834,8 @@ proc ::fx::note::RouteMap {} {
     # external, therefore conversion is not required for display.
     # Validation and conversion to internal will happen on actual use.
 
-    foreach k [lsort -dict [dict keys $settings]] {
+    set map {}
+    dict for {k __} $settings {
 	# dynamic route through ticket field
 	if {[string match fx-aku-note-field:* $k]} {
 	    regsub {^fx-aku-note-field:} $k {} field
@@ -585,6 +852,12 @@ proc ::fx::note::RouteMap {} {
 	}
 	# ignore everything else
     }
+
+    # First reduction pass to weed out the static duplicates, if any.
+    dict for {event routes} $map {
+	dict set map $event [lsort -unique $routes]
+    }
+
     return $map
 }
 

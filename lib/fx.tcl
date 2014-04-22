@@ -24,6 +24,13 @@
 package require Tcl 8.5
 package require cmdr
 package require lambda
+package require fx::config
+package require fx::enum
+package require fx::fossil
+package require fx::note
+#package require fx::report
+package require fx::seen
+#package require fx::user
 
 # # ## ### ##### ######## ############# ######################
 
@@ -38,7 +45,12 @@ proc fx::main {argv} {
     try {
 	fx do {*}$argv
     } trap {CMDR CONFIG WRONG-ARGS} {e o} - \
-      trap {CMDR VALIDATE} {e o} {
+      trap {CMDR CONFIG BAD OPTION} {e o} - \
+      trap {CMDR VALIDATE} {e o} - \
+      trap {CMDR ACTION UNKNOWN} {e o} - \
+      trap {CMDR ACTION BAD} {e o} - \
+      trap {CMDR VALIDATE} {e o} - \
+      trap {CMDR DO UNKNOWN} {e o} {
         puts $e
 	return 1
     } on error {e o} {
@@ -49,25 +61,60 @@ proc fx::main {argv} {
 }
 
 # # ## ### ##### ######## ############# ######################
+## Support commands constructing glue for various callbacks.
 
-proc fx::call {p args} {
+proc ::fx::call {p args} {
     lambda {p args} {
 	package require fx::$p
 	fx::$p {*}$args
     } $p {*}$args
 }
 
-proc fx::vt {p args} {
+proc ::fx::vt {p args} {
     lambda {p args} {
 	package require fx::validate::$p
 	fx::validate::$p {*}$args
     } $p {*}$args
 }
 
+proc ::fx::overlay {path args} {
+    [::fx::fx find $path] learn [subst {
+	private delegate {
+	    section Convenience
+	    description {
+		Delegate the command to the local fossil executable.
+	    }
+	    input args {
+		Command and arguments to deliver to core fossil
+	    } { list ; validate str }
+	} {fx::delegate {$args}}
+	# All commands not known to fx at this level are delegated to
+	# the core fossil application.
+	default
+    }]
+}
+
+proc ::fx::delegate {prefix config} {
+    catch {
+	exec >@ stdout 2>@ stderr <@ stdin \
+	    {*}[auto_execok fossil] {*}$prefix {*}[$config @args]
+    }
+}
+
+# # ## ### ##### ######## ############# ######################
+
+fx seen set-progress [lambda {text} {
+    set eeol \033\[K
+    puts -nonewline \r$eeol\r$text
+    flush stdout
+}]
+
 # # ## ### ##### ######## ############# ######################
 
 cmdr create fx::fx [file tail $::argv0] {
     # # ## ### ##### ######## ############# ######################
+    ## Common pieces across the various commands.
+
     common *all* {
 	option repository {
 	    The repository to work with.
@@ -99,11 +146,45 @@ cmdr create fx::fx [file tail $::argv0] {
 	} { alias g ; presence }
     }
 
+    common .extend {
+	# Used by officer'note config'.
+	option extend {
+	    Extend the current tables.
+	} { presence }
+    }
+
+    common .uuid {
+	input uuid {
+	    Full fossil uuid of the artifact to work with.
+	} { validate [fx::vt uuid] }
+    }
+
     common .all {
 	option all {
 	    Do this for all repositories watched by fx.
 	} { alias A; presence }
 	# See also the note in option repository above.
+    }
+
+    common .event-hidden-validation {
+	state event {
+	    Hidden parameter to be used by the internal validation of
+	    event-types.
+	} {}
+    }
+
+    common .field-hidden-validation {
+	state field {
+	    Hidden parameter to be used by the internal validation of
+	    ticket fields.
+	} {}
+    }
+
+    common .mailconfig-hidden-validation {
+	state mailconfig {
+	    Hidden parameter to be used by the internal validation of
+	    mail configuration keys
+	} {}
     }
 
     # # ## ### ##### ######## ############# ######################
@@ -126,25 +207,45 @@ cmdr create fx::fx [file tail $::argv0] {
 	puts [$config @repository]
     }]
 
-    private delegate {
-	section Convenience
-	description {
-	    Delegate the command to the local fossil executable.
-	}
-	input args {
-	    Command and arguments to deliver to core fossil
-	} { list ; validate str }
-    } [lambda config {
-	exec >@ stdout 2>@ stderr <@ stdin \
-	    {*}[auto_execok fossil] {*}[$config @args]
-    }]
-    # All commands not known to fx are delegated to the fossil core.
-    default
+    # # ## ### ##### ######## ############# ######################
+    ## Overlay to the standard "fossil user" command
 
-    # TODO Helper: Show generated mail
-    # TODO Helper: Test sending a mail
+    officer user {
+	description {
+	    Management of users in the local repository
+	}
+
+	private list {
+	    section {User Management}
+	    description {
+		Show all known users, their information and capabilities
+	    }
+	} [fx::call user list]
+
+	private contact {
+	    section {User Management}
+	    description {
+		Change the contact information for the named user
+	    }
+	    input user {
+		The name of the user to update.
+	    } {
+		#TODO validate [fx::vt user]
+	    }
+	    input contact {
+		The new contact information of the user.
+		Will be asked for interactively if not specified.
+	    } {
+		optional
+		validate str
+		interact
+	    }
+	} [fx::call user update-contact]
+    }
 
     # # ## ### ##### ######## ############# ######################
+    ## Extended configuration management.
+
     officer config {
 	description {
 	    Management of a fossil repositories' configuration, in detail.
@@ -216,9 +317,10 @@ cmdr create fx::fx [file tail $::argv0] {
     }
 
     # # ## ### ##### ######## ############# ######################
-    # Report mgmt. Using an external report format which is easier to
-    # write by a human being. Also nicer table output, and structured
-    # output.
+    ## Report management. Using an external report format which is
+    ## easier to write by a human being. Also nicer table output, and
+    ## structured output.
+
     officer report {
 	description {
 	    Management of a fossil repositories' set of ticket reports.
@@ -290,8 +392,10 @@ cmdr create fx::fx [file tail $::argv0] {
     }
 
     # # ## ### ##### ######## ############# ######################
-    # Mgmt of enumerations (used in ticket system for example. Type,
-    # severity, priority, category, ...)
+    ## Management of enumerations (used both internally and by the
+    ## ticket system, for example. Type, severity, priority, category,
+    ## ...)
+
     officer enum {
 	description {
 	    Management of enumerations for the ticketing system.
@@ -429,7 +533,11 @@ cmdr create fx::fx [file tail $::argv0] {
 	} [fx::call enum change]
     }
 
+    alias enums = enum list
+
     # # ## ### ##### ######## ############# ######################
+    ## Change notifications, management and generation.
+
     officer note {
 	description {
 	    Management of notification emails for ticket
@@ -445,20 +553,13 @@ cmdr create fx::fx [file tail $::argv0] {
 	# All commands check for and remind the user about a missing
 	# mail configuration, especially the mandatory fields.
 
-	# dump  uuid        | 'fossil artifact'
-	# unsee uuid        | test touch(-all)
-	#                   |
-	#                   | test mail-setup
-	#                   | test manifest-parse uuid
-	#                   | test mail-for       uuid
-	#                   | test mail-receivers uuid
-
 	officer config {
 	    description {
 		Manage the mail setup for notification emails.
 	    }
 	    private show {
 		section Notifications {Mail setup}
+		section Introspection
 		description {
 		    Show the current mail setup for notifications.
 		}
@@ -468,8 +569,7 @@ cmdr create fx::fx [file tail $::argv0] {
 	    common .key {
 		input key {
 		    The part of the mail setup to (re)configure.
-		} { validate [fx::vt mail-config]
-		}
+		} { validate [fx::vt mail-config] }
 	    }
 	    private set {
 		section Notifications {Mail setup}
@@ -492,19 +592,91 @@ cmdr create fx::fx [file tail $::argv0] {
 		use .global
 		use .key
 	    } [fx::call note mail-config-unset]
+
+	    private export {
+		section Notifications {Mail setup}
+		description {
+		    Save the notification configuration into a file.
+		}
+		use .global
+		option output {
+		    The file to save the configuration into.
+		    Defaults to stdout.
+		} {
+		    alias o
+		    validate wchan
+		}
+	    } [fx::call note mail-config-export]
+
+	    private import {
+		section Notifications {Mail setup}
+		description {
+		    Import the notification configuration from a save file.
+		}
+		use .global
+		input import {
+		    The file to read the configuration from.
+		    Defaults to stdin.
+		} {
+		    optional
+		    validate rchan ;# cmdr - *file => *chan, default: stdin
+		}
+		use .mailconfig-hidden-validation
+	    } [fx::call note mail-config-import]
 	}
 
-	# TODO: Batch export/import of routes.
+	private regenerate-ticket-cache {
+	    section Notifications Control
+	    description {
+		Forcibly regenerate the cache of time series for the watched
+		ticket fields (See dynamic routes).
+	    }
+	} [fx::call seen regenerate-series]
+
 	# TODO: Global routes?
 
 	officer route {
 	    private list {
 		section Notifications Destinations
+		section Introspection
 		description {
-		    Show all mail destinations.
+		    Show all configured mail destinations (per event type).
 		}
+		use .event-hidden-validation
 	    } [fx::call note route-list]
 	    default
+
+	    private export {
+		section Notifications Destinations
+		description {
+		    Save the configured mail destinations into a file.
+		}
+		option output {
+		    The file to save the routes into.
+		    Defaults to stdout.
+		} {
+		    alias o
+		    validate wchan
+		}
+		use .event-hidden-validation
+	    } [fx::call note route-export]
+
+	    private import {
+		section Notifications Destinations
+		description {
+		    Import mail destinations from a save file.
+		}
+		use .extend
+		input import {
+		    The file to read the mail destinations from.
+		    Defaults to stdin.
+		} {
+		    optional
+		    validate rchan ;# cmdr - *file => *chan, default: stdin
+		}
+		use .field-hidden-validation
+		use .event-hidden-validation
+	    } [fx::call note route-import]
 
 	    common .etype {
 		input event {
@@ -543,6 +715,7 @@ cmdr create fx::fx [file tail $::argv0] {
 
 	    private events {
 		section Notifications Destinations
+		section Introspection
 		description {
 		    Show all events we can generate notifications for.
 		}
@@ -551,8 +724,9 @@ cmdr create fx::fx [file tail $::argv0] {
 	    officer field {
 		private list {
 		    section Notifications Destinations
+		    section Introspection
 		    description {
-			Show all available ticket fields.
+			Show all available ticket fields (for dynamic routes).
 		    }
 		} [fx::call note field-list]
 		default
@@ -586,6 +760,7 @@ cmdr create fx::fx [file tail $::argv0] {
 	    }
 	    alias fields = field list
 	}
+
 	alias routes = route list
 
 	private deliver {
@@ -604,11 +779,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		thus forcing the generation of a notification for it on the next
 		invokation of "deliver".
 	    }
-	    input uuid {
-		Fossil id of the artifact to touch.
-	    } {
-		#validate [fx::vt uuid] -- TODO
-	    }
+	    use .uuid
 	} [fx::call note mark-pending]
 
 	private mark-notified {
@@ -618,11 +789,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		preventing generation of a notification for it on the next
 		invokation of "deliver".
 	    }
-	    input uuid {
-		Fossil id of the artifact to hide.
-	    } {
-		#validate [fx::vt uuid] -- TODO
-	    }
+	    use .uuid
 	} [fx::call note mark-notified]
 
 	private mark-pending-all {
@@ -652,9 +819,6 @@ cmdr create fx::fx [file tail $::argv0] {
 	    Various commands to test the system and its configuration.
 	}
 
-
-	# TODO: inverted operation: untouch|hide => prevent future notifications.
-
 	private mail-setup {
 	    section Testing
 	    description {
@@ -672,12 +836,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		Generate the notification mail for the specified artifact,
 		and print it to stdout.
 	    }
-	    input uuid {
-		Fossil id of the artifact to generate the notification
-		mail for.
-	    } {
-		#validate [fx::vt uuid] -- TODO
-	    }
+	    use .uuid
 	} [fx::call note test-mail-gen]
 
 	private mail-receivers {
@@ -687,11 +846,8 @@ cmdr create fx::fx [file tail $::argv0] {
 		of mail addresses to send a notification to, fixed
 		and field-based.
 	    }
-	    input uuid {
-		Fossil id of the artifact to inspect.
-	    } {
-		#validate [fx::vt uuid] -- TODO
-	    }
+	    use .uuid
+	    use .event-hidden-validation
 	} [fx::call note test-mail-receivers]
 
 	private manifest-parse {
@@ -700,11 +856,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		Parse the specified artifact as manifest and print the
 		resulting array/dictionary to stdout.
 	    }
-	    input uuid {
-		Fossil id of the artifact to parse.
-	    } {
-		#validate [fx::vt uuid] -- TODO
-	    }
+	    use .uuid
 	} [fx::call note test-parse]
     }
 
@@ -715,8 +867,18 @@ cmdr create fx::fx [file tail $::argv0] {
 	}
     }
 
+    # Shortcut
+    alias ticket-fields = note route field list
+    # aka                 note route fields
+
     # TODO - mgmt of mirrors, fossil and git (export)
 }
+
+# # ## ### ##### ######## ############# ######################
+## Add delegations.
+
+fx::overlay {}
+fx::overlay user user
 
 # # ## ### ##### ######## ############# ######################
 package provide fx 0
