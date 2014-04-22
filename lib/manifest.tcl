@@ -105,10 +105,14 @@ proc ::fx::manifest::parse {manifest args} {
 	    K {
 		set m(ticket) $data
 		set m(type) ticket
-		# TODO: Pull the current ticket state.
-		# TODO: Unify with the fields to have everything proper for dynamic routing.
-		# TODO: Changes in m(field) overwrite the current settings.
-		# TODO: Get title here as well.
+
+		# NOTE: We do not have to retrieve the current ticket
+		# state here. While we are interested in that, it is
+		# actually only a partial interest, i.e. for the
+		# fields inspected later to dynamically derive mail
+		# destinations. That is something we can (and do)
+		# handle outside (see fx::seen, => ticket timeseries
+		# cache).
 	    }
 	    L {
 		set m(title) $data
