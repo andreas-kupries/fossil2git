@@ -228,6 +228,7 @@ proc ::fx::seen::FillSeries {} {
     # based on new events. Of course, changes to the set of watched
     # fields clear the series and force a recalculation.
 
+    set changes 0
     fossil repository transaction {
 	fossil repository eval {
 	    SELECT event.type  AS type,
@@ -285,9 +286,10 @@ proc ::fx::seen::FillSeries {} {
 	    dict for {fname fid} $fields {
 		if {![dict exists $m field $fname]} continue
 
+		incr changes
 		set value [dict get $m field $fname]
 
-		Progress +[format %10d $tid]|[format %10d $fid]|[format %15d $mtime]|$fname|$value
+		Progress "[format %10d $changes]:[clock format $mtime] ${fname}=$value"
 
 		fossil repository eval {
 		    INSERT
@@ -297,6 +299,8 @@ proc ::fx::seen::FillSeries {} {
 	    }
 	}
     }
+
+    Progress "Processed changes: $changes\n"
     return
 }
 
