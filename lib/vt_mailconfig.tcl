@@ -15,6 +15,7 @@
 
 package require Tcl 8.5
 package require cmdr::validate::common
+package require fx::mgr::config
 
 # # ## ### ##### ######## ############# ######################
 
@@ -33,6 +34,7 @@ namespace eval ::fx::validate::mail-config {
 
     namespace import ::cmdr::validate::common::fail
     namespace import ::cmdr::validate::common::complete-enum
+    namespace import ::fx::mgr::config
 }
 
 proc ::fx::validate::mail-config::release  {p x} { return }
@@ -66,6 +68,21 @@ proc ::fx::validate::mail-config::internal {x} {
 
 proc ::fx::validate::mail-config::default {x} {
     variable default
+
+    if {$x eq "location"} {
+	if {[config has-local last-sync-url]} {
+	    # Special casing: The location defaults to the last synced
+	    # remote url, if we have any.
+	    set r [config get-local last-sync-url]
+	    # Strip any user:password information out of the url
+	    regsub {//([^@]+)@} $r {//} r
+	    return $r
+	}
+	# TODO: future - when we have mirroring information,
+	# i.e. peers, the primary peer will be our location, except if
+	# overridden.
+    }
+
     return [dict get $default $x]
 }
 
