@@ -51,8 +51,7 @@ proc ::fx::mailer::get-config {} {
     }
 
     lappend config -tlspolicy ::fx::mailer::TlsPolicy
-
-    # lappend config -header [list From [Get 0 sender] ]
+    lappend config -header [list From [Get 0 sender] ]
     return $config
 }
 

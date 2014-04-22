@@ -44,11 +44,10 @@ namespace eval ::fx::mailgen {
 ## which tells the type of change artifact (ticket, wiki, event)
 ## to configure the mail in detail.
 
-proc ::fx::mailgen::test {sender} {
+proc ::fx::mailgen::test {} {
     Begin
     Headers \
 	Test Test \
-	$sender \
 	"FX mail configuration test mail" \
 	[clock seconds]
     Body
@@ -92,7 +91,6 @@ proc ::fx::mailgen::attachment {m} {
     #   location        sys config Project repository web location
     #   project         sys config Project name
     #   self            system     Manifest uuid
-    #   sender          sys config Origin of the mail
     #   target          Manifest   Reference to holder of attachment.
     #   type            Manifest   Fixed "attachment"
     #   user            Manifest   Committer
@@ -112,7 +110,7 @@ proc ::fx::mailgen::attachment {m} {
     }
 
     Begin
-    Headers $project $location $sender [Subject] $epoch
+    Headers $project $location [Subject] $epoch
     Body
     + "$op Attachment \[${attachment,uuid}\]"
     + "  \[${attachment,path}\]"
@@ -143,7 +141,6 @@ proc ::fx::mailgen::checkin {m} {
     #   location  sys config Project repository web location
     #   project   sys config Project name
     #   self      system     Manifest uuid
-    #   sender    sys config Origin of the mail
     #   type      Manifest   Fixed "checkin"
     #   user      Manifest   Committer
     #   when      Manifest   Commit timestamp
@@ -157,8 +154,7 @@ proc ::fx::mailgen::checkin {m} {
     if {$branch eq ""} { set branch <unknown> }
 
     Begin
-    Headers $project $location $sender \
-	[Subject "Commit by $user - "] $epoch
+    Headers $project $location [Subject "Commit by $user - "] $epoch
     Body
     + "Commit \[$self\]"
     +T By      $user
@@ -213,7 +209,7 @@ proc ::fx::mailgen::control {m} {
     }
 
     Begin
-    Headers $project $location $sender [Subject] $epoch
+    Headers $project $location [Subject] $epoch
     Body
     +T By      $user
     +T For     "$project"
@@ -260,7 +256,6 @@ proc ::fx::mailgen::event {m} {
     #   location    sys config   Project repository web location
     #   project     sys config   Project name
     #   self        system       Manifest uuid
-    #   sender      sys config   Origin of the mail
     #   tags        Manifest     Dictionary of event tag settings/changes
     #   text        Manifest     Text of the event page.
     #   type        Manifest     Fixed "event"
@@ -273,7 +268,7 @@ proc ::fx::mailgen::event {m} {
     if {$etype ne "event"} { error "Unexpected etype \"$etype\" for event change" }
 
     Begin
-    Headers $project $location $sender [Subject] $epoch
+    Headers $project $location [Subject] $epoch
     Body
     + "Event Change \[$self\]"
     +T By         $user
@@ -306,7 +301,6 @@ proc ::fx::mailgen::ticket {m} {
     #   location  sys config Project repository web location
     #   project   sys config Project name
     #   self      system     Manifest uuid
-    #   sender    sys config Origin of the mail
     #   ticket    Manifest   Ticket uuid, of the changed ticket
     #   type      Manifest   Fixed "ticket"
     #   user      Manifest   Committer
@@ -317,7 +311,7 @@ proc ::fx::mailgen::ticket {m} {
     if {$etype ne "ticket"} { error "Unexpected etype \"$etype\" for ticket change" }
 
     Begin
-    Headers $project $location $sender [Subject] $epoch
+    Headers $project $location [Subject] $epoch
     Body
     # Body, Intro
 
@@ -371,7 +365,6 @@ proc ::fx::mailgen::wiki {m} {
     #   location  sys config Project repository web location
     #   project   sys config Project name
     #   self      system     Manifest uuid
-    #   sender    sys config Origin of the mail
     #   text      Manifest   Text of the wiki page.
     #   title     Manifest   Name of the wiki page.
     #   type      Manifest   Fixed "wiki"
@@ -383,7 +376,7 @@ proc ::fx::mailgen::wiki {m} {
     if {$etype ne "wiki"} { error "Unexpected etype \"$etype\" for wiki change" }
 
     Begin
-    Headers $project $location $sender [Subject] $epoch
+    Headers $project $location [Subject] $epoch
     Body
     + "Wiki Change \[$self\]"
     +T Page    $title
@@ -412,6 +405,7 @@ proc ::fx::mailgen::InfoText {type} {
 }
 
 proc ::fx::mailgen::InfoLink {type detail} {
+    upvar 1 location location
     switch -exact $type {
 	attachment { return $location/ainfo/$detail }
 	blob       { return $location/artifact/$detail }
@@ -472,11 +466,10 @@ proc ::fx::mailgen::Subject {{prefix {}}} {
     return "\[$project\] $prefix$ecomment"
 }
 
-proc ::fx::mailgen::Headers {project location sender subject epoch} {
+proc ::fx::mailgen::Headers {project location subject epoch} {
     set date  [clock format $epoch -gmt 1]
 
     upvar 1 lines lines
-    + "From:    $sender"
     + "Subject: $subject"
     + "Date:    $date"
     + "X-Fossil-FX-Note:"
