@@ -16,6 +16,7 @@
 package require Tcl 8.5
 package require fx::table
 package require fx::mgr::config
+package require fx::fossil
 
 # # ## ### ##### ######## ############# ######################
 
@@ -24,6 +25,7 @@ namespace eval ::fx::config {
     namespace ensemble create
 
     namespace import ::fx::mgr::config
+    namespace import ::fx::fossil
     namespace import ::fx::table::do
     rename do table
 }
@@ -42,7 +44,9 @@ proc ::fx::config::list {config} {
     # TODO: order by name, or last-changed.
     # Currently fixed order by name.
 
-    [table t {Setting Global Last-Changed Value} {
+    puts @[fossil repository-location]
+
+    [table t {Setting Value Last-Changed} {
 	foreach name [lsort -dict [dict keys $settings]] {
 	    # Maybe run a dict filter on settings.
 	    if {[string match ckout:*     $name]} continue
@@ -56,7 +60,7 @@ proc ::fx::config::list {config} {
 	    # to ensure proper use.
 	    if {[string match fx-*        $name]} continue
 
-	    lassign [dict get $settings $name] where value time
+	    lassign [dict get $settings $name] where value mtime
 
 	    # Force unix EOL conventions.
 	    ::set value [string map [::list \r\n \n \r \n] $value]
@@ -70,12 +74,12 @@ proc ::fx::config::list {config} {
 		::set value [string range $value 0 29]...
 	    }
 
-	    ::set isglobal [expr { ($where eq "G") ? "*" : "" }]
+	    ::set isglobal [expr { ($where eq "G") ? "G " : "  " }]
 	    if {$mtime ne {}} {
 		::set mtime [clock format $mtime]
 	    }
 
-	    $t add $name $isglobal $mtime $value
+	    $t add $isglobal$name $value $mtime
 	}
     }] show
     return
