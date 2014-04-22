@@ -27,7 +27,7 @@ namespace eval ::fx::fossil {
 	repository-open repository-find \
 	fx-tables fx-enums fx-enum-items \
 	ticket-title ticket-fields get-manifest \
-	branch-of changeset
+	branch-of changeset reveal user-info
     namespace ensemble create
 
     # Cached location of the repository we are working with.
@@ -248,6 +248,29 @@ proc ::fx::fossil::changeset {uuid} {
 	dict lappend r $theaction $thepath
     }
     return $r
+}
+
+proc ::fx::fossil::reveal {value} {
+    repository eval {
+	SELECT content
+	FROM concealed
+	WHERE hash = :value
+    } {
+	set value $content
+    }
+    return $value
+}
+
+
+proc ::fx::fossil::user-info {value} {
+    repository eval {
+	SELECT info
+	FROM user
+	WHERE login = :value
+    } {
+	set value $info
+    }
+    return $value
 }
 
 # # ## ### ##### ######## ############# ######################
