@@ -230,7 +230,9 @@ cmdr create fx::fx [file tail $::argv0] {
 	    input user {
 		The name of the user to update.
 	    } {
-		#TODO validate [fx::vt user]
+		validate [fx::vt user]
+		# need extended interaction ops => part of cmdr ?
+		#generate [fx::call user select-for {contact change}]
 	    }
 	    input contact {
 		The new contact information of the user.
