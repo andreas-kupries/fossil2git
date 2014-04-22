@@ -35,21 +35,33 @@ namespace eval ::fx::validate::not-enum {
 
     namespace import ::fx::fossil::fx-enums
     namespace import ::cmdr::validate::common::fail
+    namespace import ::cmdr::validate::common::fail-known-thing
+
+    variable illegal "\n!@#$%^&*()={}\"';<>?~`\[\[.\].\]"
+    variable pattern "\[$illegal\]"
 }
 
 proc ::fx::validate::not-enum::release  {p x} { return }
 proc ::fx::validate::not-enum::validate {p x} {
+    variable pattern
     # Note 1: enum names are case-insensitive.
-    # Note 2: enum names cannot be multi-line.
+    # Note 2: enum names cannot be multi-line,
+    #         nor contain many special characters.
 
     set cx [string tolower $x]
-    if {($cx ni [Values $p]) &&
-	![string match *\n* $cx]
-    } {
-	# Internal representation is the enum table.
-	return fx_aku_enum_$cx
+
+    if {[regexp $pattern $cx]} {
+	# Lexical failure.
+	variable illegal
+	fail $p NOT-ENUM "an enumeration name" $x " (Not allowed: [string map [list \n \\n] $illegal])"
     }
-    fail $p NOT-ENUM "an unused enumeration" $x
+
+    if {$cx in [Values $p]} {
+	fail-known-thing $p NOT-ENUM "enumeration" $x
+    }
+
+    # Internal representation is the enum table.
+    return fx_aku_enum_$cx
 }
 
 proc ::fx::validate::not-enum::default  {p} { return {} }
