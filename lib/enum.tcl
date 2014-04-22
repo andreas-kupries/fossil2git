@@ -49,7 +49,7 @@ proc ::fx::enum::MaxL {words} {
 proc ::fx::enum::list {config} {
     [table t {Name Elements} {
 	::set db    [$config @repository-db]
-	::set enums [fx-enums $db]
+	::set enums [fx-enums]
 
 	set w [expr {[linenoise columns] - [MaxL $enums] - 7}]
 
