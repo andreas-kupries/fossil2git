@@ -94,7 +94,7 @@ namespace eval ::fx::validate::mail-config {
 	user     {}
 	password {}
 	host 	 localhost
-	port 	 22
+	port 	 25
 	sender   {*Undefined* Please set.}
 	location {*Undefined* Please set.}
     }
