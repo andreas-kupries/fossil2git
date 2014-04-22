@@ -30,7 +30,7 @@ namespace eval ::fx::mgr::config {
 	get-local get-global has-glob unset-glob \
 	get-list-global get-extended-with-default \
 	set-global set-local unset-global unset-local \
-	unset-glob-global unset-glob-local
+	unset-glob-global unset-glob-local has-local
     namespace ensemble create
 
     namespace import ::fx::fossil
