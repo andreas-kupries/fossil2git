@@ -97,7 +97,7 @@ proc ::fx::manifest::parse {manifest args} {
 		# error - bad syntax - ignored
 	    }
 	    J {
-		if {[regexp {(.*) (.*)$} $data -> fname value]} {
+		if {[regexp {^ (.*) (.*)$} $data -> fname value]} {
 		    dict set m(field) $fname [Dearmor $value]
 		    continue
 		}
