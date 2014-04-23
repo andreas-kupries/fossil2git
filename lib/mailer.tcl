@@ -25,7 +25,7 @@ namespace eval ::fx {
     namespace ensemble create
 }
 namespace eval ::fx::mailer {
-    namespace export get-config get-sender send good-address
+    namespace export get-config get-sender send good-address dedup-addresses
     namespace ensemble create
 
     namespace import ::fx::mgr::config
@@ -33,6 +33,33 @@ namespace eval ::fx::mailer {
 }
 
 # # ## ### ##### ######## ############# ######################
+
+proc ::fx::mailer::dedup-addresses {addrlist} {
+    # We assume that all addresses are good.
+    # We keep the longest input of each with the same 'address'.
+
+    #puts IN|[join $addrlist "|\n  |"]|
+
+    # Note that we do basic lexical uniqueness first, getting rid of
+    # the trivial duplicates.
+
+    set map {}
+    foreach a [lsort -unique $addrlist] {
+	set route [dict get [lindex [mime::parseaddress $a] 0] address]
+	dict lappend map $route $a
+    }
+
+    #array set mm $map ; parray mm ; unset mm
+
+    set r {}
+    dict for {route alist} $map {
+	lappend r [lindex [lsort -command [lambda {a b} {
+	    expr {[string length $b] - [string length $a]}
+	}] $alist] 0]
+    }
+
+    return $r
+}
 
 proc ::fx::mailer::good-address {addr} {
     set r [lindex [mime::parseaddress $addr] 0]
@@ -45,6 +72,9 @@ proc ::fx::mailer::good-address {addr} {
     if {[dict get $r domain] eq {}} { return 0 }
     if {![dict exists $r local]}    { return 0 }
     if {[dict get $r local] eq {}}  { return 0 }
+
+    #puts ======================================================
+    #array set aa $r ; parray aa ; unset aa
 
     # TODO: Filter out addresses with domains matching the local host.
 
