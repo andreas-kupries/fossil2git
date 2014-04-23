@@ -6,7 +6,7 @@
 # Meta author      {Andreas Kupries}
 # Meta category    ?
 # Meta description ?
-# Meta location    http:/core.tcl.tk/akupries/fossil2git
+# Meta location    http:/core.tcl.tk/akupries/fx
 # Meta platform    tcl
 # Meta require     sqlite3
 # Meta subject     fossil
@@ -252,6 +252,7 @@ proc ::fx::fossil::changeset {uuid} {
 }
 
 proc ::fx::fossil::reveal {value} {
+    if {$value eq {}} { return $value }
     repository eval {
 	SELECT content
 	FROM concealed
@@ -263,6 +264,7 @@ proc ::fx::fossil::reveal {value} {
 }
 
 proc ::fx::fossil::user-info {value} {
+    if {$value eq {}} { return $value }
     repository eval {
 	SELECT info
 	FROM user
