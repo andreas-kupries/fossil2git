@@ -57,16 +57,17 @@ proc ::fx::manifest::parse {manifest args} {
     # W     text
     # Z n/a
 
-    while {[regexp "^(\[A-FJ-NP-RTUWZ\]) (\[^\n\]*)\n(.*)$" $manifest -> code data manifest]} {
+    while {[regexp "^(\[ABCDEFJKLMNPQRTUWZ\])(\[^\n\]*)\n(.*)$" $manifest -> code data manifest]} {
+	#puts C|$code|$data|
 	switch -exact -- $code {
 	    A {
-		if {[regexp {^(.*) (.*) (.*)$} $data -> m(attachment,path) m(target) m(attachment,uuid)]} {
+		if {[regexp {^ (.*) (.*) (.*)$} $data -> m(attachment,path) m(target) m(attachment,uuid)]} {
 		    # Attachment added - Target = uuid of { event, ticket }, or wiki page name
 		    set m(type) attachment
 		    set m(attachment,op) added
 		    continue
 		}
-		if {[regexp {(.*) (.*)$} $data -> m(attachment,path) m(target)]} {
+		if {[regexp {^ (.*) (.*)$} $data -> m(attachment,path) m(target)]} {
 		    # Attachment removed - Target = uuid of { event, ticket }, or wiki page name
 		    set m(type) attachment
 		    set m(attachment,op) removed
@@ -81,14 +82,14 @@ proc ::fx::manifest::parse {manifest args} {
 		set m(type) checkin
 	    }
 	    C {
-		set m(comment) [Dearmor $data]
+		set m(comment) [Dearmor [string trim $data]]
 	    }
 	    D {
-		set m(when) $data
+		set m(when) [string trim $data]
 		set m(epoch) [Epoch $m(when)]
 	    }
 	    E {
-		if {[regexp {(.*) (.*)$} $data -> m(when-event) m(eventid)]} {
+		if {[regexp {^ (.*) (.*)$} $data -> m(when-event) m(eventid)]} {
 		    set m(epoch-event) [Epoch $m(when-event)]
 		    set m(type) event
 		    continue
@@ -103,7 +104,7 @@ proc ::fx::manifest::parse {manifest args} {
 		# error - bad syntax - ignored
 	    }
 	    K {
-		set m(ticket) $data
+		set m(ticket) [string trim $data]
 		set m(type) ticket
 
 		# NOTE: We do not have to retrieve the current ticket
@@ -115,30 +116,31 @@ proc ::fx::manifest::parse {manifest args} {
 		# cache).
 	    }
 	    L {
-		set m(title) $data
+		set m(title) [string trim $data]
 		set m(type) wiki
 	    }
 	    M {
 		set m(type) cluster
 	    }
 	    N {
-		set m(mimetype) $data
+		set m(mimetype) [string trim $data]
 	    }
 	    P {}
 	    T {
-		if {[regexp {(.*) (.*) (.*)$} $data -> tagname taguuid tagvalue]} {
+		if {[regexp {^ (.*) (.*) (.*)$} $data -> tagname taguuid tagvalue]} {
 		    dict set m(tags) $tagname [list $taguuid = [Dearmor $tagvalue]]
 		    continue
-		} elseif {[regexp {(.*) (.*)$} $data -> tagname taguuid]} {
+		} elseif {[regexp {^ (.*) (.*)$} $data -> tagname taguuid]} {
 		    dict set m(tags) $tagname [list $taguuid !]
 		    continue
 		}
 		# error - bad syntax - ignored
 	    }
 	    U {
-		set m(user) $data
+		set m(user) [string trim $data]
 	    }
 	    W {
+		set data [string trim $data]
 		# data = number of characters to take
 		# we take one more, which is the closing \n
 		set text [string range $manifest 0 $data]
@@ -149,6 +151,9 @@ proc ::fx::manifest::parse {manifest args} {
 	    Z {}
 	}
     }
+
+    #parray m
+    #puts --------------------------------
 
     if {![info exists m(type)]} {
 	set m(type) control
