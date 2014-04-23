@@ -6,7 +6,7 @@
 # Meta author      {Andreas Kupries}
 # Meta category    ?
 # Meta description ?
-# Meta location    http:/core.tcl.tk/akupries/fossil2git
+# Meta location    http:/core.tcl.tk/akupries/fx
 # Meta platform    tcl
 # Meta require     sqlite3
 # Meta subject     fossil

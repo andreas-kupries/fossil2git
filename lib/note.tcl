@@ -745,7 +745,7 @@ proc ::fx::note::Receivers {routes manifest} {
     } else {
 	set field {}
     }
-    array set ff $field ; parray ff
+    #array set ff $field ; parray ff
 
     set mtime [dict get $manifest epoch]
 
