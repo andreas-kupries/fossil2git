@@ -35,11 +35,16 @@ namespace eval ::fx::mailer {
 # # ## ### ##### ######## ############# ######################
 
 proc ::fx::mailer::good-address {addr} {
-    set r [mime::parseaddress $addr]
+    set r [lindex [mime::parseaddress $addr] 0]
 
-    if {$r eq {}}                 { return 0 }
-    if {![dict exists $r domain]} { return 0 }
-    if {![dict exists $r local]}  { return 0 }
+    # Drop empty results. Drop results which are not full addresses
+    # i.e. have missing or empty local and domain parts.
+
+    if {$r eq {}}                   { return 0 }
+    if {![dict exists $r domain]}   { return 0 }
+    if {[dict get $r domain] eq {}} { return 0 }
+    if {![dict exists $r local]}    { return 0 }
+    if {[dict get $r local] eq {}}  { return 0 }
 
     # TODO: Filter out addresses with domains matching the local host.
 
