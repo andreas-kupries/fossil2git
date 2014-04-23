@@ -19,7 +19,7 @@ package require fx::manifest
 
 namespace eval ::fx::seen {
     namespace export \
-	get-event forall-pending \
+	get-event num-pending forall-pending \
 	mark-notified mark-notified-all \
 	mark-pending mark-pending-all \
 	set-watched-fields get-watched-fields \
@@ -59,11 +59,22 @@ proc ::fx::seen::get-event {uuid} {
     return
 }
 
+proc ::fx::seen::num-pending {} {
+    Init
+    return [fossil repository onecolumn {
+	    SELECT count(*)
+	    FROM  event, blob
+	    WHERE event.objid NOT IN (SELECT id
+				      FROM fx_aku_watch_seen)
+	    AND   event.objid = blob.rid
+    }]
+}
+
 proc ::fx::seen::forall-pending {tv iv uv cv script} {
     Init
-    upvar 1 $tv type $iv id $uv uuid $cv comment
-
     FillSeries
+
+    upvar 1 $tv type $iv id $uv uuid $cv comment
 
     fossil repository transaction {
 	fossil repository eval {
@@ -187,6 +198,7 @@ proc ::fx::seen::set-progress {cmdprefix} {
 }
 
 proc ::fx::seen::get-field {uuid field before} {
+    FillSeries
     return [fossil repository onecolumn {
 	SELECT S.val
 	FROM fx_aku_watch_tktseries S,
@@ -215,6 +227,7 @@ proc ::fx::seen::Clear {} {
 }
 
 proc ::fx::seen::FillSeries {} {
+    Init
     # Get field => id mapping.
 
     set fields [fossil repository eval {
@@ -230,6 +243,15 @@ proc ::fx::seen::FillSeries {} {
 
     set changes 0
     fossil repository transaction {
+
+	# TODO: Use in progress display...
+	if 0 {set num [fossil repository onecolumn {
+	    SELECT count(*)
+	    FROM  event, blob
+	    WHERE event.objid NOT IN (SELECT id FROM fx_aku_watch_tktseen)
+	    AND   event.objid = blob.rid
+	}]}
+
 	fossil repository eval {
 	    SELECT event.type  AS type,
 	           event.objid AS id,
@@ -300,6 +322,7 @@ proc ::fx::seen::FillSeries {} {
 	}
     }
 
+    if {!$changes} return
     Progress "Processed changes: $changes\n"
     return
 }
