@@ -119,7 +119,6 @@ proc ::fx::note::test-mail-gen {config} {
 	# generator is ok with them.
 
 	# TODO: switchable progress animation
-	# TODO: Short listing of only failing events
 
 	[table t {UUID Status} {
 	    set max [seen num-pending]
@@ -132,6 +131,7 @@ proc ::fx::note::test-mail-gen {config} {
 		flush stderr
 
 		try {
+		    set extype [event-type external $type]
 		    mailgen artifact \
 			[manifest parse \
 			     [fossil get-manifest $uuid] \
@@ -140,9 +140,10 @@ proc ::fx::note::test-mail-gen {config} {
 			     self     $uuid    \
 			     {*}$pinfo]
 		} on ok {e o} {
-		    $t add $uuid OK
+		    # No lines for ok artifacts. Not of interest.
+		    #$t add $uuid OK
 		} on error {e o} {
-		    $t add $uuid "ERROR: $e"
+		    $t add $uuid $e ;#"ERROR: $e"
 		}
 	    }
 	}] show
@@ -154,6 +155,7 @@ proc ::fx::note::test-mail-gen {config} {
     dict with context {} ;# type, id, uuid, comment
     set extype [event-type external $type]
 
+    puts @[fossil repository-location]:$uuid
     puts [mailgen artifact \
 	      [manifest parse \
 		   [fossil get-manifest $uuid] \
@@ -274,13 +276,50 @@ proc ::fx::note::MailCore {uuid type map {context {}}} {
 }
 
 proc ::fx::note::test-parse {config} {
-    set uuid [$config @uuid]
-
     # Context (event type, comment, etc. is all automatically
     # determined, similar to the code in deliver.
 
-    set context [seen get-event $uuid]
+    set uuid  [$config @uuid]
+    set all   [$config @overall]
+    set pinfo [ProjectInfo]
 
+    if {$all} {
+	# Scan entire pending set of events and check that the
+	# manifest parser is ok with them.
+
+	# TODO: switchable progress animation
+
+	[table t {UUID Status} {
+	    set max [seen num-pending]
+	    set n 0
+	    set fmt %[string length $max]d
+
+	    seen forall-pending type id uuid comment {
+		incr n
+		puts -nonewline stderr "\r\033\[K\r[format $fmt $n]/$max: $uuid"
+		flush stderr
+
+		try {
+		    set extype [event-type external $type]
+		    manifest parse \
+			[fossil get-manifest $uuid] \
+			ecomment $comment \
+			etype    $extype  \
+			self     $uuid    \
+			{*}$pinfo]
+		} on ok {e o} {
+		    # No lines for ok artifacts. Not of interest.
+		    #$t add $uuid OK
+		} on error {e o} {
+		    $t add $uuid $e ;#"ERROR: $e"
+		}
+	    }
+	}] show
+	return
+    }
+
+    # Single uuid
+    set context [seen get-event $uuid]
     dict with context {} ;# type, id, uuid, comment
     set extype [event-type external $type]
 
@@ -306,8 +345,12 @@ proc ::fx::note::test-parse {config} {
 	unset m(tags)
     }
 
-    # TODO: Show as nice table.
-    parray m
+    puts @[fossil repository-location]:$uuid
+    [table t {Key Value} {
+	foreach k [lsort -dict [array names m]] {
+	    $t add $k $m($k)
+	}
+    }] show
     return
 }
 
@@ -708,6 +751,7 @@ proc ::fx::note::route-deliver {config} {
     seen forall-pending type id uuid comment {
 	# TODO: no mail and such when suspended.
 	# TODO: Dry run for testing.
+	# TODO: switchable progress animation
 
         seen touch $id
 	lassign [MailCore $uuid $type $map $pinfo] recv m
@@ -727,9 +771,9 @@ proc ::fx::note::ProjectInfo {} {
 		  project-name \
 		  [file rootname [file tail [fossil repository-location]]]]
 
-    set location  [config get-with-default \
-		       fx-aku-note-project-location \
-		       {Location not known}]
+    set location [config get-with-default \
+		      fx-aku-note-project-location \
+		      [mail-config default location]]
 
     return [dict create project $name location $location]
 }
@@ -786,7 +830,10 @@ proc ::fx::note::Receivers {routes manifest} {
     }
 
     # Dynamic fields may have introduced duplicate destinations.
-    set recv [lsort -unique $recv]
+    # Also, same destinations may different friendly names in them,
+    # and still must be collated into one route.
+
+    set recv [mailer dedup-addresses $recv]
 
     # TODO: Check list against a table of bad addresses and ignore these.
     # Must be noted in a log.
