@@ -84,7 +84,7 @@ proc ::fx::mailgen::attachment {m} {
     #   attachment,op   Manifest   Added/Removed
     #   attachment,path Manifest   Filename of the attachment
     #   attachment,uuid Manifest   uuid of attachment data blob
-    #   comment         Manifest   Attachment description
+    #   comment         Manifest   Attachment description /optional
     #   ecomment        EVENT      Timeline text
     #   epoch           (when)     Unix epoch of commit timestamp
     #   etype           EVENT      ASSERT {event, ticket, wiki}
@@ -100,6 +100,10 @@ proc ::fx::mailgen::attachment {m} {
     dict with m {}
     if {$etype ni {event ticket wiki}} {
 	error "Unexpected etype \"$etype\" for attachment"
+    }
+
+    if {![info exists comment]} {
+	set comment "<no description given>"
     }
 
     set op [string totitle ${attachment,op}]
