@@ -110,8 +110,46 @@ proc ::fx::note::test-mail-gen {config} {
     # Context (event type, comment, etc. is automatically determined,
     # similar to the code in deliver.
 
-    set uuid [$config @uuid]
+    set uuid  [$config @uuid]
+    set all   [$config @overall]
+    set pinfo [ProjectInfo]
 
+    if {$all} {
+	# Scan entire pending set of events and check that the mail
+	# generator is ok with them.
+
+	# TODO: switchable progress animation
+	# TODO: Short listing of only failing events
+
+	[table t {UUID Status} {
+	    set max [seen num-pending]
+	    set n 0
+	    set fmt %[string length $max]d
+
+	    seen forall-pending type id uuid comment {
+		incr n
+		puts -nonewline stderr "\r\033\[K\r[format $fmt $n]/$max: $uuid"
+		flush stderr
+
+		try {
+		    mailgen artifact \
+			[manifest parse \
+			     [fossil get-manifest $uuid] \
+			     ecomment $comment \
+			     etype    $extype  \
+			     self     $uuid    \
+			     {*}$pinfo]
+		} on ok {e o} {
+		    $t add $uuid OK
+		} on error {e o} {
+		    $t add $uuid "ERROR: $e"
+		}
+	    }
+	}] show
+	return
+    }
+
+    # Single uuid
     set context [seen get-event $uuid]
     dict with context {} ;# type, id, uuid, comment
     set extype [event-type external $type]
@@ -122,7 +160,7 @@ proc ::fx::note::test-mail-gen {config} {
 		   ecomment $comment \
 		   etype    $extype  \
 		   self     $uuid    \
-		   {*}[ProjectInfo]]]
+		   {*}$pinfo]]
     return
 }
 
@@ -136,38 +174,103 @@ proc ::fx::note::test-mail-config {config} {
 
 proc ::fx::note::test-mail-receivers {config} {
     set uuid [$config @uuid]
+    set all  [$config @overall]
     set map  [RouteMap $config]
 
-    #array set xx $map ; parray xx
+    #array set xx $map ; parray xx ; unset xx
 
-    # Get the timeline's information about the event, deduce its type,
-    # and use that to choose the set of routes to follow.
+    if {$all} {
+	# Test all pending events.
 
-    set context [seen get-event $uuid]
-    dict with context {} ;# type, id, uuid, comment
+	[table t {UUID # Destinations} {
+	    set max [seen num-pending]
+	    set n 0
+	    set fmt %[string length $max]d
+
+	    seen forall-pending type id uuid comment {
+		incr n
+		puts -nonewline stderr "\r\033\[K\r[format $fmt $n]/$max: $uuid"
+		flush stderr
+
+		lassign [MailCore $uuid $type $map] recv m
+		$t add $uuid [llength $recv] [join [lsort -dict $recv] {, }]
+	    }
+	}] show
+
+    } else {
+	# Single uuid, show in details
+
+	lassign [MailCore $uuid {} $map] recv m
+
+	[table t [list "Destinations $uuid"] {
+	    foreach dest [lsort -dict $recv] {
+		$t add $dest
+	    }
+	}] show
+    }
+    return
+}
+
+proc ::fx::note::MailCore {uuid type map {context {}}} {
+    # Timeline event types, and associated artifact types.
+    #
+    # extype  type
+    # ------  ----
+    # checkin ci -- manifest (checkin)
+    # control g  -- control        (comment change, tag change on a checkin)
+    # event   e  -- event,         attachment
+    # ticket  t  -- ticket change, attachment
+    # wiki    w  -- wiki page,     attachment
+    # ------  ----
+    #
+    # Note how the attachment are not their own type of timeline
+    # event, but are categorized underneath the associated changed
+    # artifact, i.e. ticket or wiki.
+    #
+    # As events can have attachments as well I suspect that these
+    # are handled under 'e' too, assuming consistency.
+
+    # Mail dispatch (and receivers) are done by timeline event type.
+    # Mail generation is done by artifact type, with influences by the
+    # actually changed artifact in case of attachments (different
+    # references to the changed artifact). This is provided by the
+    # 'econtext', holding the 'type' of timeline event <=> type of
+    # changed artifact.
+
+    # Back fill for single uuid
+    if {$type eq {}} {
+	# Get the timeline's information about the event, deduce its
+	# type, and use that to choose the set of routes to follow.
+
+	set econtext [seen get-event $uuid]
+	#array set cc $econtext ; parray cc ; unset cc
+
+	if {$uuid ne [dict get $econtext uuid]} {
+	    error "uuid $uuid context does not match"
+	}
+	dict with econtext {} ;# type, id, uuid, comment
+    }
 
     set extype [event-type external $type]
-    set routes [dict get $map $extype]
+    if {![dict exists $map $extype]} { return {{} {}} }
 
-    #puts <$routes>
+    set routes [dict get $map $extype]
+    if {![llength $routes]} { return {{} {}} }
+
+    #puts type\t$extype
+    #puts routes\t[join $routes \n\t]
 
     # Next, get the event's manifest and use it to deduce and add the
     # dynamic routes
     set m [manifest parse \
 	       [fossil get-manifest $uuid] \
 	       etype $extype  \
-	       self  $uuid]
+	       self  $uuid \
+	       {*}$context]
 
     #array set mm $m ; parray mm
 
-    set recv [Receivers $routes $m]
-
-    [table t Destination {
-	foreach dest $recv {
-	    $t add $dest
-	}
-    }] show
-    return
+    list [Receivers $routes $m] $m
 }
 
 proc ::fx::note::test-parse {config} {
@@ -269,7 +372,7 @@ proc ::fx::note::IMConfig {p key value} {
     variable imported
     # Validate through the hidden parameter
     $p set $key
-    lappend imported [$p get $key] $value
+    lappend imported [$p value] $value
     return
 }
 
@@ -467,7 +570,7 @@ proc ::fx::note::IRoute {pe pd event destination} {
     $pe set $event
     $pd set $destination
 
-    lappend routes [$pe get] [$pd get]
+    lappend routes [$pe value] [$pd value]
     return
 }
 
@@ -476,7 +579,7 @@ proc ::fx::note::IField {p destination} {
     # Validate through the hidden parameters.
     $p set $destination
 
-    lappend fields [$p get]
+    lappend fields [$p value]
     return
 }
 
@@ -602,48 +705,16 @@ proc ::fx::note::route-deliver {config} {
     # Other general configuration identical across all notifications.
     set pinfo [ProjectInfo]
 
-    # Timeline event types, and associated artifact types.
-    #
-    # checkin ci -- manifest (checkin)
-    # control g  -- control        (comment change, tag change on a checkin)
-    # event   e  -- event,         attachment
-    # ticket  t  -- ticket change, attachment
-    # wiki    w  -- wiki page,     attachment
-    #
-    # Note how the attachment are not their own type of timeline
-    # event, but are categorized underneath the associated changed
-    # artifact, i.e. ticket or wiki.
-    #
-    # As events can have attachments as well I suspect that these
-    # are handled under 'e' too, assuming consistency.
-
-    # Mail dispatch (and receivers) are done by timeline event type.
-    # Mail generation is done by artifact type, with influences by the
-    # changed artifact in case of attachments (different references to
-    # the changed artifact). This is provided by the 'context', holding
-    # the type of timeline event <=> type of changed artifact.
-
     seen forall-pending type id uuid comment {
 	# TODO: no mail and such when suspended.
 	# TODO: Dry run for testing.
 
-	if {[dict exists $map $type]} {
-	    # May have routes for the event, process the artifact.
-
-	    set m [manifest parse \
-		       [fossil get-manifest $uuid] \
-		       ecomment $comment \
-		       etype    $ex      \
-		       self     $uuid    \
-		       {*}$pinfo]
-
-	    set recv [Receivers [dict get $map $type] $m]
-	    if {[llength $recv]} {
-		mailer send $mc $recv \
-		    [mailgen artifact $m]
-	    }
-	}
         seen touch $id
+	lassign [MailCore $uuid $type $map $pinfo] recv m
+
+	if {[llength $recv]} {
+	    mailer send $mc $recv [mailgen artifact $m]
+	}
     }
     return
 }
@@ -665,7 +736,6 @@ proc ::fx::note::ProjectInfo {} {
 
 proc ::fx::note::Receivers {routes manifest} {
     set recv {}
-    set compress 0
 
     # NOTE: The caller made sure that all route lists have unique
     # elements. The expansion here may break this - See dynamic routing.
@@ -675,18 +745,27 @@ proc ::fx::note::Receivers {routes manifest} {
     } else {
 	set field {}
     }
-    #array set ff $field ; parray ff
+    array set ff $field ; parray ff
 
     set mtime [dict get $manifest epoch]
 
-    #puts mtime=$mtime
+    if {[dict exists $manifest ticket]} {
+	set tuuid [dict get $manifest ticket]
+    } elseif {[dict exists $manifest target]} {
+	set tuuid [dict get $manifest target]
+    } else {
+	set tuuid {}
+    }
+
+    #puts mtime/ticket=$mtime/$tuuid
 
     foreach route $routes {
 	lassign $route static dest
 
 	# Static route, pass into output, nothing else to do.
 	if {$static} {
-	    lappend recv $dest
+	    #puts static|$dest
+	    +R $dest
 	    continue
 	}
 
@@ -700,41 +779,47 @@ proc ::fx::note::Receivers {routes manifest} {
 	# then the timeseries value is the current one.
 
 	if {[dict exists $field $dest]} {
-	    +R [dict get $field $dest]
+	    +RX [dict get $field $dest]
 	}
 
-	+R [seen get-field [dict get $manifest ticket] $dest $mtime]
+	+RX [seen get-field $tuuid $dest $mtime]
     }
 
-    if {$compress} {
-	# Dynamic fields may have introduced duplicate destinations.
-	set recv [lsort -unique $recv]
-    }
+    # Dynamic fields may have introduced duplicate destinations.
+    set recv [lsort -unique $recv]
 
     # TODO: Check list against a table of bad addresses and ignore these.
-    # should possibly noted in a log.
+    # Must be noted in a log.
 
     return $recv
 }
 
-proc ::fx::note::+R {val} {
-    upvar 1 recv recv compress compress
-    #set val [uplevel 1 $sourcecmd]
-    if {$val eq {}} return
+proc ::fx::note::+R {addr} {
+    upvar 1 recv recv
+    if {$addr eq {}} return
+    if {![mailer good-address $addr]} {
+	#puts \trejected_=$addr
+	# TODO: Log rejected string
+	return
+    }
+    #puts \tadded____=$addr
+    lappend recv $addr
+    return
+}
 
-    #puts \tconcealed=$val
+proc ::fx::note::+RX {addr} {
+    upvar 1 recv recv
+    # Each level of transformation may introduce an address.
+    #puts \tconcealed=$addr
+    +R $addr
 
-    set val [fossil reveal $val]
-    #puts \trevealed_=$val
-    if {$val eq {}} return
+    set addr [fossil reveal $addr]
+    #puts \trevealed_=$addr
+    +R $addr
 
-    set val [fossil user-info $val]
-    #puts \tuserinfo_=$val
-    if {$val eq {}} return
-
-    #puts \tadded____=$val
-    lappend recv $val
-    incr compress
+    set addr [fossil user-info $addr]
+    #puts \tuserinfo_=$addr
+    +R $addr
     return
 }
 
@@ -829,7 +914,7 @@ proc ::fx::note::RouteMap {config} {
 	    # Note: We are checking the validity of the field names
 	    # found in the route map. The map is stored in a place
 	    # where it can be manipulated, accidental or intentional.
-	    [$config @field set $field
+	    $config @field set $field
 
 	    dict lappend map ticket [list 0 [$config @field]]
 	    continue
@@ -843,8 +928,8 @@ proc ::fx::note::RouteMap {config} {
 	    # place where it can be manipulated, accidental or
 	    # intentional.
 
-	    $config @event        set $event
-	    $config @mail-address set $addr
+	    $config @event    set $event
+	    $config @mailaddr set $addr
 
 	    dict lappend map $event [list 1 $addr]
 	    continue

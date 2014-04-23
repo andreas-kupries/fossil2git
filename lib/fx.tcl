@@ -77,6 +77,21 @@ proc ::fx::vt {p args} {
     } $p {*}$args
 }
 
+proc fx::exclude {locked} {
+    # Jump into the context of the parameter instance currently
+    # getting configured. At the time the spec is executed things
+    # regarding naming are in good enough shape to extract naming
+    # information. While aliases for options are missing these are of
+    # no relevance to our purpose here either, we need only the
+    # primary name, and that is initialized by now.
+
+    set by [uplevel 2 {my the-name}]
+    lambda {locked by p args} {
+	#debug.cmdr {}
+	$p config @$locked lock $by
+    } $locked $by
+}
+
 proc ::fx::overlay {path args} {
     [::fx::fx find $path] learn [subst {
 	private delegate {
@@ -164,6 +179,36 @@ cmdr create fx::fx [file tail $::argv0] {
 	    Do this for all repositories watched by fx.
 	} { alias A; presence }
 	# See also the note in option repository above.
+    }
+
+    common .uuid-or-all {
+	input uuid {
+	    Full fossil uuid of the artifact to work with.
+	} {
+	    optional
+	    validate [fx::vt uuid]
+	    when-set [fx::exclude overall]
+	}
+	option overall {
+	    Do this for all repositories watched by fx.
+	} {
+	    label all
+	    alias A
+	    presence
+	    when-set [fx::exclude uuid]
+	}
+	state uuid-all-check {
+	    Check that either uuid or --all were used.
+	    The exclusion have already made sure that not both are set.
+	} {
+	    immediate
+	    when-complete [lambda {p x} {
+		if {[$p config @uuid    set?] ||
+		    [$p config @overall set?]} return
+		return -code error -errorcode {CMDR VALIDATE} \
+		    "Must use either uuid or --all" 
+	    }]
+	}
     }
 
     # # ## ### ##### ######## ############# ######################
@@ -878,7 +923,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		Generate the notification mail for the specified artifact,
 		and print it to stdout.
 	    }
-	    use .uuid
+	    use .uuid-or-all
 	} [fx::call note test-mail-gen]
 
 	private mail-receivers {
@@ -888,7 +933,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		of mail addresses to send a notification to, fixed
 		and field-based.
 	    }
-	    use .uuid
+	    use .uuid-or-all
 	    use .routemap
 	} [fx::call note test-mail-receivers]
 
@@ -898,7 +943,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		Parse the specified artifact as manifest and print the
 		resulting array/dictionary to stdout.
 	    }
-	    use .uuid
+	    use .uuid-or-all
 	} [fx::call note test-parse]
     }
 
