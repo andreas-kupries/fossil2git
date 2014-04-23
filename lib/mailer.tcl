@@ -6,7 +6,7 @@
 # Meta author      {Andreas Kupries}
 # Meta category    ?
 # Meta description ?
-# Meta location    http:/core.tcl.tk/akupries/fossil2git
+# Meta location    http:/core.tcl.tk/akupries/fx
 # Meta platform    tcl
 # Meta require     sqlite3
 # Meta subject     fossil
@@ -25,7 +25,7 @@ namespace eval ::fx {
     namespace ensemble create
 }
 namespace eval ::fx::mailer {
-    namespace export get-config get-sender send
+    namespace export get-config get-sender send good-address
     namespace ensemble create
 
     namespace import ::fx::mgr::config
@@ -33,6 +33,18 @@ namespace eval ::fx::mailer {
 }
 
 # # ## ### ##### ######## ############# ######################
+
+proc ::fx::mailer::good-address {addr} {
+    set r [mime::parseaddress $addr]
+
+    if {$r eq {}}                 { return 0 }
+    if {![dict exists $r domain]} { return 0 }
+    if {![dict exists $r local]}  { return 0 }
+
+    # TODO: Filter out addresses with domains matching the local host.
+
+    return 1
+}
 
 proc ::fx::mailer::get-sender {} {
     return [Get 0 sender]

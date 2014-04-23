@@ -6,7 +6,7 @@
 # Meta author      {Andreas Kupries}
 # Meta category    ?
 # Meta description ?
-# Meta location    http:/core.tcl.tk/akupries/fossil2git
+# Meta location    http:/core.tcl.tk/akupries/fx
 # Meta platform    tcl
 # Meta require     ?
 # Meta subject     ?
@@ -23,7 +23,6 @@ package require fx::seen
 package require fx::table
 package require fx::validate::event-type
 package require fx::validate::mail-config
-package require fx::validate::ticket-field
 package require interp
 
 # # ## ### ##### ######## ############# ######################
@@ -51,7 +50,6 @@ namespace eval ::fx::note {
 
     namespace import ::fx::validate::event-type
     namespace import ::fx::validate::mail-config
-    namespace import ::fx::validate::ticket-field
 }
 
 # # ## ### ##### ######## ############# ######################
@@ -138,14 +136,7 @@ proc ::fx::note::test-mail-config {config} {
 
 proc ::fx::note::test-mail-receivers {config} {
     set uuid [$config @uuid]
-
-    set map [RouteMap]
-    dict for {event __} $map {
-	# Note: We are checking the validity of the events found in
-	# the route map. It is stored in a place where it can be
-	# manipulated, accidental or intentional.
-	event-type validate [$config @event self] $event
-    }
+    set map  [RouteMap $config]
 
     #array set xx $map ; parray xx
 
@@ -276,7 +267,9 @@ proc ::fx::note::mail-config-import {config} {
 
 proc ::fx::note::IMConfig {p key value} {
     variable imported
-    lappend  imported [mail-config validate $p $key] $value
+    # Validate through the hidden parameter
+    $p set $key
+    lappend imported [$p get $key] $value
     return
 }
 
@@ -368,13 +361,8 @@ proc ::fx::note::ConfigSet {global name value {prefix Setting} {gsuffix {}}} {
 
 proc ::fx::note::route-list {config} {
     # Retrieve data, and restructure for table.
-    set map [RouteMap]
+    set map [RouteMap $config]
     dict for {event routes} $map {
-	# Note: We are checking the validity of the events found in
-	# the route map. It is stored in a place where it can be
-	# manipulated, accidental or intentional.
-	event-type validate [$config @event self] $event
-
 	set new {}
 	foreach route $routes {
 	    lassign $route static destination
@@ -398,12 +386,7 @@ proc ::fx::note::route-list {config} {
 
 proc ::fx::note::route-export {config} {
     set chan [$config @output]
-    dict for {event routes} [RouteMap] {
-	# Note: We are checking the validity of the events found in
-	# the route map. It is stored in a place where it can be
-	# manipulated, accidental or intentional.
-	event-type validate [$config @event self] $event
-
+    dict for {event routes} [RouteMap $config] {
 	foreach route $routes {
 	    lassign $route static destination
 	    if {$static} {
@@ -433,7 +416,7 @@ proc ::fx::note::route-import {config} {
     variable fields {}
 
     set i [interp::createEmpty]
-    $i alias route ::fx::note::IRoute [$config @event self]
+    $i alias route ::fx::note::IRoute [$config @event self] [$config @mailaddr self]
     $i alias field ::fx::note::IField [$config @field self]
 
     $i eval $data
@@ -478,15 +461,22 @@ proc ::fx::note::route-import {config} {
     return
 }
 
-proc ::fx::note::IRoute {p event destination} {
+proc ::fx::note::IRoute {pe pd event destination} {
     variable routes
-    lappend  routes [event-type validate $p $event] $destination
+    # Validate through the hidden parameters.
+    $pe set $event
+    $pd set $destination
+
+    lappend routes [$pe get] [$pd get]
     return
 }
 
 proc ::fx::note::IField {p destination} {
     variable fields
-    lappend  fields [ticket-field validate $p $destination]
+    # Validate through the hidden parameters.
+    $p set $destination
+
+    lappend fields [$p get]
     return
 }
 
@@ -606,15 +596,8 @@ proc ::fx::note::route-deliver {config} {
     #   Send mail
     #   Remember as seen
 
-    set map [RouteMap]
-    dict for {event __} $map {
-	# Note: We are checking the validity of the events found in
-	# the route map. It is stored in a place where it can be
-	# manipulated, accidental or intentional.
-	event-type validate [$config @event self] $event
-    }
-
-    set mc [mailer get-config]
+    set map [RouteMap $config]
+    set mc  [mailer get-config]
 
     # Other general configuration identical across all notifications.
     set pinfo [ProjectInfo]
@@ -813,7 +796,7 @@ proc ::fx::note::Fields {} {
     return $fields
 }
 
-proc ::fx::note::RouteMap {} {
+proc ::fx::note::RouteMap {config} {
     # @repository(-db)
 
     set map {}
@@ -831,7 +814,11 @@ proc ::fx::note::RouteMap {} {
 
     # Note: The event types in the saved route information is
     # external, therefore conversion is not required for display.
-    # Validation and conversion to internal will happen on actual use.
+    # It may be needed for internal use.
+
+    # Anyway, the data we pull out of the repository is validated as
+    # it can be manipulated with other tools (anything providing
+    # access to the sqlite3 database file).
 
     set map {}
     dict for {k __} $settings {
@@ -839,12 +826,25 @@ proc ::fx::note::RouteMap {} {
 	if {[string match fx-aku-note-field:* $k]} {
 	    regsub {^fx-aku-note-field:} $k {} field
 
-	    dict lappend map ticket [list 0 $field]
+	    # Note: We are checking the validity of the field names
+	    # found in the route map. The map is stored in a place
+	    # where it can be manipulated, accidental or intentional.
+	    [$config @field set $field
+
+	    dict lappend map ticket [list 0 [$config @field]]
 	    continue
 	}
 	# static route for event
 	if {[string match fx-aku-note-send2-*:* $k]} {
 	    regexp {^fx-aku-note-send2-([^:]*):(.*)$} $k -> event addr
+
+	    # Note: We are checking the validity of the events and
+	    # addresses found in the route map. The map is stored in a
+	    # place where it can be manipulated, accidental or
+	    # intentional.
+
+	    $config @event        set $event
+	    $config @mail-address set $addr
 
 	    dict lappend map $event [list 1 $addr]
 	    continue

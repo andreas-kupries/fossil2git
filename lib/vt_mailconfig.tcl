@@ -6,7 +6,7 @@
 # Meta author      {Andreas Kupries}
 # Meta category    ?
 # Meta description ?
-# Meta location    http:/core.tcl.tk/akupries/fossil2git
+# Meta location    http:/core.tcl.tk/akupries/fx
 # Meta platform    tcl
 # Meta require     ?
 # Meta subject     ?
@@ -66,6 +66,7 @@ proc ::fx::validate::mail-config::internal {x} {
     return [dict get $map [string tolower $x]]
 }
 
+# TODO: overwrites validation method with incompat API - FIX here, and callers.
 proc ::fx::validate::mail-config::default {x} {
     variable default
 

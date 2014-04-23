@@ -166,25 +166,49 @@ cmdr create fx::fx [file tail $::argv0] {
 	# See also the note in option repository above.
     }
 
+    # # ## ### ##### ######## ############# ######################
+
     common .event-hidden-validation {
 	state event {
 	    Hidden parameter to be used by the internal validation of
 	    event-types.
-	} {}
+	} {
+	    label imported-event
+	    validate [fx::vt event-type]
+	}
     }
-
     common .field-hidden-validation {
 	state field {
 	    Hidden parameter to be used by the internal validation of
 	    ticket fields.
-	} {}
+	} {
+	    label imported-ticket-field
+	    validate [fx::vt ticket-field]
+	}
     }
-
     common .mailconfig-hidden-validation {
 	state mailconfig {
 	    Hidden parameter to be used by the internal validation of
 	    mail configuration keys
-	} {}
+	} {
+	    label imported-mail-config-key
+	    validate [fx::vt mail-config]
+	}
+    }
+    common .mailaddr-hidden-validation {
+	state mailaddr {
+	    Hidden parameter to be used by the internal validation of
+	    email addresses.
+	} {
+	    label imported-mail-address
+	    validate [fx::vt mail-address]
+	}
+    }
+    common .routemap {
+	# All validation fields used by the RouteMap code.
+	use .field-hidden-validation
+	use .event-hidden-validation
+	use .mailaddr-hidden-validation
     }
 
     # # ## ### ##### ######## ############# ######################
@@ -657,7 +681,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		description {
 		    Show all configured mail destinations (per event type).
 		}
-		use .event-hidden-validation
+		use .routemap
 	    } [fx::call note route-list]
 	    default
 
@@ -673,7 +697,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		    alias o
 		    validate wchan
 		}
-		use .event-hidden-validation
+		use .routemap
 	    } [fx::call note route-export]
 
 	    private import {
@@ -689,8 +713,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		    optional
 		    validate rchan ;# cmdr - *file => *chan, default: stdin
 		}
-		use .field-hidden-validation
-		use .event-hidden-validation
+		use .routemap
 	    } [fx::call note route-import]
 
 	    common .etype {
@@ -707,7 +730,10 @@ cmdr create fx::fx [file tail $::argv0] {
 		use .etype
 		input to {
 		    Email addresses of the added routes.
-		} { list ; validate str }
+		} {
+		    list
+		    validate [call@vt mail-address]
+		}
 	    } [fx::call note route-add]
 
 	    private drop {
@@ -785,6 +811,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		for all new events (since the last delivery).
 	    }
 	    use .all
+	    use .routemap
 	} [fx::call note deliver]
 
 	private mark-pending {
@@ -862,7 +889,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		and field-based.
 	    }
 	    use .uuid
-	    use .event-hidden-validation
+	    use .routemap
 	} [fx::call note test-mail-receivers]
 
 	private manifest-parse {
