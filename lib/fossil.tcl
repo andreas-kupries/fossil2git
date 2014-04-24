@@ -15,6 +15,13 @@
 
 package require Tcl 8.5
 package require sqlite3
+package require debug
+package require debug::caller
+
+debug level  fx/fossil
+debug prefix fx/fossil {[debug caller] | }
+
+# # ## ### ##### ######## ############# ######################
 
 namespace eval ::fx {
     namespace export fossil
@@ -43,6 +50,7 @@ namespace eval ::fx::fossil {
 ## Commands for global and repository databases.
 
 proc ::fx::fossil::global {args} {
+    debug.fx/fossil {1st call, create and short-circuit all following}
     # Drop the procedure.
     rename ::fx::fossil::global {}
 
@@ -65,6 +73,7 @@ proc ::fx::fossil::global {args} {
 }
 
 proc ::fx::fossil::repository {args} {
+    debug.fx/fossil {fail}
     # This procedure will be overwritten by 'repository-open' below.
     ::global argv0
     return -code error \
@@ -75,6 +84,7 @@ proc ::fx::fossil::repository {args} {
 # # ## ### ##### ######## ############# ######################
 
 proc ::fx::fossil::repository-open {p} {
+    debug.fx/fossil {}
     # cmdr generate callback
 
     # NOTE how we are keeping the repository database until process
@@ -82,6 +92,8 @@ proc ::fx::fossil::repository-open {p} {
     # specification.
 
     set location [$p config @repository]
+
+    debug.fx/fossil {@ $location}
     if {$location eq {}} {
 	# Do not create a repository db if we have no location for it
 	# (see repo-location below, use case "all").
@@ -95,15 +107,18 @@ proc ::fx::fossil::repository-open {p} {
 # # ## ### ##### ######## ############# ######################
 
 proc ::fx::fossil::global-location {} {
+    debug.fx/fossil {}
     return [file normalize ~/.fossil]
 }
 
 proc ::fx::fossil::repository-location {} {
     variable repo_location
+    debug.fx/fossil {@ $repo_location}
     return  $repo_location
 }
 
 proc ::fx::fossil::repository-find {p} {
+    debug.fx/fossil {}
     # cmdr generate callback
     variable repo_location
 
@@ -112,6 +127,7 @@ proc ::fx::fossil::repository-find {p} {
 	# find it. This way we cannot run into an error when an "all"
 	# operation is run outside of a checkout and without a
 	# "repository".
+	debug.fx/fossil {skip on --all}
 	return {}
     }
 
@@ -121,6 +137,7 @@ proc ::fx::fossil::repository-find {p} {
 
     # Get checkout directory and database.
     set ckout [ckout [scan-up Repository [pwd] fx::fossil::is]]
+    debug.fx/fossil {checkout located @ $ckout}
     sqlite3 CK $ckout
 
     # Retrieve repository location. This may be relative (to the
@@ -130,21 +147,27 @@ proc ::fx::fossil::repository-find {p} {
 	FROM vvar
 	WHERE name = 'repository'
     }]
+    debug.fx/fossil {directed to  $repo_location}
 
     # Merge checkout directory and location to resolve relative
     # paths. Absolute location supercedes the preceding path segments.
     set repo_location [file join [file dirname $ckout] $repo_location]
+    debug.fx/fossil {resolved as  $repo_location}
 
     # Normalize to make the path nicer.
     set repo_location [file normalize $repo_location]
+    debug.fx/fossil {normalized as $repo_location}
 
     rename CK {}
+
+    debug.fx/fossil {done ==> $repo_location}
     return $repo_location
 }
 
 # # ## ### ##### ######## ############# ######################
 
 proc ::fx::fossil::fx-enum-items {table} {
+    debug.fx/fossil {}
     return [repository eval [subst {
 	SELECT item
 	FROM   $table
@@ -153,6 +176,7 @@ proc ::fx::fossil::fx-enum-items {table} {
 }
 
 proc ::fx::fossil::fx-enums {} {
+    debug.fx/fossil {}
     set enums {}
     foreach table [fx-tables] {
 	if {![string match fx_aku_enum_* $table]} continue
@@ -163,6 +187,7 @@ proc ::fx::fossil::fx-enums {} {
 }
 
 proc ::fx::fossil::fx-tables {} {
+    debug.fx/fossil {}
     set tables {}
     repository eval {
 	SELECT name
@@ -177,9 +202,10 @@ proc ::fx::fossil::fx-tables {} {
 }
 
 proc ::fx::fossil::ticket-title {uuid} {
+    debug.fx/fossil {}
     # TODO: get configured name of the title field.
-
     set titlefield title
+
     return [fossil repository onecolumn [subst {
 	SELECT $titlefield
 	FROM ticket
@@ -188,6 +214,7 @@ proc ::fx::fossil::ticket-title {uuid} {
 }
 
 proc ::fx::fossil::ticket-fields {} {
+    debug.fx/fossil {}
     # table_info fields: cid, name, type, notnull, dflt_value, pk
     # Looking at tables "ticket" and "ticketchng".
 
@@ -207,12 +234,18 @@ proc ::fx::fossil::ticket-fields {} {
 }
 
 proc ::fx::fossil::get-manifest {uuid} {
+    debug.fx/fossil {}
     variable fossil
     variable repo_location
 
     # We go through a temp file so that we can load the result with
     # proper binary translation. That is something 'exec' does not
     # provide for its results, that is always auto.
+    #
+    # We spawn the actual fossil executable to avoid having to write
+    # our own implementation of the delta-decoder, and of inflate.
+    #
+    # FUTURE: Consider writing and using a Tcl binding to libfossil.
 
     exec > [pid].$uuid {*}$fossil artifact $uuid -R $repo_location
 
@@ -222,6 +255,7 @@ proc ::fx::fossil::get-manifest {uuid} {
 }
 
 proc ::fx::fossil::branch-of {uuid} {
+    debug.fx/fossil {}
     return [repository onecolumn {
 	SELECT tag.tagname
 	FROM blob, tagxref, tag
@@ -233,6 +267,7 @@ proc ::fx::fossil::branch-of {uuid} {
 }
 
 proc ::fx::fossil::changeset {uuid} {
+    debug.fx/fossil {}
     set r {}
     repository eval {
         SELECT filename.name AS thepath,
@@ -252,6 +287,7 @@ proc ::fx::fossil::changeset {uuid} {
 }
 
 proc ::fx::fossil::reveal {value} {
+    debug.fx/fossil {}
     if {$value eq {}} { return $value }
     repository eval {
 	SELECT content
@@ -264,6 +300,7 @@ proc ::fx::fossil::reveal {value} {
 }
 
 proc ::fx::fossil::user-info {value} {
+    debug.fx/fossil {}
     if {$value eq {}} { return $value }
     repository eval {
 	SELECT info
@@ -276,6 +313,7 @@ proc ::fx::fossil::user-info {value} {
 }
 
 proc ::fx::fossil::user-config {} {
+    debug.fx/fossil {}
     return [repository eval {
 	SELECT login, cap, info, mtime
 	FROM user
@@ -283,6 +321,7 @@ proc ::fx::fossil::user-config {} {
 }
 
 proc ::fx::fossil::users {} {
+    debug.fx/fossil {}
     return [repository eval {
 	SELECT login
 	FROM user
@@ -292,29 +331,40 @@ proc ::fx::fossil::users {} {
 # # ## ### ##### ######## ############# ######################
 
 proc ::fx::fossil::is {dir} {
+    debug.fx/fossil {}
     foreach control {
 	_FOSSIL_
 	.fslckout
 	.fos
     } {
+	debug.fx/fossil {iterate $control}
 	set control $dir/$control
 	if {[file exists $control] &&
 	    [file isfile $control]
-	} {return 1}
+	} {
+	    debug.fx/fossil {done ==> HIT}
+	    return 1
+	}
     }
+    debug.fx/fossil {done ==> MISS}
     return 0
 }
 
 proc ::fx::fossil::ckout {dir} {
+    debug.fx/fossil {}
     foreach control {
 	_FOSSIL_
 	.fslckout
 	.fos
     } {
+	debug.fx/fossil {iterate $control}
 	set control $dir/$control
 	if {[file exists $control] &&
 	    [file isfile $control]
-	} {return $control}
+	} {
+	    debug.fx/fossil {done ==> $control}
+	    return $control
+	}
     }
     return -code error \
 	-errorcode {FX FOSSIL CHECKOUT} \
@@ -322,10 +372,14 @@ proc ::fx::fossil::ckout {dir} {
 }
 
 proc ::fx::fossil::scan-up {this dir predicate} {
+    debug.fx/fossil {}
     set dir [file normalize $dir]
     while {1} {
+	debug.fx/fossil {iterate $dir}
+
 	# Found the proper directory, per the predicate.
 	if {[{*}$predicate $dir]} {
+	    debug.fx/fossil {done ==> $dir}
 	    return $dir
 	}
 
@@ -333,8 +387,11 @@ proc ::fx::fossil::scan-up {this dir predicate} {
 	set new [file dirname $dir]
 
 	# Stop when reaching the root.
-	if {$new eq $dir} { return {} }
-	if {$new eq {}} { return {} }
+	if {($new eq $dir) ||
+	    ($new eq {})}   {
+	    debug.fx/fossil {done ==> nothing found ($new)}
+	    return {}
+	}
 
 	# Ok, truly walk up.
 	set dir $new

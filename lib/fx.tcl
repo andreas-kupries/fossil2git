@@ -22,15 +22,26 @@
 # @@ Meta End
 
 package require Tcl 8.5
+package require debug
+package require debug::caller
 package require cmdr
 package require lambda
+package require fx::tty
+package require fx::color
 package require fx::config
 package require fx::enum
 package require fx::fossil
 package require fx::note
 #package require fx::report
 package require fx::seen
-#package require fx::user
+package require fx::user
+
+if {[fx tty stdout]} {
+    fx color activate
+}
+
+debug level  fx
+debug prefix fx {[debug caller] | }
 
 # # ## ### ##### ######## ############# ######################
 
@@ -42,6 +53,7 @@ namespace eval fx {
 # # ## ### ##### ######## ############# ######################
 
 proc fx::main {argv} {
+    debug.fx {}
     try {
 	fx do {*}$argv
     } trap {CMDR CONFIG WRONG-ARGS} {e o} - \
@@ -51,12 +63,16 @@ proc fx::main {argv} {
       trap {CMDR ACTION BAD} {e o} - \
       trap {CMDR VALIDATE} {e o} - \
       trap {CMDR DO UNKNOWN} {e o} {
-        puts $e
+	debug.fx {trap - user error}
+	puts [fx color red $e]
 	return 1
     } on error {e o} {
-	puts $::errorInfo
+	debug.fx {trap - general, internal error}
+	puts [fx color red $::errorInfo]
 	return 1
     }
+
+    debug.fx {done, ok}
     return 0
 }
 
