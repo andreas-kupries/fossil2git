@@ -277,7 +277,7 @@ proc ::fx::fossil::user-info {value} {
 
 proc ::fx::fossil::user-config {} {
     return [repository eval {
-	SELECT login, cap, info
+	SELECT login, cap, info, mtime
 	FROM user
     }]
 }

@@ -18,6 +18,7 @@
 package require Tcl 8.5
 package require fx::table
 package require fx::fossil
+package require fx::mailer
 package require textutil::adjust
 package require linenoise
 package require interp
@@ -26,46 +27,105 @@ package require try
 # # ## ### ##### ######## ############# ######################
 
 namespace eval ::fx::user {
-    namespace export list contact
+    namespace export list update-contact push pull sync \
+	broadcast
     namespace ensemble create
 
     namespace import ::fx::table::do
     namespace import ::fx::fossil
+    namespace import ::fx::mailer
     rename do table
+}
+
+# # ## ### ##### ######## ############# ######################
+
+proc ::fx::user::broadcast {config} {
+    set content [read [$config @text]]
+    $config @text forget
+
+    foreach {login cap info mtime} [fossil user-config] {
+	if {![mailer good-address $info]} {
+	    puts "Ignoring $login ($info)"
+	    continue
+	}
+	lappend receivers $info
+    }
+    set receivers [mailer dedup-addresses $receivers]
+
+    puts "Sending to\n* [join $receivers "\n* "]"
+
+    #return;# TODO: dry run
+    mailer send \
+	[mailer get-config] \
+	$receivers \
+	$content
+    return
+}
+
+# # ## ### ##### ######## ############# ######################
+
+proc ::fx::user::push {config} {
+    [$config context root] do delegate configuration push user
+    return
+}
+
+proc ::fx::user::pull {config} {
+    [$config context root] do delegate configuration pull user
+    return
+}
+
+proc ::fx::user::sync {config} {
+    [$config context root] do delegate configuration sync user
+    return
 }
 
 # # ## ### ##### ######## ############# ######################
 
 proc ::fx::user::list {config} {
     set map {}
-    foreach {login cap info} [fossil user-config] {
-	dict set map $login [::list $cap $info]
+    foreach {login cap info mtime} [fossil user-config] {
+	dict set map $login [::list $cap $info $mtime]
     }
 
-    [table t {Name Permissions Contact} {
+    #array set uu $map ; parray uu ; unset uu
+
+    [table t {Name Permissions Contact Changed Notes} {
 	foreach login [lsort -dict [dict keys $map]] {
-	    lassign [dict get $map $login] cap info
-	    $t add $login $cap $info
+	    lassign [dict get $map $login] cap info mtime
+	    set mtime [expr {($mtime ne {})
+			     ? [clock format $mtime]
+			     : ""}]
+	    set notes [expr {[mailer good-address $info]
+			     ? ""
+			     : "** No Email **"}]
+	    $t add $login $cap $info $mtime $notes
 	}
     }] show
     return
 }
 
-proc ::fx::user::contact {config} {
-    set login   [$config @name]
+proc ::fx::user::update-contact {config} {
+    set login   [$config @user]
     set contact [$config @contact]
+    set now     [clock seconds]
 
     # TODO: feedback ...
     # TODO: add colorization and general animated terminal feedback code.
     # TODO: Add --debug support.
 
+    puts -nonewline "Updating \"$login\" to \"$contact\""
+    flush stdout
+
     fossil repository transaction {
 	fossil repository eval {
 	    UPDATE user
-	    SET info = :contact
+	    SET info  = :contact,
+	        mtime = :now
 	    WHERE login = :login
 	}
     }
+
+    puts OK
     return
 }
 

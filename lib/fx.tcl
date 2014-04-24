@@ -284,12 +284,50 @@ cmdr create fx::fx [file tail $::argv0] {
 	    Management of users in the local repository
 	}
 
+	private push {
+	    section {User Management}
+	    description {
+		Push local changes to the users to the
+		configured remote
+	    }
+	} [fx::call user push]
+
+	private pull {
+	    section {User Management}
+	    description {
+		Push user information from the
+		configured remote to here.
+	    }
+	} [fx::call user pull]
+
+	private sync {
+	    section {User Management}
+	    description {
+		Sync the user information at the configured
+		remote and here.
+	    }
+	} [fx::call user sync]
+
 	private list {
 	    section {User Management}
 	    description {
 		Show all known users, their information and capabilities
 	    }
 	} [fx::call user list]
+
+	private broadcast {
+	    section {User Management}
+	    description {
+		Send a mail to all accounts of the repository.
+	    }
+	    input text {
+		The file containing the contents of the mail.
+		Defaults to stdin
+	    } {
+		optional
+		validate rchan
+	    }
+	} [fx::call user broadcast]
 
 	private contact {
 	    section {User Management}
@@ -777,7 +815,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		    Email addresses of the added routes.
 		} {
 		    list
-		    validate [call@vt mail-address]
+		    validate [fx::vt mail-address]
 		}
 	    } [fx::call note route-add]
 
