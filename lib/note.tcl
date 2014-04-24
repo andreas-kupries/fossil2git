@@ -363,9 +363,10 @@ proc ::fx::note::mail-config-export {config} {
     # Retrieve and assemble semi-table.
     foreach k [mail-config all] {
 	# NOTE: k :: mail-config external (string) rep.
+	# See mailer::Get
 	set v [config get-extended-with-default \
-		   [mail-config internal $k] \
-		   [mail-config default  $k]]
+		   [mail-config internal   $k] \
+		   [mail-config default-of $k]]
 
 	lassign $v isglobal mtime v
 
@@ -422,9 +423,10 @@ proc ::fx::note::IMConfig {p key value} {
 proc ::fx::note::mail-config-show {config} {
     # Retrieve and assemble semi-table.
     foreach k [mail-config all] {
+	# See mailer::Get
 	set v [config get-extended-with-default \
-		   [mail-config internal $k] \
-		   [mail-config default  $k]]
+		   [mail-config internal   $k] \
+		   [mail-config default-of $k]]
 
 	lassign $v isglobal mtime v
 
@@ -773,7 +775,7 @@ proc ::fx::note::ProjectInfo {} {
 
     set location [config get-with-default \
 		      fx-aku-note-project-location \
-		      [mail-config default location]]
+		      [mail-config default-of location]]
 
     return [dict create project $name location $location]
 }

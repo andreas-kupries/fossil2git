@@ -104,8 +104,8 @@ proc ::fx::mailer::get-config {} {
 
 proc ::fx::mailer::Get {listify setting} {
     set  v [config get-with-default \
-		[mail-config internal $setting] \
-		[mail-config default  $setting]]
+		[mail-config internal   $setting] \
+		[mail-config default-of $setting]]
     if {$listify} { set v [list $v] }
     return $v
 }

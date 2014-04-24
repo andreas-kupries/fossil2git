@@ -29,7 +29,7 @@ namespace eval ::fx::validate {
 
 namespace eval ::fx::validate::mail-config {
     namespace export release validate default complete \
-	internal external all
+	internal external all default-of
     namespace ensemble create
 
     namespace import ::cmdr::validate::common::fail
@@ -66,8 +66,7 @@ proc ::fx::validate::mail-config::internal {x} {
     return [dict get $map [string tolower $x]]
 }
 
-# TODO: overwrites validation method with incompat API - FIX here, and callers.
-proc ::fx::validate::mail-config::default {x} {
+proc ::fx::validate::mail-config::default-of {x} {
     variable default
 
     if {$x eq "location"} {
