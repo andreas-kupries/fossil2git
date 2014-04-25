@@ -251,30 +251,48 @@ proc ::fx::seen::FillSeries {} {
     # based on new events. Of course, changes to the set of watched
     # fields clear the series and force a recalculation.
 
-    set num [Unprocessed]
-    debug.fx/seen {entries to process: $num}
-
-    # Quick exit if there is nothing to process.
-    if {!$num} return
-
-    # TODO: Chunk the processing into shorter transactions so that
-    # progress can be made by iterating the core even if one
-    # transaction fails (db locked or some such) as long as actual
-    # progress is made this way.
-
     set changes 0
-    fossil repository transaction {
-	fossil repository eval {
-	    SELECT event.type  AS type,
-	           event.objid AS id,
-	           blob.uuid   AS uuid
-	    FROM  event, blob
-	    WHERE event.objid NOT IN (SELECT id FROM fx_aku_watch_tktseen)
-	    AND   event.objid = blob.rid
-	} {
-	    # type, id, uuid - Event which has not been handled before.
-	    debug.fx/seen {@ $uuid $type $id}
-	    incr changes [ProcessChange $type $id $uuid]
+    set total   [Unprocessed]
+    set pending $total
+    while {$pending} {
+	debug.fx/seen {entries to process: $num}
+	try {
+	    # Inner loop: Process in chunks of 1000
+	    # (see the LIMIT clause below).
+	    # TODO: Make this configurable ?
+	    set progress 0
+	    while {$pending} {
+		fossil repository transaction {
+		    fossil repository eval {
+			SELECT event.type  AS type,
+			event.objid AS id,
+			blob.uuid   AS uuid
+			FROM  event, blob
+			WHERE event.objid NOT IN (SELECT id FROM fx_aku_watch_tktseen)
+			AND   event.objid = blob.rid
+			LIMIT 1000
+		    } {
+			# type, id, uuid - Event which has not been handled before.
+			debug.fx/seen {@ $uuid $type $id}
+			ProcessChange $type $id $uuid
+			incr changes
+		    }
+		}
+		# At least one sucessful transaction now = some events handled
+		incr progress
+		set pending [Unprocessed]
+	    }
+	} trap {FOSSIL PROCESS LOCKED} {e o} {
+	    # Transaction failed because of the get-manifest get
+	    # locked out even with re-trials. Swallowing the error now
+	    # we restart from the top, i.e. iterate the outer loop.
+
+	    # Except if the inner loop did not do any transaction at
+	    # all, i.e. stalled without any progress before getting
+	    # locked up. Then we abort as well.
+
+	    if {!$progress} { return {*}$o $e }
+	    set pending [Unprocessed]
 	}
     }
 
@@ -285,7 +303,7 @@ proc ::fx::seen::FillSeries {} {
 }
 
 proc ::fx::seen::ProcessChange {type id uuid} {
-    upvar 1 changes changes num num
+    upvar 1 changes changes total total
 
     # type, id, uuid - Event which has not been handled before.
     #Progress $uuid
@@ -297,7 +315,7 @@ proc ::fx::seen::ProcessChange {type id uuid} {
     # Detect and skip non-ticket events.
     if {$type ne "t"} {
 	debug.fx/seen {skipped type ($t)}
-	return 0
+	return
     }
 
     # Pull and parse the ticket change. 
@@ -308,7 +326,7 @@ proc ::fx::seen::ProcessChange {type id uuid} {
     # other words, attachment changes.
     if {[dict get $m type] eq "attachment"} {
 	debug.fx/seen {skip attachment}
-	return 0
+	return
     }
 
     # Now we can check if this change modifies one or more of the
@@ -322,10 +340,9 @@ proc ::fx::seen::ProcessChange {type id uuid} {
     dict for {fname fid} $fields {
 	if {![dict exists $m field $fname]} continue
 
-	#incr changes
 	set value [dict get $m field $fname]
 
-	Progress "[format %10d $changes]/$num:[clock format $mtime] ${fname}=$value"
+	Progress "[format %10d $changes]/$total:[clock format $mtime] ${fname}=$value"
 
 	debug.fx/seen {enter $tid ($fname) $fid $mtime ($value)}
 	fossil repository eval {
@@ -335,7 +352,7 @@ proc ::fx::seen::ProcessChange {type id uuid} {
 	}
     }
 
-    return 1
+    return
 }
 
 proc ::fx::seen::Unprocessed {} {
