@@ -117,7 +117,7 @@ proc ::fx::exclude {locked} {
 proc ::fx::overlay {path args} {
     set cmd {}
     if {[llength $args]} {
-	set cmd " '[join $arg { }]'"
+	set cmd " '[join $args { }]'"
     }
     [::fx::fx find $path] learn [subst {
 	private delegate {
