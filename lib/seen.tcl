@@ -247,23 +247,23 @@ proc ::fx::seen::FillSeries {} {
 
     # Go over all pending ticket events and use them to compute the
     # time series of watched ticket fields. While the initial run has
-    # to compute the total information al others are incremental,
+    # to compute the total information all others are incremental,
     # based on new events. Of course, changes to the set of watched
     # fields clear the series and force a recalculation.
 
+    set num [Unprocessed]
+    debug.fx/seen {entries to process: $num}
+
+    # Quick exit if there is nothing to process.
+    if {!$num} return
+
+    # TODO: Chunk the processing into shorter transactions so that
+    # progress can be made by iterating the core even if one
+    # transaction fails (db locked or some such) as long as actual
+    # progress is made this way.
+
     set changes 0
     fossil repository transaction {
-
-	# TODO: Use in progress display...
-	set num [fossil repository onecolumn {
-	    SELECT count(*)
-	    FROM  event, blob
-	    WHERE event.objid NOT IN (SELECT id FROM fx_aku_watch_tktseen)
-	    AND   event.objid = blob.rid
-	}]
-
-	debug.fx/seen {entries to process: $num}
-
 	fossil repository eval {
 	    SELECT event.type  AS type,
 	           event.objid AS id,
@@ -272,78 +272,9 @@ proc ::fx::seen::FillSeries {} {
 	    WHERE event.objid NOT IN (SELECT id FROM fx_aku_watch_tktseen)
 	    AND   event.objid = blob.rid
 	} {
-	    debug.fx/seen {@ $uuid}
-	    #Progress $uuid
-
 	    # type, id, uuid - Event which has not been handled before.
-
-	    # Mark all events as seen, even if not a ticket. This
-	    # reduces the amount of events we have to inspect on
-	    # future increments.
-
-	    fossil repository eval {
-		INSERT
-		INTO fx_aku_watch_tktseen
-		VALUES (:id)
-	    }
-	    debug.fx/seen {ticked as seen}
-
-
-	    # Detect and skip non-ticket events.
-	    if {$type ne "t"} {
-		debug.fx/seen {skipped type ($t)}
-		continue
-	    }
-
-	    # Pull and parse the ticket change. 
-	    debug.fx/seen {get manifest}
-	    set m [manifest parse [fossil get-manifest $uuid]]
-
-	    # Detect and skip non-ticket events associated with a
-	    # ticket, IOW attachment changes.
-	    if {[dict get $m type] eq "attachment"} {
-		debug.fx/seen {skip attachment}
-		continue
-	    }
-
-	    # Now we can check if this change modifies one or more of
-	    # the watched fields. If yes we store the current value,
-	    # together with the time. Do not forget to translate the
-	    # ticket uuid into a proper key, and remember the same.
-
-	    #puts |$m|
-
-	    set mtime [dict get $m epoch]
-	    set tuuid [dict get $m ticket]
-
-	    debug.fx/seen {remember ticket uuid $tuuid}
-	    fossil repository eval {
-		INSERT OR IGNORE
-		INTO fx_aku_watch_tkt
-		VALUES (NULL, :tuuid);
-	    }
-	    set tid [fossil repository onecolumn {
-		SELECT id
-		FROM fx_aku_watch_tkt
-		WHERE uuid = :tuuid
-	    }]
-	    debug.fx/seen {= $tid}
-
-	    dict for {fname fid} $fields {
-		if {![dict exists $m field $fname]} continue
-
-		incr changes
-		set value [dict get $m field $fname]
-
-		Progress "[format %10d $changes]/$num:[clock format $mtime] ${fname}=$value"
-
-		debug.fx/seen {enter $tid ($fname) $fid $mtime ($value)}
-		fossil repository eval {
-		    INSERT
-		    INTO fx_aku_watch_tktseries
-		    VALUES (:tid, :fid, :mtime, :value)
-		}
-	    }
+	    debug.fx/seen {@ $uuid $type $id}
+	    incr changes [ProcessChange $type $id $uuid]
 	}
     }
 
@@ -351,6 +282,103 @@ proc ::fx::seen::FillSeries {} {
     if {!$changes} return
     Progress "Processed changes: $changes\n"
     return
+}
+
+proc ::fx::seen::ProcessChange {type id uuid} {
+    upvar 1 changes changes num num
+
+    # type, id, uuid - Event which has not been handled before.
+    #Progress $uuid
+
+    # Mark all events as seen, even if not a ticket. This reduces the
+    # amount of events we have to inspect on future increments.
+    Processed $id
+
+    # Detect and skip non-ticket events.
+    if {$type ne "t"} {
+	debug.fx/seen {skipped type ($t)}
+	return 0
+    }
+
+    # Pull and parse the ticket change. 
+    debug.fx/seen {get manifest}
+    set m [manifest parse [fossil get-manifest $uuid]]
+
+    # Detect and skip non-ticket events associated with a ticket, in
+    # other words, attachment changes.
+    if {[dict get $m type] eq "attachment"} {
+	debug.fx/seen {skip attachment}
+	return 0
+    }
+
+    # Now we can check if this change modifies one or more of the
+    # watched fields. If yes we store the current value, together with
+    # the time. Do not forget to translate the ticket uuid into a
+    # proper key, and remember the same.
+
+    set mtime [dict get $m epoch]
+    set tid   [TicketOf [dict get $m ticket]]
+
+    dict for {fname fid} $fields {
+	if {![dict exists $m field $fname]} continue
+
+	#incr changes
+	set value [dict get $m field $fname]
+
+	Progress "[format %10d $changes]/$num:[clock format $mtime] ${fname}=$value"
+
+	debug.fx/seen {enter $tid ($fname) $fid $mtime ($value)}
+	fossil repository eval {
+	    INSERT
+	    INTO fx_aku_watch_tktseries
+	    VALUES (:tid, :fid, :mtime, :value)
+	}
+    }
+
+    return 1
+}
+
+proc ::fx::seen::Unprocessed {} {
+    debug.fx/seen {}
+    return [fossil repository onecolumn {
+	SELECT count(*)
+	FROM  event, blob
+	WHERE event.objid NOT IN (SELECT id FROM fx_aku_watch_tktseen)
+	AND   event.objid = blob.rid
+    }]
+}
+
+proc ::fx::seen::Processed {id} {
+    debug.fx/seen {mark as seen}
+    # TODO: animation, progress display
+    fossil repository eval {
+	INSERT
+	INTO fx_aku_watch_tktseen
+	VALUES (:id)
+    }
+    return
+}
+
+proc ::fx::seen::TicketOf {tuuid} {
+    debug.fx/seen {}
+
+    set tuuid [dict get $m ticket]
+
+    debug.fx/seen {remember ticket $tuuid}
+    fossil repository eval {
+	INSERT OR IGNORE
+	INTO fx_aku_watch_tkt
+	VALUES (NULL, :tuuid);
+    }
+
+    set tid [fossil repository onecolumn {
+	SELECT id
+	FROM fx_aku_watch_tkt
+	WHERE uuid = :tuuid
+    }]
+
+    debug.fx/seen {done =>= $tid}
+    return $tid
 }
 
 proc ::fx::seen::Progress {text} {
