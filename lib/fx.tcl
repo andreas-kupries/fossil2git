@@ -47,6 +47,7 @@ namespace eval fx {
 }
 
 # # ## ### ##### ######## ############# ######################
+## TODO: enable command history.
 
 proc ::fx::main {argv} {
     debug.fx {}
@@ -60,13 +61,19 @@ proc ::fx::main {argv} {
       trap {CMDR VALIDATE} {e o} - \
       trap {CMDR PARAMETER LOCKED} {e o} - \
       trap {CMDR DO UNKNOWN} {e o} {
-	debug.fx {trap - user error}
-	puts [color error $e]
+	debug.fx {trap - cmdline user error}
+	puts "$::argv0 cmdr: [color error $e]"
 	return 1
+
+    } trap {FX} {e o} {
+	debug.fx {trap - other user error}
+	puts "$::argv0 general: [color error $e]"
+	return 1
+	
     } on error {e o} {
 	debug.fx {trap - general, internal error}
 	debug.fx {[debug pdict $o]}
-
+	# TODO: nicer formatting of internal errors.
 	puts [color error $::errorInfo]
 	return 1
     }
