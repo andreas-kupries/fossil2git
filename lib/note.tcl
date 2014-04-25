@@ -54,27 +54,36 @@ namespace eval ::fx::note {
 
 # # ## ### ##### ######## ############# ######################
 
-proc ::fx::note::mark-pending {config} {
-    seen mark-pending [$config @uuid]
-    return
-}
+debug level  fx/note
+debug prefix fx/note {[debug caller] | }
 
-proc ::fx::note::mark-pending-all {config} {
-    seen mark-pending-all
+# # ## ### ##### ######## ############# ######################
+
+proc ::fx::note::mark-pending {config} {
+    debug.fx/note {}
+
+    if {[$config @overall]} {
+	seen mark-pending-all
+    } else {
+	seen mark-pending [$config @uuid]
+    }
     return
 }
 
 proc ::fx::note::mark-notified {config} {
-    seen mark-notified [$config @uuid]
-    return
-}
+    debug.fx/note {}
 
-proc ::fx::note::mark-notified-all {config} {
-    seen mark-notified-all
+    if {[$config @overall]} {
+	seen mark-notified-all
+    } else {
+	seen mark-notified [$config @uuid]
+    }
     return
 }
 
 proc ::fx::note::show-pending {config} {
+    debug.fx/note {}
+
     global env
     if {[info exists env(FX_COLUMNS)]} {
 	set w $env(FX_COLUMNS)
@@ -107,6 +116,7 @@ proc ::fx::note::show-pending {config} {
 }
 
 proc ::fx::note::test-mail-gen {config} {
+    debug.fx/note {}
     # Context (event type, comment, etc. is automatically determined,
     # similar to the code in deliver.
 
@@ -167,6 +177,7 @@ proc ::fx::note::test-mail-gen {config} {
 }
 
 proc ::fx::note::test-mail-config {config} {
+    debug.fx/note {}
     mailer send \
 	[mailer get-config] \
 	[$config @destination] \
@@ -175,6 +186,8 @@ proc ::fx::note::test-mail-config {config} {
 }
 
 proc ::fx::note::test-mail-receivers {config} {
+    debug.fx/note {}
+
     set uuid [$config @uuid]
     set all  [$config @overall]
     set map  [RouteMap $config]
@@ -214,6 +227,7 @@ proc ::fx::note::test-mail-receivers {config} {
 }
 
 proc ::fx::note::MailCore {uuid type map {context {}}} {
+    debug.fx/note {}
     # Timeline event types, and associated artifact types.
     #
     # extype  type
@@ -276,6 +290,7 @@ proc ::fx::note::MailCore {uuid type map {context {}}} {
 }
 
 proc ::fx::note::test-parse {config} {
+    debug.fx/note {}
     # Context (event type, comment, etc. is all automatically
     # determined, similar to the code in deliver.
 
@@ -357,6 +372,8 @@ proc ::fx::note::test-parse {config} {
 # # ## ### ##### ######## ############# ######################
 
 proc ::fx::note::mail-config-export {config} {
+    debug.fx/note {}
+
     set chan      [$config @output]
     set useglobal [$config @global]
 
@@ -382,6 +399,8 @@ proc ::fx::note::mail-config-export {config} {
 }
 
 proc ::fx::note::mail-config-import {config} {
+    debug.fx/note {}
+
     set global [$config @global]
     set input  [$config @import]
 
@@ -413,6 +432,8 @@ proc ::fx::note::mail-config-import {config} {
 }
 
 proc ::fx::note::IMConfig {p key value} {
+    debug.fx/note {}
+
     variable imported
     # Validate through the hidden parameter
     $p set $key
@@ -421,6 +442,8 @@ proc ::fx::note::IMConfig {p key value} {
 }
 
 proc ::fx::note::mail-config-show {config} {
+    debug.fx/note {}
+
     # Retrieve and assemble semi-table.
     foreach k [mail-config all] {
 	# See mailer::Get
@@ -457,6 +480,7 @@ proc ::fx::note::mail-config-show {config} {
 }
 
 proc ::fx::note::mail-config-set {config} {
+    debug.fx/note {}
     # See also "fx::config::set"
     # equivalent with shorter user-visible keys
 
@@ -471,8 +495,9 @@ proc ::fx::note::mail-config-set {config} {
 }
 
 proc ::fx::note::mail-config-unset {config} {
-    set global [$config @global]
+    debug.fx/note {}
 
+    set global [$config @global]
     foreach name [$config @key] {
 	puts -nonewline "Unsetting [mail-config external $name]"
 	if {$global} {
@@ -487,6 +512,8 @@ proc ::fx::note::mail-config-unset {config} {
 
 
 proc ::fx::note::ConfigSet {global name value {prefix Setting} {gsuffix {}}} {
+    debug.fx/note {}
+
     puts -nonewline "$prefix [mail-config external $name]: "
     flush stdout
 
@@ -508,6 +535,8 @@ proc ::fx::note::ConfigSet {global name value {prefix Setting} {gsuffix {}}} {
 # # ## ### ##### ######## ############# ######################
 
 proc ::fx::note::route-list {config} {
+    debug.fx/note {}
+
     # Retrieve data, and restructure for table.
     set map [RouteMap $config]
     dict for {event routes} $map {
@@ -533,6 +562,8 @@ proc ::fx::note::route-list {config} {
 }
 
 proc ::fx::note::route-export {config} {
+    debug.fx/note {}
+
     set chan [$config @output]
     dict for {event routes} [RouteMap $config] {
 	foreach route $routes {
@@ -548,6 +579,8 @@ proc ::fx::note::route-export {config} {
 }
 
 proc ::fx::note::route-import {config} {
+    debug.fx/note {}
+
     set extend [$config @extend]
     set input  [$config @import]
 
@@ -610,6 +643,8 @@ proc ::fx::note::route-import {config} {
 }
 
 proc ::fx::note::IRoute {pe pd event destination} {
+    debug.fx/note {}
+
     variable routes
     # Validate through the hidden parameters.
     $pe set $event
@@ -620,6 +655,8 @@ proc ::fx::note::IRoute {pe pd event destination} {
 }
 
 proc ::fx::note::IField {p destination} {
+    debug.fx/note {}
+
     variable fields
     # Validate through the hidden parameters.
     $p set $destination
@@ -629,6 +666,7 @@ proc ::fx::note::IField {p destination} {
 }
 
 proc ::fx::note::route-add {config} {
+    debug.fx/note {}
     # @to (list), @event, @repository(-db)
 
     # seen event is internal rep.
@@ -645,6 +683,7 @@ proc ::fx::note::route-add {config} {
 }
 
 proc ::fx::note::route-drop {config} {
+    debug.fx/note {}
     # @to (list), @event, @repository(-db)
 
     # seen event is internal rep.
@@ -662,7 +701,9 @@ proc ::fx::note::route-drop {config} {
 }
 
 proc ::fx::note::event-list {config} {
+    debug.fx/note {}
     # @repository-db
+
     [table t Event {
 	foreach col [lsort -dict [event-type all]] {
 	    $t add $col
@@ -672,6 +713,7 @@ proc ::fx::note::event-list {config} {
 }
 
 proc ::fx::note::field-list {config} {
+    debug.fx/note {}
     # @repository-db
 
     puts @[fossil repository-location]
@@ -686,7 +728,9 @@ proc ::fx::note::field-list {config} {
 }
 
 proc ::fx::note::route-field-add {config} {
+    debug.fx/note {}
     # @field (list), @repository(-db)
+
     if {![RouteAdd \
 	     fx-aku-note-field \
 	     [$config @field]]
@@ -699,7 +743,9 @@ proc ::fx::note::route-field-add {config} {
 }
 
 proc ::fx::note::route-field-drop {config} {
+    debug.fx/note {}
     # @field (list), @repository(-db)
+
     if {![RouteDrop \
 	     fx-aku-note-field \
 	     [$config @field]]
@@ -717,6 +763,7 @@ proc ::fx::note::route-field-drop {config} {
 ## for all events not yet handled (i.e. not marked as seen).
 
 proc ::fx::note::route-deliver {config} {
+    debug.fx/note {}
     # @repository, @global, /... ?? --all how ?
 
     if {[$config @all]} {
@@ -769,6 +816,8 @@ proc ::fx::note::route-deliver {config} {
 ## Receiver collection
 
 proc ::fx::note::ProjectInfo {} {
+    debug.fx/note {}
+
     set name [config get-with-default \
 		  project-name \
 		  [file rootname [file tail [fossil repository-location]]]]
@@ -781,8 +830,9 @@ proc ::fx::note::ProjectInfo {} {
 }
 
 proc ::fx::note::Receivers {routes manifest} {
-    set recv {}
+    debug.fx/note {}
 
+    set recv {}
     # NOTE: The caller made sure that all route lists have unique
     # elements. The expansion here may break this - See dynamic routing.
 
@@ -844,6 +894,7 @@ proc ::fx::note::Receivers {routes manifest} {
 }
 
 proc ::fx::note::+R {addr} {
+    debug.fx/note {}
     upvar 1 recv recv
     if {$addr eq {}} return
     if {![mailer good-address $addr]} {
@@ -857,6 +908,7 @@ proc ::fx::note::+R {addr} {
 }
 
 proc ::fx::note::+RX {addr} {
+    debug.fx/note {}
     upvar 1 recv recv
     # Each level of transformation may introduce an address.
     #puts \tconcealed=$addr
@@ -876,8 +928,9 @@ proc ::fx::note::+RX {addr} {
 ## Internal helpers: Low level generic route management.
 
 proc ::fx::note::RouteAdd {prefix destinations} {
-    set added 0
+    debug.fx/note {}
 
+    set added 0
     foreach dst $destinations {
 	puts -nonewline "  $dst ... "
 
@@ -894,8 +947,9 @@ proc ::fx::note::RouteAdd {prefix destinations} {
 }
 
 proc ::fx::note::RouteDrop {prefix destinations} {
-    set removed 0
+    debug.fx/note {}
 
+    set removed 0
     foreach pattern $destinations {
 	puts -nonewline "  $pattern ... "
 
@@ -912,11 +966,13 @@ proc ::fx::note::RouteDrop {prefix destinations} {
 }
 
 proc ::fx::note::HasRoutes {} {
+    debug.fx/note {}
     return [expr { [config has-glob fx-aku-note-send2-*:*] ||
 		   [config has-glob fx-aku-note-field:*]      }]
 }
 
 proc ::fx::note::Fields {} {
+    debug.fx/note {}
     # TODO: config get-glob (get-keys-glob) ...
     set settings [config get-list]
     set fields {}
@@ -931,6 +987,7 @@ proc ::fx::note::Fields {} {
 }
 
 proc ::fx::note::RouteMap {config} {
+    debug.fx/note {}
     # @repository(-db)
 
     set map {}
@@ -999,11 +1056,15 @@ proc ::fx::note::RouteMap {config} {
 ## (De)register the repository in the global database, 'deliver all'
 
 proc ::fx::note::WatchMe {r} {
+    debug.fx/note {}
     config set-global fx-aku-note-watch:$r 1
+    return
 }
 
 proc ::fx::note::RemoveMe {r} {
+    debug.fx/note {}
     config unset-global fx-aku-note-watch:$r
+    return
 }
 
 # # ## ### ##### ######## ############# ######################

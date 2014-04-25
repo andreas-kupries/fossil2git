@@ -58,12 +58,15 @@ proc ::fx::main {argv} {
       trap {CMDR ACTION UNKNOWN} {e o} - \
       trap {CMDR ACTION BAD} {e o} - \
       trap {CMDR VALIDATE} {e o} - \
+      trap {CMDR PARAMETER LOCKED} {e o} - \
       trap {CMDR DO UNKNOWN} {e o} {
 	debug.fx {trap - user error}
 	puts [color red $e]
 	return 1
     } on error {e o} {
 	debug.fx {trap - general, internal error}
+	debug.fx {[debug pdict $o]}
+
 	puts [color red $::errorInfo]
 	return 1
     }
@@ -918,36 +921,24 @@ cmdr create fx::fx [file tail $::argv0] {
 	private mark-pending {
 	    section Notifications Control
 	    description {
-		Mark the specified artifact as having not been notified before,
-		thus forcing the generation of a notification for it on the next
-		invokation of "deliver".
+		Mark the specified (or all) artifacts as having not
+		been notified before. This forces the generation of a
+		notification for them on the next invokation of
+		"note deliver".
 	    }
-	    use .uuid
+	    use .uuid-or-all
 	} [fx::call note mark-pending]
 
 	private mark-notified {
 	    section Notifications Control
 	    description {
-		Mark the specified artifact as having been notified before, thus
-		preventing generation of a notification for it on the next
-		invokation of "deliver".
+		Mark the specified (or all) artifacts as having been
+		notified before, thus preventing generation of a
+		notification for them on the next invokation of
+		"note deliver".
 	    }
-	    use .uuid
+	    use .uuid-or-all
 	} [fx::call note mark-notified]
-
-	private mark-pending-all {
-	    section Notifications Control
-	    description {
-		Mark all events in the timeline as requiring a notification.
-	    }
-	} [fx::call note mark-pending-all]
-
-	private mark-notified-all {
-	    section Notifications Control
-	    description {
-		Mark all events in the timeline as not requiring a notification.
-	    }
-	} [fx::call note mark-notified-all]
 
 	private show-pending {
 	    section Notifications Control
