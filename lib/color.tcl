@@ -25,24 +25,26 @@ namespace eval ::fx {
 }
 
 namespace eval ::fx::color {
-    variable colorize 0
-
     namespace export {[a-z]*}
     namespace ensemble create
 
     # TODO: symbolic mapping (error, warning, note, ...)
 
     ::term::ansi::code::ctrl::import =
+    namespace export =
     namespace eval = {
 	namespace export *
 	namespace ensemble create
     }
+
+    # Activation state
+    variable active 0
 }
 
 # # ## ### ##### ######## ############# #####################
 
 proc ::fx::color::activate {{flag 1}} {
-    variable colorize $flag
+    variable active $flag
     return
 }
 
@@ -69,11 +71,11 @@ foreach {cmd color} {
 # # ## ### ##### ######## ############# #####################
 
 proc ::fx::color::Apply {code text} {
-    variable colorize
-    if {!$colorize} {
-	return $text
-    } else {
+    variable active
+    if {$active} {
 	return [= $code]$text[= sda_reset]
+    } else {
+	return $text
     }
 }
 
