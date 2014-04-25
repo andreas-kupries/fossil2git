@@ -17,6 +17,11 @@ package require Tcl 8.5
 package require fx::fossil
 package require fx::manifest
 
+debug level  fx/seen
+debug prefix fx/seen {[debug caller] | }
+
+# # ## ### ##### ######## ############# ######################
+
 namespace eval ::fx::seen {
     namespace export \
 	get-event num-pending forall-pending \
@@ -41,6 +46,7 @@ namespace eval ::fx {
 # # ## ### ##### ######## ############# ######################
 
 proc ::fx::seen::get-event {uuid} {
+    debug.fx/seen {}
     fossil repository eval {
 	SELECT event.type  AS type,
 	       event.objid AS id,
@@ -60,6 +66,7 @@ proc ::fx::seen::get-event {uuid} {
 }
 
 proc ::fx::seen::num-pending {} {
+    debug.fx/seen {}
     Init
     return [fossil repository onecolumn {
 	    SELECT count(*)
@@ -71,6 +78,7 @@ proc ::fx::seen::num-pending {} {
 }
 
 proc ::fx::seen::forall-pending {tv iv uv cv script} {
+    debug.fx/seen {}
     Init
     FillSeries
 
@@ -101,8 +109,7 @@ proc ::fx::seen::forall-pending {tv iv uv cv script} {
 }
 
 proc ::fx::seen::mark-notified {uuid} {
-    # TODO dry run
-
+    debug.fx/seen {}
     Init
     fossil repository eval {
 	INSERT OR IGNORE INTO fx_aku_watch_seen
@@ -114,8 +121,7 @@ proc ::fx::seen::mark-notified {uuid} {
 }
 
 proc ::fx::seen::mark-notified-all {} {
-    # TODO dry run
-
+    debug.fx/seen {}
     Init
     fossil repository eval {
 	INSERT OR IGNORE INTO fx_aku_watch_seen
@@ -126,8 +132,7 @@ proc ::fx::seen::mark-notified-all {} {
 }
 
 proc ::fx::seen::mark-pending {uuid} {
-    # TODO dry run
-
+    debug.fx/seen {}
     Init
     fossil repository eval {
 	DELETE FROM fx_aku_watch_seen
@@ -139,7 +144,7 @@ proc ::fx::seen::mark-pending {uuid} {
 }
 
 proc ::fx::seen::mark-pending-all {} {
-    # TODO dry run
+    debug.fx/seen {}
     Init
     fossil repository eval {
 	DELETE FROM fx_aku_watch_seen
@@ -152,6 +157,7 @@ proc ::fx::seen::mark-pending-all {} {
 ## interest, i.e. used to compute the dynamically derived notes.
 
 proc ::fx::seen::regenerate-series {config} {
+    debug.fx/seen {}
     puts @[fossil repository-location]
     Clear
     FillSeries
@@ -159,6 +165,7 @@ proc ::fx::seen::regenerate-series {config} {
 }
 
 proc ::fx::seen::get-watched-fields {} {
+    debug.fx/seen {}
     return [fossil repository eval {
 	SELECT name
 	FROM   fx_aku_watch_tktfield
@@ -166,14 +173,14 @@ proc ::fx::seen::get-watched-fields {} {
 }
 
 proc ::fx::seen::set-watched-fields {fields} {
+    debug.fx/seen {}
     Clear
 
-    #puts |$fields|
     set flist \"[join $fields "\",\""]\"
     set alist \"[join $fields "\"), (NULL, \""]\"
 
-    #puts F|$flist|
-    #puts A|$alist|
+    debug.fx/seen {F = |$flist|}
+    debug.fx/seen {A = |$alist|}
 
     # Drop all fields not in the list anymore.
     # Then add all fields, ignoring the existing ones.
@@ -193,11 +200,13 @@ proc ::fx::seen::set-watched-fields {fields} {
 }
 
 proc ::fx::seen::set-progress {cmdprefix} {
+    debug.fx/seen {}
     variable progress $cmdprefix
     return
 }
 
 proc ::fx::seen::get-field {uuid field before} {
+    debug.fx/seen {}
     FillSeries
     return [fossil repository onecolumn {
 	SELECT S.val
@@ -227,6 +236,7 @@ proc ::fx::seen::Clear {} {
 }
 
 proc ::fx::seen::FillSeries {} {
+    debug.fx/seen {}
     Init
     # Get field => id mapping.
 
@@ -245,12 +255,14 @@ proc ::fx::seen::FillSeries {} {
     fossil repository transaction {
 
 	# TODO: Use in progress display...
-	if 0 {set num [fossil repository onecolumn {
+	set num [fossil repository onecolumn {
 	    SELECT count(*)
 	    FROM  event, blob
 	    WHERE event.objid NOT IN (SELECT id FROM fx_aku_watch_tktseen)
 	    AND   event.objid = blob.rid
-	}]}
+	}]
+
+	debug.fx/seen {entries to process: $num}
 
 	fossil repository eval {
 	    SELECT event.type  AS type,
@@ -260,6 +272,7 @@ proc ::fx::seen::FillSeries {} {
 	    WHERE event.objid NOT IN (SELECT id FROM fx_aku_watch_tktseen)
 	    AND   event.objid = blob.rid
 	} {
+	    debug.fx/seen {@ $uuid}
 	    #Progress $uuid
 
 	    # type, id, uuid - Event which has not been handled before.
@@ -273,16 +286,25 @@ proc ::fx::seen::FillSeries {} {
 		INTO fx_aku_watch_tktseen
 		VALUES (:id)
 	    }
+	    debug.fx/seen {ticked as seen}
+
 
 	    # Detect and skip non-ticket events.
-	    if {$type ne "t"} continue
+	    if {$type ne "t"} {
+		debug.fx/seen {skipped type ($t)}
+		continue
+	    }
 
 	    # Pull and parse the ticket change. 
+	    debug.fx/seen {get manifest}
 	    set m [manifest parse [fossil get-manifest $uuid]]
 
 	    # Detect and skip non-ticket events associated with a
 	    # ticket, IOW attachment changes.
-	    if {[dict get $m type] eq "attachment"} continue
+	    if {[dict get $m type] eq "attachment"} {
+		debug.fx/seen {skip attachment}
+		continue
+	    }
 
 	    # Now we can check if this change modifies one or more of
 	    # the watched fields. If yes we store the current value,
@@ -294,6 +316,7 @@ proc ::fx::seen::FillSeries {} {
 	    set mtime [dict get $m epoch]
 	    set tuuid [dict get $m ticket]
 
+	    debug.fx/seen {remember ticket uuid $tuuid}
 	    fossil repository eval {
 		INSERT OR IGNORE
 		INTO fx_aku_watch_tkt
@@ -304,6 +327,7 @@ proc ::fx::seen::FillSeries {} {
 		FROM fx_aku_watch_tkt
 		WHERE uuid = :tuuid
 	    }]
+	    debug.fx/seen {= $tid}
 
 	    dict for {fname fid} $fields {
 		if {![dict exists $m field $fname]} continue
@@ -311,8 +335,9 @@ proc ::fx::seen::FillSeries {} {
 		incr changes
 		set value [dict get $m field $fname]
 
-		Progress "[format %10d $changes]:[clock format $mtime] ${fname}=$value"
+		Progress "[format %10d $changes]/$num:[clock format $mtime] ${fname}=$value"
 
+		debug.fx/seen {enter $tid ($fname) $fid $mtime ($value)}
 		fossil repository eval {
 		    INSERT
 		    INTO fx_aku_watch_tktseries
@@ -322,6 +347,7 @@ proc ::fx::seen::FillSeries {} {
 	}
     }
 
+    debug.fx/seen {done}
     if {!$changes} return
     Progress "Processed changes: $changes\n"
     return
@@ -337,6 +363,7 @@ proc ::fx::seen::Progress {text} {
 # # ## ### ##### ######## ############# ######################
 
 proc ::fx::seen::Init {} {
+    debug.fx/seen {}
     fossil repository eval {
 
 	-- Table holding the set of timeline events we have processed
@@ -388,6 +415,8 @@ proc ::fx::seen::Init {} {
 
     # Disable further calls.
     proc ::fx::seen::Init {} {}
+
+    debug.fx/seen {done}
     return
 }
 
