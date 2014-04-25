@@ -2,7 +2,7 @@
 # # ## ### ##### ######## ############# #####################
 
 # @@ Meta Begin
-# Application fx   ?
+# Package fx::color   ?
 # Meta author      {Andreas Kupries}
 # Meta category    ?
 # Meta description ?
