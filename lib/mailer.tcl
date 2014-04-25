@@ -17,6 +17,7 @@ package require Tcl 8.5
 package require tls
 package require smtp
 package require mime
+package require fx::table
 package require fx::mgr::config
 package require fx::validate::mail-config
 
@@ -25,11 +26,57 @@ namespace eval ::fx {
     namespace ensemble create
 }
 namespace eval ::fx::mailer {
-    namespace export get-config get-sender send good-address dedup-addresses
+    namespace export get-config get-sender send \
+	good-address dedup-addresses test-address
     namespace ensemble create
 
     namespace import ::fx::mgr::config
     namespace import ::fx::validate::mail-config
+    namespace import ::fx::table::do
+    rename do table
+}
+
+# # ## ### ##### ######## ############# ######################
+
+proc ::fx::mailer::test-address {config} {
+    set address [$config @address]
+
+    set parts [lindex [mime::parseaddress $address] 0]
+    set hasdomain 0
+    set haslocal  0
+
+    puts "Decoding ($address) :="
+    [table t {Part Value Notes} {
+	foreach k [lsort -dict [dict keys $parts]] {
+	    set v [dict get $parts $k]
+	    set notes {}
+	    switch -exact $k {
+		domain -
+		local {
+		    incr has$k
+		    if {$v eq {}} {
+			lappend notes {** Empty **}
+		    }
+		}
+		default {
+		    # Report on the missing pieces. Depends on the
+		    # parts sorted lexicographically (see lsort above)
+		    # to place the fakes at the correct locations.
+
+		    if {([string compare $k domain] > 0) && !$hasdomain} {
+			$t add $k {} {** Missing **}
+			incr hasdomain
+		    }
+		    if {([string compare $k local] > 0) && !$haslocal} {
+			$t add $k {} {** Missing **}
+			incr haslocal
+		    }
+		}
+	    }
+	    $t add $k $v [join $notes \n]
+	}
+    }] show
+    return
 }
 
 # # ## ### ##### ######## ############# ######################
