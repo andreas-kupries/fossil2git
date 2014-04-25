@@ -21,6 +21,11 @@ package require fx::table
 package require fx::mgr::config
 package require fx::validate::mail-config
 
+debug level  fx/mailer
+debug prefix fx/mailer {[debug caller] | }
+
+# # ## ### ##### ######## ############# ######################
+
 namespace eval ::fx {
     namespace export mailer
     namespace ensemble create
@@ -39,6 +44,7 @@ namespace eval ::fx::mailer {
 # # ## ### ##### ######## ############# ######################
 
 proc ::fx::mailer::test-address {config} {
+    debug.fx/mailer {}
     set address [$config @address]
 
     set parts [lindex [mime::parseaddress $address] 0]
@@ -82,6 +88,7 @@ proc ::fx::mailer::test-address {config} {
 # # ## ### ##### ######## ############# ######################
 
 proc ::fx::mailer::dedup-addresses {addrlist} {
+    debug.fx/mailer {}
     # We assume that all addresses are good.
     # We keep the longest input of each with the same 'address'.
 
@@ -109,6 +116,7 @@ proc ::fx::mailer::dedup-addresses {addrlist} {
 }
 
 proc ::fx::mailer::good-address {addr} {
+    debug.fx/mailer {}
     set r [lindex [mime::parseaddress $addr] 0]
 
     # Drop empty results. Drop results which are not full addresses
@@ -129,10 +137,13 @@ proc ::fx::mailer::good-address {addr} {
 }
 
 proc ::fx::mailer::get-sender {} {
+    debug.fx/mailer {}
     return [Get 0 sender]
 }
 
 proc ::fx::mailer::get-config {} {
+    debug.fx/mailer {}
+
     foreach {option listify setting} {
 	-debug    0 debug
 	-usetls   0 tls
@@ -150,9 +161,10 @@ proc ::fx::mailer::get-config {} {
 }
 
 proc ::fx::mailer::Get {listify setting} {
-    set  v [config get-with-default \
-		[mail-config internal   $setting] \
-		[mail-config default-of $setting]]
+    debug.fx/mailer {}
+    set v [config get-with-default \
+	       [mail-config internal   $setting] \
+	       [mail-config default-of $setting]]
     if {$listify} { set v [list $v] }
     return $v
 }
@@ -160,6 +172,7 @@ proc ::fx::mailer::Get {listify setting} {
 # # ## ### ##### ######## ############# ######################
 
 proc ::fx::mailer::send {config receivers corpus} {
+    debug.fx/mailer {}
     #if {[suspended]} return
     #if {![llength $receivers]} return
 
@@ -196,6 +209,7 @@ proc ::fx::mailer::send {config receivers corpus} {
 # # ## ### ##### ######## ############# ######################
 
 proc ::fx::mailer::TlsPolicy {args} {
+    debug.fx/mailer {}
     puts $args
     return secure
 }
