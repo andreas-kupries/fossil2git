@@ -61,13 +61,13 @@ proc ::fx::main {argv} {
       trap {CMDR PARAMETER LOCKED} {e o} - \
       trap {CMDR DO UNKNOWN} {e o} {
 	debug.fx {trap - user error}
-	puts [color red $e]
+	puts [color error $e]
 	return 1
     } on error {e o} {
 	debug.fx {trap - general, internal error}
 	debug.fx {[debug pdict $o]}
 
-	puts [color red $::errorInfo]
+	puts [color error $::errorInfo]
 	return 1
     }
 

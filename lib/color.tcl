@@ -39,6 +39,15 @@ namespace eval ::fx::color {
 
     # Activation state
     variable active 0
+
+    # Mapping of symbolic codes to color commands
+    # TODO: Make this configurable.
+    variable symbol {
+	error   red
+	warning yellow
+	note    blue
+	good    green
+    }
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -64,6 +73,9 @@ foreach {cmd color} {
     bg-cyan   sda_bgcyan
     bg-black  sda_bgblack
     bold      sda_bold
+    error     error
+    warning   warning
+    note      note
 } {
     interp alias {} ::fx::color::$cmd {} ::fx::color::Apply $color
 }
@@ -73,6 +85,10 @@ foreach {cmd color} {
 proc ::fx::color::Apply {code text} {
     variable active
     if {$active} {
+	variable symbol
+	if {[dict exists $symbol $code]} {
+	    return [[dict get $symbol $code] $text]
+	}
 	return [= $code]$text[= sda_reset]
     } else {
 	return $text
