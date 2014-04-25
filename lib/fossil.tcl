@@ -247,10 +247,64 @@ proc ::fx::fossil::get-manifest {uuid} {
     #
     # FUTURE: Consider writing and using a Tcl binding to libfossil.
 
-    exec > [pid].$uuid {*}$fossil artifact $uuid -R $repo_location
+    set afile [pid].$uuid
+    set efile [pid].error
 
-    set archive [fileutil::cat -translation binary -encoding binary [pid].$uuid]
-    file delete [pid].$uuid
+    try {
+	# There may be race conditions which cause the spawned process
+	# to error with 'database locked'. If that happens we back up
+	# and try again (up to 10 times). After that we throw a nice
+	# error for the higher layers to handle.
+
+	# TODO: future: make it configurable
+	set trials 10
+	while {[catch {
+	    debug.fx/fossil {go}
+	    exec > $afile 2> $efile \
+		{*}$fossil artifact $uuid -R $repo_location
+	} e o]} {
+	    debug.fx/fossil {caught out: $e}
+
+	    # Read the error message to see if this is about
+	    # blocking. If not we throw the issue up immediately,
+	    # without retrying.
+
+	    set theerror [fileutil::cat $efile]
+
+	    debug.fx/fossil {message = $theerror}
+
+	    if {![string match *locked* $theerror]} {
+		debug.fx/fossil {rethrow}
+		return {*}$o $e
+	    }
+
+	    debug.fx/fossil {locked @$trial}
+
+	    incr trials -1
+	    if {!$trials} {
+		debug.fx/fossil {giving up}
+		# Lock has not cleared in some time, giving up.
+		return -code error \
+		    -errorcode {FOSSIL PROCESS LOCKED} \
+		    "artifact retrieval locked"
+	    }
+	    # Wait a bit first, to clear the condition.
+	    # TODO: Make the delay configurable.
+	    debug.fx/fossil {delay and retry}
+	    after 500
+	}
+
+	set archive [fileutil::cat -translation binary -encoding binary $afile]
+    } finally {
+	# Ensure removal of temp files in presence of errors.
+	# (Note however that this is not enough to deal with ^C).
+	file delete $afile
+	file delete $efile
+
+	debug.fx/fossil {cleaned temp files}
+    }
+
+    debug.fx/fossil {done ==> <content elided>}
     return $archive
 }
 
