@@ -62,19 +62,19 @@ proc ::fx::main {argv} {
       trap {CMDR PARAMETER LOCKED} {e o} - \
       trap {CMDR DO UNKNOWN} {e o} {
 	debug.fx {trap - cmdline user error}
-	puts "$::argv0 cmdr: [color error $e]"
+	puts stderr "$::argv0 cmdr: [color error $e]"
 	return 1
 
     } trap {FX} {e o} {
 	debug.fx {trap - other user error}
-	puts "$::argv0 general: [color error $e]"
+	puts stderr "$::argv0 general: [color error $e]"
 	return 1
 	
     } on error {e o} {
 	debug.fx {trap - general, internal error}
 	debug.fx {[debug pdict $o]}
 	# TODO: nicer formatting of internal errors.
-	puts [color error $::errorInfo]
+	puts stderr [color error $::errorInfo]
 	return 1
     }
 
@@ -115,11 +115,15 @@ proc ::fx::exclude {locked} {
 }
 
 proc ::fx::overlay {path args} {
+    set cmd {}
+    if {[llength $args]} {
+	set cmd " '[join $arg { }]'"
+    }
     [::fx::fx find $path] learn [subst {
 	private delegate {
 	    section Convenience
 	    description {
-		Delegate the command to the local fossil executable.
+		Delegate the command$cmd to the local fossil executable.
 	    }
 	    input args {
 		Command and arguments to deliver to core fossil
@@ -132,6 +136,8 @@ proc ::fx::overlay {path args} {
 }
 
 proc ::fx::delegate {prefix config} {
+    # Any issues of the command delegated to are its problems, and not ours.
+    # It will have them reported already anyway as well.
     catch {
 	exec >@ stdout 2>@ stderr <@ stdin \
 	    {*}[auto_execok fossil] {*}$prefix {*}[$config @args]
