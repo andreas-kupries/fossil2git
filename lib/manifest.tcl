@@ -16,6 +16,9 @@
 package require Tcl 8.5
 package require clock::iso8601
 
+debug level  fx/manifest
+debug prefix fx/manifest {[debug caller] | }
+
 # # ## ### ##### ######## ############# ######################
 
 namespace eval ::fx {
@@ -30,6 +33,7 @@ namespace eval ::fx::manifest {
 # # ## ### ##### ######## ############# ######################
 
 proc ::fx::manifest::parse {manifest args} {
+    debug.fx/manifest {}
     # Manifest array/dictionary collecting all important pieces.
 
     # Initalize with general data coming from outside the manifest itself.
@@ -58,7 +62,7 @@ proc ::fx::manifest::parse {manifest args} {
     # Z n/a
 
     while {[regexp "^(\[ABCDEFJKLMNPQRTUWZ\])(\[^\n\]*)\n(.*)$" $manifest -> code data manifest]} {
-	#puts C|$code|$data|
+	debug.fx/manifest {card $code ($data)}
 	switch -exact -- $code {
 	    A {
 		if {[regexp {^ (.*) (.*) (.*)$} $data -> m(attachment,path) m(target) m(attachment,uuid)]} {
@@ -73,6 +77,7 @@ proc ::fx::manifest::parse {manifest args} {
 		    set m(attachment,op) removed
 		    continue
 		}
+		debug.fx/manifest {bad syntax}
 		# error - bad syntax - ignored
 	    }
 	    B -
@@ -94,6 +99,7 @@ proc ::fx::manifest::parse {manifest args} {
 		    set m(type) event
 		    continue
 		}
+		debug.fx/manifest {bad syntax}
 		# error - bad syntax - ignored
 	    }
 	    J {
@@ -101,6 +107,7 @@ proc ::fx::manifest::parse {manifest args} {
 		    dict set m(field) $fname [Dearmor $value]
 		    continue
 		}
+		debug.fx/manifest {bad syntax}
 		# error - bad syntax - ignored
 	    }
 	    K {
@@ -134,6 +141,7 @@ proc ::fx::manifest::parse {manifest args} {
 		    dict set m(tags) $tagname [list $taguuid !]
 		    continue
 		}
+		debug.fx/manifest {bad syntax}
 		# error - bad syntax - ignored
 	    }
 	    U {
@@ -156,6 +164,7 @@ proc ::fx::manifest::parse {manifest args} {
     #puts --------------------------------
 
     if {![info exists m(type)]} {
+	debug.fx/manifest {default type: control}
 	set m(type) control
     }
 

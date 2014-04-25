@@ -24,6 +24,9 @@ package require linenoise
 package require interp
 package require try
 
+debug level  fx/user
+debug prefix fx/user {[debug caller] | }
+
 # # ## ### ##### ######## ############# ######################
 
 namespace eval ::fx::user {
@@ -40,6 +43,8 @@ namespace eval ::fx::user {
 # # ## ### ##### ######## ############# ######################
 
 proc ::fx::user::broadcast {config} {
+    debug.fx/user {}
+
     set content [read [$config @text]]
     $config @text forget
 
@@ -65,16 +70,19 @@ proc ::fx::user::broadcast {config} {
 # # ## ### ##### ######## ############# ######################
 
 proc ::fx::user::push {config} {
+    debug.fx/user {}
     [$config context root] do delegate configuration push user
     return
 }
 
 proc ::fx::user::pull {config} {
+    debug.fx/user {}
     [$config context root] do delegate configuration pull user
     return
 }
 
 proc ::fx::user::sync {config} {
+    debug.fx/user {}
     [$config context root] do delegate configuration sync user
     return
 }
@@ -82,6 +90,8 @@ proc ::fx::user::sync {config} {
 # # ## ### ##### ######## ############# ######################
 
 proc ::fx::user::list {config} {
+    debug.fx/user {}
+
     set map {}
     foreach {login cap info mtime} [fossil user-config] {
 	dict set map $login [::list $cap $info $mtime]
@@ -105,6 +115,8 @@ proc ::fx::user::list {config} {
 }
 
 proc ::fx::user::update-contact {config} {
+    debug.fx/user {}
+
     set login   [$config @user]
     set contact [$config @contact]
     set now     [clock seconds]

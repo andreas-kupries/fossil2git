@@ -20,6 +20,11 @@ package require clock::iso8601
 package require fx::fossil
 package require http
 
+debug level  fx/mailgen
+debug prefix fx/mailgen {[debug caller] | }
+
+# # ## ### ##### ######## ############# ######################
+
 namespace eval ::fx {
     namespace export mailgen
     namespace ensemble create
@@ -45,6 +50,7 @@ namespace eval ::fx::mailgen {
 ## to configure the mail in detail.
 
 proc ::fx::mailgen::test {} {
+    debug.fx/mailgen {}
     Begin
     Headers \
 	Test Test \
@@ -56,6 +62,7 @@ proc ::fx::mailgen::test {} {
 }
 
 proc ::fx::mailgen::artifact {m} {
+    debug.fx/mailgen {}
     # Dynamic dispatch by artifact type
 
     # NOT by event type. The event type however can be used by the
@@ -77,6 +84,7 @@ proc ::fx::mailgen::limit {n text} {
 # # ## ### ##### ######## ############# ######################
 
 proc ::fx::mailgen::attachment {m} {
+    debug.fx/mailgen {}
     # Possible etypes: ticket, event, wiki
 
     # Fields:           Source     Notes
@@ -136,6 +144,7 @@ proc ::fx::mailgen::attachment {m} {
 }
 
 proc ::fx::mailgen::checkin {m} {
+    debug.fx/mailgen {}
     # Fields:     Source     Notes
     # ------      ------     -----
     #   comment   Manifest   Commit message
@@ -191,6 +200,7 @@ proc ::fx::mailgen::checkin {m} {
 }
 
 proc ::fx::mailgen::control {m} {
+    debug.fx/mailgen {}
     # Possible etypes: control (checkin, event)
 
     # Fields:     Source         Notes
@@ -249,6 +259,7 @@ proc ::fx::mailgen::control {m} {
 }
 
 proc ::fx::mailgen::event {m} {
+    debug.fx/mailgen {}
     # Fields:       Source       Notes
     # ------        ------       -----
     #   comment     Manifest     Event description
@@ -296,6 +307,7 @@ proc ::fx::mailgen::event {m} {
 }
 
 proc ::fx::mailgen::ticket {m} {
+    debug.fx/mailgen {}
     # Fields:     Source     Notes
     # ------      ------     -----
     #   ecomment  EVENT      Timeline text
@@ -361,6 +373,7 @@ proc ::fx::mailgen::ticket {m} {
 }
 
 proc ::fx::mailgen::wiki {m} {
+    debug.fx/mailgen {}
     # Fields:     Source     Notes
     # ------      ------     -----
     #   ecomment  EVENT      "Changes to wiki page [...]"
@@ -398,6 +411,7 @@ proc ::fx::mailgen::wiki {m} {
 # # ## ### ##### ######## ############# ######################
 
 proc ::fx::mailgen::InfoText {type} {
+    debug.fx/mailgen {}
     # consider a dict for mapping.
     switch -exact $type {
 	attachment { return Attachment }
@@ -409,6 +423,7 @@ proc ::fx::mailgen::InfoText {type} {
 }
 
 proc ::fx::mailgen::InfoLink {type detail} {
+    debug.fx/mailgen {}
     upvar 1 location location
     switch -exact $type {
 	attachment { return $location/ainfo/$detail }
