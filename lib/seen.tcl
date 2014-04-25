@@ -240,6 +240,7 @@ proc ::fx::seen::FillSeries {} {
     Init
     # Get field => id mapping.
 
+    # TODO: put into helper command
     set fields [fossil repository eval {
 	SELECT name, id
 	FROM fx_aku_watch_tktfield
@@ -255,13 +256,14 @@ proc ::fx::seen::FillSeries {} {
     set total   [Unprocessed]
     set pending $total
     while {$pending} {
-	debug.fx/seen {entries to process: $num}
+	debug.fx/seen {entries to process: $pending}
 	try {
 	    # Inner loop: Process in chunks of 1000
 	    # (see the LIMIT clause below).
 	    # TODO: Make this configurable ?
 	    set progress 0
 	    while {$pending} {
+		debug.fx/seen {chunk ...}
 		fossil repository transaction {
 		    fossil repository eval {
 			SELECT event.type  AS type,
@@ -274,7 +276,7 @@ proc ::fx::seen::FillSeries {} {
 		    } {
 			# type, id, uuid - Event which has not been handled before.
 			debug.fx/seen {@ $uuid $type $id}
-			ProcessChange $type $id $uuid
+			ProcessChange $type $id $uuid $fields
 			incr changes
 		    }
 		}
@@ -302,11 +304,11 @@ proc ::fx::seen::FillSeries {} {
     return
 }
 
-proc ::fx::seen::ProcessChange {type id uuid} {
+proc ::fx::seen::ProcessChange {type id uuid fields} {
     upvar 1 changes changes total total
 
     # type, id, uuid - Event which has not been handled before.
-    #Progress $uuid
+    Progress "[format %10d $changes]/$total"
 
     # Mark all events as seen, even if not a ticket. This reduces the
     # amount of events we have to inspect on future increments.
@@ -314,7 +316,7 @@ proc ::fx::seen::ProcessChange {type id uuid} {
 
     # Detect and skip non-ticket events.
     if {$type ne "t"} {
-	debug.fx/seen {skipped type ($t)}
+	debug.fx/seen {skipped type ($type)}
 	return
     }
 
@@ -378,10 +380,6 @@ proc ::fx::seen::Processed {id} {
 
 proc ::fx::seen::TicketOf {tuuid} {
     debug.fx/seen {}
-
-    set tuuid [dict get $m ticket]
-
-    debug.fx/seen {remember ticket $tuuid}
     fossil repository eval {
 	INSERT OR IGNORE
 	INTO fx_aku_watch_tkt

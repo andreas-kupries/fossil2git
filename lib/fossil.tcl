@@ -271,14 +271,14 @@ proc ::fx::fossil::get-manifest {uuid} {
 
 	    set theerror [fileutil::cat $efile]
 
-	    debug.fx/fossil {message = $theerror}
+	    debug.fx/fossil {message.1 = [lindex [split $theerror \n] 0]}
 
 	    if {![string match *locked* $theerror]} {
 		debug.fx/fossil {rethrow}
 		return {*}$o $e
 	    }
 
-	    debug.fx/fossil {locked @$trial}
+	    debug.fx/fossil {locked @$trials}
 
 	    incr trials -1
 	    if {!$trials} {
