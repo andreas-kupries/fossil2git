@@ -159,7 +159,10 @@ proc ::fx::seen::mark-pending-all {} {
 proc ::fx::seen::regenerate-series {config} {
     debug.fx/seen {}
     puts @[fossil repository-location]
-    Clear
+
+    if {[$config @clear]} {
+	Clear
+    }
     FillSeries
     return
 }
@@ -168,6 +171,15 @@ proc ::fx::seen::get-watched-fields {} {
     debug.fx/seen {}
     return [fossil repository eval {
 	SELECT name
+	FROM   fx_aku_watch_tktfield
+    }]
+}
+
+proc ::fx::seen::map-watched-fields {} {
+    # Return the field => id mapping.
+    debug.fx/seen {}
+    return [fossil repository eval {
+	SELECT name, id
 	FROM   fx_aku_watch_tktfield
     }]
 }
@@ -224,6 +236,7 @@ proc ::fx::seen::get-field {uuid field before} {
 }
 
 proc ::fx::seen::Clear {} {
+    debug.fx/seen {}
     Init
     fossil repository transaction {
 	fossil repository eval {
@@ -232,19 +245,15 @@ proc ::fx::seen::Clear {} {
 	    DELETE FROM fx_aku_watch_tktseen;
 	}
     }
+    debug.fx/seen {done}
     return
 }
 
 proc ::fx::seen::FillSeries {} {
     debug.fx/seen {}
     Init
-    # Get field => id mapping.
 
-    # TODO: put into helper command
-    set fields [fossil repository eval {
-	SELECT name, id
-	FROM fx_aku_watch_tktfield
-    }]
+    set fields [map-watched-fields]
 
     # Go over all pending ticket events and use them to compute the
     # time series of watched ticket fields. While the initial run has

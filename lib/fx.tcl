@@ -781,12 +781,15 @@ cmdr create fx::fx [file tail $::argv0] {
 	    } [fx::call note mail-config-import]
 	}
 
-	private regenerate-ticket-cache {
+	private update-history {
 	    section Notifications Control
 	    description {
-		Forcibly regenerate the cache of time series for the watched
-		ticket fields (See dynamic routes).
+		Update the cached ticket history used to calculate dynamic routes.
 	    }
+	    option clear {
+		Clear the ticket history before updating. I.e. force full update
+		from scratch, instead of doing an incremental one.
+	    } { presence }
 	} [fx::call seen regenerate-series]
 
 	# TODO: Global routes?
