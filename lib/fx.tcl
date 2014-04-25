@@ -22,19 +22,15 @@
 # @@ Meta End
 
 package require Tcl 8.5
+package require cmdr
 package require debug
 package require debug::caller
-package require cmdr
 package require lambda
-package require fx::tty
-package require fx::color
-package require fx::config
-package require fx::enum
-package require fx::fossil
-package require fx::note
-#package require fx::report
-package require fx::seen
-package require fx::user
+package require fx::color ; # color activation
+package require fx::seen  ; # set-progress
+package require fx::tty   ; # stdout check
+
+# # ## ### ##### ######## ############# ######################
 
 if {[fx tty stdout]} {
     fx color activate
@@ -52,7 +48,7 @@ namespace eval fx {
 
 # # ## ### ##### ######## ############# ######################
 
-proc fx::main {argv} {
+proc ::fx::main {argv} {
     debug.fx {}
     try {
 	fx do {*}$argv
@@ -64,11 +60,11 @@ proc fx::main {argv} {
       trap {CMDR VALIDATE} {e o} - \
       trap {CMDR DO UNKNOWN} {e o} {
 	debug.fx {trap - user error}
-	puts [fx color red $e]
+	puts [color red $e]
 	return 1
     } on error {e o} {
 	debug.fx {trap - general, internal error}
-	puts [fx color red $::errorInfo]
+	puts [color red $::errorInfo]
 	return 1
     }
 
@@ -93,7 +89,7 @@ proc ::fx::vt {p args} {
     } $p {*}$args
 }
 
-proc fx::exclude {locked} {
+proc ::fx::exclude {locked} {
     # Jump into the context of the parameter instance currently
     # getting configured. At the time the spec is executed things
     # regarding naming are in good enough shape to extract naming
@@ -147,6 +143,12 @@ cmdr create fx::fx [file tail $::argv0] {
     ## Common pieces across the various commands.
 
     common *all* {
+	option debug {
+	    Placeholder. Processed before reaching cmdr.
+	} {
+	    undocumented
+	    validate str
+	}
 	option repository {
 	    The repository to work with.
 	    Defaults to the repository of the
@@ -960,6 +962,18 @@ cmdr create fx::fx [file tail $::argv0] {
 	    Various commands to test the system and its configuration.
 	}
 
+	private mail-address {
+	    section Testing
+	    description {
+		Parse the specified address into parts, and determine
+		if it is lexically ok for us, or not, and why not in
+		case of the latter.
+	    }
+	    input address {
+		The address to parse and test.
+	    } { }
+	} [fx::call mailer test-address]
+
 	private mail-setup {
 	    section Testing
 	    description {
@@ -1002,10 +1016,18 @@ cmdr create fx::fx [file tail $::argv0] {
     }
 
     officer debug {
-	undocumented
 	description {
-	    Various commands to help debugging the system and its configuration.
+	    Various commands to help debugging the system itself
+	    and its configuration.
 	}
+
+	private levels {
+	    section Debugging
+	    description {
+		List all debug levels known to the system,
+		we can enable for narrative
+	    }
+	} [fx::call debug levels]
     }
 
     # Shortcut

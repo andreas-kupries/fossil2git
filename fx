@@ -20,10 +20,10 @@ package require debug
 package require debug::caller
 package require fx::color
 
-#debug header  {[fx color = sda_bgblack][fx color = sda_bgcyan][pid] @ [clock format [clock seconds]] :: }
+#debug header  {[fx color = sda_bgblack][fx color = sda_bgcyan][clock format [clock seconds]] }
 #debug trailer {[fx color = sda_reset]}
 
-debug header  {[fx color = sda_fgblack][fx color = sda_bgcyan][pid] @ [clock format [clock seconds]] ::[fx color = sda_reset] }
+debug header  {[fx color = sda_fgblack][fx color = sda_bgcyan][clock format [clock seconds]][fx color = sda_reset] }
 
 package require fx
 
