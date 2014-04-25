@@ -33,7 +33,7 @@ namespace eval ::fx::note {
 	mail-config-export mail-config-import route-export \
 	route-import route-add route-drop route-list route-field-add \
 	route-field-drop deliver event-list field-list \
-	mark-pending mark-notified mark-pending-all mark-notified-all \
+	mark-pending mark-notified \
 	show-pending test-parse test-mail-gen test-mail-config \
 	test-mail-receivers
 
