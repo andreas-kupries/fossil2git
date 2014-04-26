@@ -28,7 +28,7 @@ namespace eval ::fx::validate {
 
 namespace eval ::fx::validate::event-type {
     namespace export release validate default complete \
-	external all
+	external all label
     namespace ensemble create
 
     namespace import ::cmdr::validate::common::fail
@@ -40,7 +40,7 @@ proc ::fx::validate::event-type::validate {p x} {
     variable legal
     set cx [string tolower $x]
     if {$cx in $legal} {
-    variable map
+	variable map
 	return [dict get $map $cx]
     }
     fail $p EVENT-TYPE "a repository event-type" $x
@@ -57,6 +57,11 @@ proc ::fx::validate::event-type::external {x} {
     return [dict get $imap $x]
 }
 
+proc ::fx::validate::event-type::label {x} {
+    variable label
+    return [dict get $label $x]
+}
+
 proc ::fx::validate::event-type::all {} {
     variable legal
     return  $legal
@@ -65,6 +70,7 @@ proc ::fx::validate::event-type::all {} {
 # # ## ### ##### ######## ############# ######################
 
 namespace eval ::fx::validate::event-type {
+    # external -> internal
     variable map {
 	commit	ci
 	control	g
@@ -72,16 +78,28 @@ namespace eval ::fx::validate::event-type {
 	event	e
 	ticket	t
     }
+    variable label {
+	commit  {commit }
+	control {control}
+	wiki    {wiki   }
+	event   {event  }
+	ticket  {ticket }
+    }
 }
 
-# Generate back-conversion internal to external.
+# Generate back-conversion internal to external, and extended
+# labeling.
 ::apply {{} {
+    variable label
     variable legal
     variable imap
     variable map
     foreach {k v} $map {
+	# Create inverted map: internal --> external
 	dict set imap $v $k
 	lappend legal $k
+	# Extend labeling to the internal types as well.
+	dict set label $v [dict get $label $k]
     }
 } ::fx::validate::event-type}
 
