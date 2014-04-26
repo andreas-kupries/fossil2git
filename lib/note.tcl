@@ -20,6 +20,7 @@ package require fx::mailgen
 package require fx::manifest
 package require fx::mgr::config
 package require fx::seen
+package require fx::color
 package require fx::table
 package require fx::validate::event-type
 package require fx::validate::mail-config
@@ -45,6 +46,7 @@ namespace eval ::fx::note {
     namespace import ::fx::manifest
     namespace import ::fx::mgr::config
     namespace import ::fx::seen
+    namespace import ::fx::color
     namespace import ::fx::table::do
     rename do table
 
@@ -608,8 +610,8 @@ proc ::fx::note::route-import {config} {
 	puts "Import replaces the existing routing ..."
 	incr changes
 	# Inlined drop of all routes and fields.
-	RouteDrop fx-aku-note-send2-* *
-	RouteDrop fx-aku-note-field *	     
+	RouteDrop "Event *"       fx-aku-note-send2-* *
+	RouteDrop "Ticket Fields" fx-aku-note-field *	     
     } else {
 	puts "Import extends the existing routing ..."
     }
@@ -618,7 +620,9 @@ proc ::fx::note::route-import {config} {
     foreach {event destination} $routes {
 	# Inlined route-add.
 	set e [event-type external $event]
+	set l [event-type label    $event]
 	if {![RouteAdd \
+		  "Event [color name $l]" \
 		  fx-aku-note-send2-${e} \
 		  $destination]
 	} continue
@@ -628,7 +632,10 @@ proc ::fx::note::route-import {config} {
     puts "New fields ..."
     foreach field $fields {
 	# Inlined route-field-add.
-	if {![RouteAdd fx-aku-note-field $field]
+	if {![RouteAdd \
+		  "Ticket Fields" \
+		  fx-aku-note-field \
+		  $field]
 	} continue
 	incr changes
 	WatchMe [$config @repository]
@@ -670,14 +677,27 @@ proc ::fx::note::route-add {config} {
     # @to (list), @event, @repository(-db)
 
     # seen event is internal rep.
-    # for storage we go back to external rep.
-    set e [event-type external [$config @event]]
+    set e [$config @event]
 
-    if {![RouteAdd \
-	     fx-aku-note-send2-${e} \
-	     [$config @to]]
-    } return
+    if {$e eq "all"} {
+	set el [event-type all]
+    } else {
+	# for storage we go back to external rep.
+	set el [list [event-type external $e]]
+    }
 
+    set watch 0
+    foreach e $el {
+	set l [event-type label $e]
+	if {![RouteAdd \
+		  "Event [color name $l]" \
+		  fx-aku-note-send2-${e} \
+		  [$config @to]]
+	} continue
+	incr watch
+    }
+
+    if {!$watch} return
     WatchMe [$config @repository]
     return
 }
@@ -687,15 +707,27 @@ proc ::fx::note::route-drop {config} {
     # @to (list), @event, @repository(-db)
 
     # seen event is internal rep.
-    # for storage we go back to external rep.
-    set e [event-type external [$config @event]]
+    set e [$config @event]
 
-    if {![RouteDrop \
-	     fx-aku-note-send2-$e \
-	     [$config @to]] ||
-	[HasRoutes]
-    } return
+    if {$e eq "all"} {
+	set el [event-type all]
+    } else {
+	# for storage we go back to external rep.
+	set el [list [event-type external $e]]
+    }
 
+    set remove 0
+    foreach e $el {
+	set l [event-type label $e]
+	if {![RouteDrop \
+		  "Event [color name $l]" \
+		  fx-aku-note-send2-$e \
+		  [$config @to]]
+	} continue
+	incr remove
+    }
+
+    if {!$remove || [HasRoutes]} return
     RemoveMe [$config @repository]
     return
 }
@@ -732,8 +764,9 @@ proc ::fx::note::route-field-add {config} {
     # @field (list), @repository(-db)
 
     if {![RouteAdd \
-	     fx-aku-note-field \
-	     [$config @field]]
+	      "Ticket Fields" \
+	      fx-aku-note-field \
+	      [$config @field]]
     } return
 
     seen set-watched-fields [Fields]
@@ -747,8 +780,9 @@ proc ::fx::note::route-field-drop {config} {
     # @field (list), @repository(-db)
 
     if {![RouteDrop \
-	     fx-aku-note-field \
-	     [$config @field]]
+	      "Ticket Fields" \
+	      fx-aku-note-field \
+	      [$config @field]]
     } return
 
     seen set-watched-fields [Fields]
@@ -927,38 +961,42 @@ proc ::fx::note::+RX {addr} {
 # # ## ### ##### ######## ############# ######################
 ## Internal helpers: Low level generic route management.
 
-proc ::fx::note::RouteAdd {prefix destinations} {
+proc ::fx::note::RouteAdd {label prefix destinations} {
     debug.fx/note {}
+
+    # TODO: destinations, pad-right for alignment
 
     set added 0
     foreach dst $destinations {
-	puts -nonewline "  $dst ... "
+	puts -nonewline "  ${label}: Adding [color name $dst] ... "
 
 	set key ${prefix}:$dst
 	if {[config has $key]} {
-	    puts "Already known"
+	    puts [color note "Already known"]
 	} else {
 	    config set-local $key 1
-	    puts "Added"
+	    puts [color good OK]
 	    incr added
 	}
     }
     return $added
 }
 
-proc ::fx::note::RouteDrop {prefix destinations} {
+proc ::fx::note::RouteDrop {label prefix destinations} {
     debug.fx/note {}
+
+    # TODO: destinations, pad-right for alignment
 
     set removed 0
     foreach pattern $destinations {
-	puts -nonewline "  $pattern ... "
+	puts -nonewline "  ${label}: Dropping [color name $pattern] ... "
 
 	set key ${prefix}:$pattern
-	set by  [config unset-glob-local  $key]
+	set by  [config unset-glob-local $key]
 	if {!$by} {
-	    puts "Ignored, no match"
+	    puts [color warning "Ignored, no match"]
 	} else {
-	    puts "Removed $by"
+	    puts [color good "Removed $by"]
 	    incr removed $by
 	}
     }

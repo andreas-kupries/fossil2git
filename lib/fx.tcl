@@ -839,7 +839,7 @@ cmdr create fx::fx [file tail $::argv0] {
 	    common .etype {
 		input event {
 		    Event to work with.
-		} { validate [fx::vt event-type] }
+		} { validate [fx::vt event-xtype] }
 	    }
 
 	    private add {
