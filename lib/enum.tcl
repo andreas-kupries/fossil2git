@@ -47,6 +47,7 @@ proc ::fx::enum::MaxL {words} {
 }
 
 proc ::fx::enum::list {config} {
+    fossil show-repository-location
     [table t {Name Elements} {
 	::set db    [$config @repository-db]
 	::set enums [fx-enums]
@@ -70,6 +71,8 @@ proc ::fx::enum::create {config} {
     ::set db     [$config @repository-db]
     ::set etable [$config @newenum]
 
+    fossil show-repository-location
+
     $db transaction {
 	$db eval [subst {
 	    CREATE TABLE $etable (
@@ -91,6 +94,8 @@ proc ::fx::enum::delete {config} {
     ::set db     [$config @repository-db]
     ::set etable [$config @enum]
 
+    fossil show-repository-location
+
     $db transaction {
 	$db eval [subst {
 	    DROP TABLE $etable
@@ -103,6 +108,8 @@ proc ::fx::enum::export {config} {
     ::set db      [$config @repository-db]
     ::set etables [$config @enums]
     ::set chan    [$config @output]
+
+    #fossil show-repository-location
 
     lappend data "\# fx enumeration export @ [clock format [clock seconds]]"
 
@@ -127,6 +134,8 @@ proc ::fx::enum::export {config} {
 proc ::fx::enum::import {config} {
     ::set db    [$config @repository-db]
     ::set input [$config @import]
+
+    fossil show-repository-location
 
     ::set data [read $input]
     close $input
@@ -185,6 +194,8 @@ proc ::fx::enum::add {config} {
     ::set db     [$config @repository-db]
     ::set etable [$config @enum]
 
+    fossil show-repository-location
+
     $db transaction {
 	foreach item [lsort -unique [$config @items]] {
 	    $db eval [subst {
@@ -198,6 +209,8 @@ proc ::fx::enum::add {config} {
 proc ::fx::enum::remove {config} {
     ::set db     [$config @repository-db]
     ::set etable [$config @enum]
+
+    fossil show-repository-location
 
     $db transaction {
 	foreach item [lsort -unique [$config @items]] {
@@ -216,6 +229,8 @@ proc ::fx::enum::change {config} {
     ::set etable [$config @enum]
     ::set old    [$config @item]
     ::set new    [$config @newitem]
+
+    fossil show-repository-location
 
     $db transaction {
 	$db eval [subst {

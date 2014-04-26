@@ -175,15 +175,15 @@ cmdr create fx::fx [file tail $::argv0] {
 	    generate [fx::call fossil repository-find]
 	    # Note: This generator command dynamically recognizes
 	    # commands with an "all" parameter, and disables itself
-	    # (*) if that parameter is active/set. Ad *: I.e. returns
-	    # an empty string.
+	    # (*) if that parameter is active/set.
+	    # (Ad *): I.e. returns an empty string.
 	}
 	state repository-db {
 	    The repository database we are working with.
 	} {
-	    # ensure that this is run before the action code, making
-	    # the database command globally accessible.
 	    immediate
+	    # Ensures that this is run before the action code, making
+	    # the database command globally accessible.
 	    generate [fx::call fossil repository-open]
 	}
     }
@@ -301,14 +301,57 @@ cmdr create fx::fx [file tail $::argv0] {
 	puts "[file tail $::argv0] [package present fx]"
     }]
 
-    private repository {
-	section Introspection
+    officer repository {
 	description {
-	    Print the name of the repository we are working on.
+	    Manage the repository to work with.
 	}
-    } [lambda config {
-	puts [$config @repository]
-    }]
+
+	private show {
+	    section Introspection
+	    section {Repository Management}
+	    description {
+		Print the name of the repository we are working on, if any.
+	    }
+	} [fx::call fossil c_show_repository]
+	default
+
+	common .no-search {
+	    state no-search {
+		Fake parameter to disable repository search by its
+		mere presence.
+	    } {}
+	}
+
+	private default {
+	    section Introspection
+	    section {Repository Management}
+	    description {
+		Print the name of the default repository, if any.
+	    }
+	    use .no-search
+	} [fx::call fossil c_default_repository]
+
+	private reset {
+	    section {Repository Management}
+	    description {
+		Unset the current default repository.
+	    }
+	    use .no-search
+	} [fx::call fossil c_reset_repository]
+
+	private set {
+	    section {Repository Management}
+	    description {
+		Set the path to the current default repository.
+	    }
+	    use .no-search
+	    input target {
+		The path to the current repository to use when all else fails.
+	    } {
+		validate rwpath
+	    }
+	} [fx::call fossil c_set_repository]
+    }
 
     # # ## ### ##### ######## ############# ######################
     ## Overlay to the standard "fossil user" command

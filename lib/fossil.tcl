@@ -17,6 +17,7 @@ package require Tcl 8.5
 package require sqlite3
 package require debug
 package require debug::caller
+package require fx::color
 
 debug level  fx/fossil
 debug prefix fx/fossil {[debug caller] | }
@@ -29,21 +30,135 @@ namespace eval ::fx {
 }
 namespace eval ::fx::fossil {
     namespace export \
-	global global-location \
-	repository repository-location \
-	repository-open repository-find \
-	fx-tables fx-enums fx-enum-items \
-	ticket-title ticket-fields get-manifest \
-	branch-of changeset reveal user-info \
-	users user-config
+	c_show_repository c_set_repository c_reset_repository \
+	c_default_repository \
+	branch-of changeset reveal user-info users user-config \
+	get-manifest fx-tables fx-enums fx-enum-items \
+	ticket-title ticket-fields global global-location \
+	repository repository-locationset-repository-location \
+	show-repository-location repository-find repository-open
+	
     namespace ensemble create
+
+    namespace import ::fx::color
 
     # Cached location of the repository we are working with.
     variable repo_location {}
+    # Information about where the location came from (one of 'user',
+    # 'checkout', or 'default').
+    variable repo_origin {}
 
-    # Location of a fossil binary for things we are shelling out
-    # (still).
+    # Location of a fossil binary for things we are shelling out to
+    # (still, although only 'get-manifest' does).
     variable fossil [auto_execok fossil]
+
+    # Configuration key used to save/read the current repository.
+    variable rkey "fx-aku-current-repository"
+}
+
+# # ## ### ##### ######## ############# ######################
+
+proc ::fx::fossil::c_show_repository {config} {
+    debug.fx/fossil {}
+    show-repository-location
+    return
+}
+
+proc ::fx::fossil::c_set_repository {config} {
+    debug.fx/fossil {}
+    variable rkey
+    # Note that we are effectively inlining the command
+    #    "fx::mgr::config::set-global".
+    # We have to, to avoid a dependency cycle with fx::mgr::config.
+
+    # Determine location, as absolute path.
+    set location [file normalize [$config @target]]
+
+    # Save to external global configuration
+    global eval {
+	INSERT OR IGNORE INTO global_config
+	VALUES (:rkey, :location);
+
+	UPDATE global_config
+	SET   value = :location
+	WHERE name  = :rkey
+    }
+
+    # Update in-memory information, for the display following.
+    clear-repository-location
+    set-repository-location $location default
+
+    show-repository-location
+    return
+}
+
+proc ::fx::fossil::c_reset_repository {config} {
+    debug.fx/fossil {}
+    variable rkey
+    # Note that we are effectively inlining the commands
+    #    "fx::mgr::config::unset-global", and "...::has-global".
+    # We have to, to avoid a dependency cycle with fx::mgr::config.
+
+    # Load current default, if there is any. Abort early if not.
+    set havedefault 0
+    global eval {
+	SELECT value AS location
+	FROM  global_config
+	WHERE name  = :rkey
+    } {
+	incr havedefault
+	clear-repository-location
+	set-repository-location $location default
+	debug.fx/fossil {==> default $location}
+    }
+
+    if {!$havedefault} {
+	puts [color warning {No default repository known, done nothing}]
+	return
+    }
+
+    # Remove from external configuration.
+    global eval {
+	DELETE
+	FROM global_config
+	WHERE name = :rkey
+    }
+
+    # Show what was unset, and clear from memory as well.
+    show-repository-location " [color warning {Now unset}]"
+    clear-repository-location
+    return
+}
+
+proc ::fx::fossil::c_default_repository {config} {
+    debug.fx/fossil {}
+    variable rkey
+    # Note that we are effectively inlining the commands
+    #    "fx::mgr::config::has-global".
+    # We have to, to avoid a dependency cycle with fx::mgr::config.
+
+    # Load current default, if there is any. Abort early if not.
+    set havedefault 0
+    global eval {
+	SELECT value AS location
+	FROM  global_config
+	WHERE name  = :rkey
+    } {
+	incr havedefault
+	clear-repository-location
+	set-repository-location $location default
+	debug.fx/fossil {==> default $location}
+    }
+
+    if {!$havedefault} {
+	puts [color warning {No default repository known}]
+	return
+    }
+
+    # Show the current setting, and clear it from memory again.
+    show-repository-location
+    clear-repository-location
+    return
 }
 
 # # ## ### ##### ######## ############# ######################
@@ -88,8 +203,8 @@ proc ::fx::fossil::repository-open {p} {
     # cmdr generate callback
 
     # NOTE how we are keeping the repository database until process
-    # end.  Assumes that locate is called only once. See also fx cmdr
-    # specification.
+    # end. We assume that this command is called only once. See also
+    # the fx cmdr specification (fx.tcl).
 
     set location [$p config @repository]
 
@@ -97,7 +212,7 @@ proc ::fx::fossil::repository-open {p} {
     # will have already set the variable below. However for a
     # user-specified location the search did not happen, leaving it
     # uninitialized. So we do that now, making sure.
-    variable repo_location $location
+    set-repository-location $location user
 
     debug.fx/fossil {@ $location}
     if {$location eq {}} {
@@ -117,23 +232,51 @@ proc ::fx::fossil::global-location {} {
     return [file normalize ~/.fossil]
 }
 
+proc ::fx::fossil::show-repository-location {{suffix {}}} {
+    debug.fx/fossil {}
+    variable repo_location
+    variable repo_origin
+    puts "[color warning [string totitle $repo_origin]] @ [color note $repo_location]$suffix"
+    return
+}
+
 proc ::fx::fossil::repository-location {} {
     variable repo_location
     debug.fx/fossil {@ $repo_location}
     return  $repo_location
 }
 
+proc ::fx::fossil::set-repository-location {path origin} {
+    debug.fx/fossil {@ $origin ($path)}
+    variable repo_location
+    variable repo_origin
+
+    # Skip when already defined.
+    if {$repo_origin ne {}} return
+
+    set repo_location $path
+    set repo_origin   $origin
+    return
+}
+
+proc ::fx::fossil::clear-repository-location {} {
+    debug.fx/fossil {}
+    variable repo_location {}
+    variable repo_origin   {}
+    return
+}
+
 proc ::fx::fossil::repository-find {p} {
     debug.fx/fossil {}
     # cmdr generate callback
-    variable repo_location
 
-    if {[$p config has @all] && [$p config @all set?]} {
+    if {[$p config has @no-search] ||
+	([$p config has @all] && [$p config @all set?])} {
 	# Leave the single repository undefined, do not even try to
 	# find it. This way we cannot run into an error when an "all"
 	# operation is run outside of a checkout and without a
 	# "repository".
-	debug.fx/fossil {skip on --all}
+	debug.fx/fossil {skip on --all, or <no-search>}
 	return {}
     }
 
@@ -142,32 +285,58 @@ proc ::fx::fossil::repository-find {p} {
     # specification.
 
     # Get checkout directory and database.
-    set ckout [ckout [scan-up Repository [pwd] fx::fossil::is]]
-    debug.fx/fossil {checkout located @ $ckout}
+    try {
+	set ckout [ckout [scan-up Repository [pwd] fx::fossil::is]]
+	debug.fx/fossil {checkout located @ $ckout}
+    } trap {FX FOSSIL SCAN-UP}  {e o} - \
+      trap {FX FOSSIL CHECKOUT} {e o} {
+	# Check if a target is set. If yes, use that as our
+	# repository. Otherwise rethrow the error, making it public.
+
+	# Note that we are effectively inlining the command
+	# "fx::mgr::config::get-global". We have to, to avoid a
+	# dependency cycle.
+
+	variable rkey
+	global eval {
+	    SELECT value AS location
+	    FROM  global_config
+	    WHERE name  = :rkey
+	} {
+	    set-repository-location $location default
+	    debug.fx/fossil {done ==> default $location}
+	    return $location
+	}
+
+	return {*}$o $e
+    }
     sqlite3 CK $ckout
 
     # Retrieve repository location. This may be relative (to the
     # checkout directory).
-    set repo_location [CK onecolumn {
+    set location [CK onecolumn {
 	SELECT value
 	FROM vvar
 	WHERE name = 'repository'
     }]
-    debug.fx/fossil {directed to  $repo_location}
+    debug.fx/fossil {directed to  $location}
 
-    # Merge checkout directory and location to resolve relative
-    # paths. Absolute location supercedes the preceding path segments.
-    set repo_location [file join [file dirname $ckout] $repo_location]
-    debug.fx/fossil {resolved as  $repo_location}
+    # Merge the path of the checkout directory and the location it
+    # refered to, to resolve relative paths in the context of the
+    # checkout, not the working directory. Of couse, an absolute
+    # repository location supercedes the preceding path segments.
+    set location [file join [file dirname $ckout] $location]
+    debug.fx/fossil {resolved as  $location}
 
     # Normalize to make the path nicer.
-    set repo_location [file normalize $repo_location]
-    debug.fx/fossil {normalized as $repo_location}
+    set location [file normalize $location]
+    debug.fx/fossil {normalized as $location}
 
     rename CK {}
 
-    debug.fx/fossil {done ==> $repo_location}
-    return $repo_location
+    set-repository-location $location checkout
+    debug.fx/fossil {done ==> checkout $location}
+    return $location
 }
 
 # # ## ### ##### ######## ############# ######################

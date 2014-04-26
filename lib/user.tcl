@@ -44,6 +44,7 @@ namespace eval ::fx::user {
 
 proc ::fx::user::broadcast {config} {
     debug.fx/user {}
+    fossil show-repository-location
 
     set content [read [$config @text]]
     $config @text forget
@@ -71,18 +72,21 @@ proc ::fx::user::broadcast {config} {
 
 proc ::fx::user::push {config} {
     debug.fx/user {}
+    fossil show-repository-location
     [$config context root] do delegate configuration push user
     return
 }
 
 proc ::fx::user::pull {config} {
     debug.fx/user {}
+    fossil show-repository-location
     [$config context root] do delegate configuration pull user
     return
 }
 
 proc ::fx::user::sync {config} {
     debug.fx/user {}
+    fossil show-repository-location
     [$config context root] do delegate configuration sync user
     return
 }
@@ -99,6 +103,7 @@ proc ::fx::user::list {config} {
 
     #array set uu $map ; parray uu ; unset uu
 
+    fossil show-repository-location
     [table t {Name Permissions Contact Changed Notes} {
 	foreach login [lsort -dict [dict keys $map]] {
 	    lassign [dict get $map $login] cap info mtime
@@ -116,6 +121,7 @@ proc ::fx::user::list {config} {
 
 proc ::fx::user::update-contact {config} {
     debug.fx/user {}
+    fossil show-repository-location
 
     set login   [$config @user]
     set contact [$config @contact]

@@ -160,7 +160,7 @@ proc ::fx::seen::mark-pending-all {} {
 
 proc ::fx::seen::regenerate-series {config} {
     debug.fx/seen {}
-    puts @[fossil repository-location]
+    fossil show-repository-location
 
     if {[$config @clear]} {
 	Clear

@@ -34,6 +34,8 @@ namespace eval ::fx::config {
 
 proc ::fx::config::available {config} {
     variable legal
+    fossil show-repository-location
+    # TODO: FIXME - fx::validate::setting ?
     puts [join [lsort -dict [dict keys $legal]] \n]
 }
 
@@ -44,8 +46,7 @@ proc ::fx::config::list {config} {
     # TODO: order by name, or last-changed.
     # Currently fixed order by name.
 
-    puts @[fossil repository-location]
-
+    fossil show-repository-location
     [table t {Setting Value Last-Changed} {
 	foreach name [lsort -dict [dict keys $settings]] {
 	    # Maybe run a dict filter on settings.
@@ -56,7 +57,7 @@ proc ::fx::config::list {config} {
 	    if {[string match baseurl:*   $name]} continue
 	    if {[string match last-sync-* $name]} continue
 
-	    # Extension variables have their own command heriarchies
+	    # Extension variables have their own command heirarchies
 	    # to ensure proper use.
 	    if {[string match fx-*        $name]} continue
 
@@ -86,6 +87,7 @@ proc ::fx::config::list {config} {
 }
 
 proc ::fx::config::get {config} {
+    fossil show-repository-location
     puts [config get [$config @setting]]
     return
 }
@@ -111,6 +113,7 @@ proc ::fx::config::set {config} {
 	config set-global $name $value
 	set current [config get-global $name]
     } else {
+	fossil show-repository-location
 	config set-local $name $value
 	set current [config get-local $name]
     }
@@ -138,6 +141,7 @@ proc ::fx::config::unset {config} {
 	if {$global} {
 	    config unset-global $name $value
 	} else {
+	    fossil show-repository-location
 	    config unset-local $name $value
 	}
 

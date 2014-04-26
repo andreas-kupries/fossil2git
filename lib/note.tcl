@@ -63,6 +63,7 @@ debug prefix fx/note {[debug caller] | }
 
 proc ::fx::note::mark-pending {config} {
     debug.fx/note {}
+    fossil show-repository-location
 
     if {[$config @overall]} {
 	seen mark-pending-all
@@ -74,6 +75,7 @@ proc ::fx::note::mark-pending {config} {
 
 proc ::fx::note::mark-notified {config} {
     debug.fx/note {}
+    fossil show-repository-location
 
     if {[$config @overall]} {
 	seen mark-notified-all
@@ -105,6 +107,7 @@ proc ::fx::note::show-pending {config} {
 	set c [expr {$w*6/10}]
     }
 
+    fossil show-repository-location
     [table t {Id Type UUID Comment} {
 	seen forall-pending type id uuid comment {
 	    set type [event-type external $type]
@@ -113,7 +116,7 @@ proc ::fx::note::show-pending {config} {
 		[mailgen limit $c [lindex [split $comment \n] 0]]
 	}
     }] show
-    puts @[fossil repository-location]
+    fossil show-repository-location
     return
 }
 
@@ -132,6 +135,7 @@ proc ::fx::note::test-mail-gen {config} {
 
 	# TODO: switchable progress animation
 
+	fossil show-repository-location
 	[table t {UUID Status} {
 	    set max [seen num-pending]
 	    set n 0
@@ -167,7 +171,7 @@ proc ::fx::note::test-mail-gen {config} {
     dict with context {} ;# type, id, uuid, comment
     set extype [event-type external $type]
 
-    puts @[fossil repository-location]:$uuid
+    fossil show-repository-location ": $uuid"
     puts [mailgen artifact \
 	      [manifest parse \
 		   [fossil get-manifest $uuid] \
@@ -180,6 +184,7 @@ proc ::fx::note::test-mail-gen {config} {
 
 proc ::fx::note::test-mail-config {config} {
     debug.fx/note {}
+    fossil show-repository-location
     mailer send \
 	[mailer get-config] \
 	[$config @destination] \
@@ -199,6 +204,7 @@ proc ::fx::note::test-mail-receivers {config} {
     if {$all} {
 	# Test all pending events.
 
+	fossil show-repository-location
 	[table t {UUID # Destinations} {
 	    set max [seen num-pending]
 	    set n 0
@@ -219,6 +225,7 @@ proc ::fx::note::test-mail-receivers {config} {
 
 	lassign [MailCore $uuid {} $map] recv m
 
+	fossil show-repository-location
 	[table t [list "Destinations $uuid"] {
 	    foreach dest [lsort -dict $recv] {
 		$t add $dest
@@ -362,7 +369,7 @@ proc ::fx::note::test-parse {config} {
 	unset m(tags)
     }
 
-    puts @[fossil repository-location]:$uuid
+    fossil show-repository-location ": $uuid"
     [table t {Key Value} {
 	foreach k [lsort -dict [array names m]] {
 	    $t add $k $m($k)
@@ -375,6 +382,7 @@ proc ::fx::note::test-parse {config} {
 
 proc ::fx::note::mail-config-export {config} {
     debug.fx/note {}
+    #fossil show-repository-location
 
     set chan      [$config @output]
     set useglobal [$config @global]
@@ -402,6 +410,7 @@ proc ::fx::note::mail-config-export {config} {
 
 proc ::fx::note::mail-config-import {config} {
     debug.fx/note {}
+    fossil show-repository-location
 
     set global [$config @global]
     set input  [$config @import]
@@ -472,7 +481,7 @@ proc ::fx::note::mail-config-show {config} {
 
     # Format and show the semi-table.
 
-    puts @[fossil repository-location]
+    fossil show-repository-location
     [table t {{} Key Value Last-Changed} {
 	foreach item [lsort -dict -index 1 $data] {
 	    $t add {*}$item
@@ -483,6 +492,8 @@ proc ::fx::note::mail-config-show {config} {
 
 proc ::fx::note::mail-config-set {config} {
     debug.fx/note {}
+    fossil show-repository-location
+
     # See also "fx::config::set"
     # equivalent with shorter user-visible keys
 
@@ -498,6 +509,7 @@ proc ::fx::note::mail-config-set {config} {
 
 proc ::fx::note::mail-config-unset {config} {
     debug.fx/note {}
+    fossil show-repository-location
 
     set global [$config @global]
     foreach name [$config @key] {
@@ -554,7 +566,7 @@ proc ::fx::note::route-list {config} {
     }
 
     # Now print nicely.
-    puts @[fossil repository-location]
+    fossil show-repository-location
     [table t {Event Route} {
 	foreach event [lsort -dict [dict keys $map]] {
 	    $t add $event [join [dict get $map $event] \n]
@@ -582,6 +594,7 @@ proc ::fx::note::route-export {config} {
 
 proc ::fx::note::route-import {config} {
     debug.fx/note {}
+    fossil show-repository-location
 
     set extend [$config @extend]
     set input  [$config @import]
@@ -645,7 +658,7 @@ proc ::fx::note::route-import {config} {
 	seen set-watched-fields [Fields]
     }
 
-    puts OK
+    puts [color good OK]
     return
 }
 
@@ -674,6 +687,7 @@ proc ::fx::note::IField {p destination} {
 
 proc ::fx::note::route-add {config} {
     debug.fx/note {}
+    fossil show-repository-location
     # @to (list), @event, @repository(-db)
 
     # seen event is internal rep.
@@ -704,6 +718,7 @@ proc ::fx::note::route-add {config} {
 
 proc ::fx::note::route-drop {config} {
     debug.fx/note {}
+    fossil show-repository-location
     # @to (list), @event, @repository(-db)
 
     # seen event is internal rep.
@@ -734,8 +749,8 @@ proc ::fx::note::route-drop {config} {
 
 proc ::fx::note::event-list {config} {
     debug.fx/note {}
-    # @repository-db
 
+    fossil show-repository-location
     [table t Event {
 	foreach col [lsort -dict [event-type all]] {
 	    $t add $col
@@ -746,9 +761,8 @@ proc ::fx::note::event-list {config} {
 
 proc ::fx::note::field-list {config} {
     debug.fx/note {}
-    # @repository-db
 
-    puts @[fossil repository-location]
+    fossil show-repository-location
     [table t Field {
 	foreach col [lsort -dict [fossil ticket-fields]] {
 	    # Ignore system columns.
@@ -761,8 +775,9 @@ proc ::fx::note::field-list {config} {
 
 proc ::fx::note::route-field-add {config} {
     debug.fx/note {}
-    # @field (list), @repository(-db)
+    # @field (list)
 
+    fossil show-repository-location
     if {![RouteAdd \
 	      "Ticket Fields" \
 	      fx-aku-note-field \
@@ -779,6 +794,7 @@ proc ::fx::note::route-field-drop {config} {
     debug.fx/note {}
     # @field (list), @repository(-db)
 
+    fossil show-repository-location
     if {![RouteDrop \
 	      "Ticket Fields" \
 	      fx-aku-note-field \
@@ -814,6 +830,7 @@ proc ::fx::note::route-deliver {config} {
     }
 
     # Delivery for single repository.
+    fossil show-repository-location
 
     # Determine the routes. This gives us (implicitly)
     #   a list of the events we can ignore, too.
