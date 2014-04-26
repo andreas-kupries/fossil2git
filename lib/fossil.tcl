@@ -93,6 +93,12 @@ proc ::fx::fossil::repository-open {p} {
 
     set location [$p config @repository]
 
+    # Note: If the repository was not specified the search process
+    # will have already set the variable below. However for a
+    # user-specified location the search did not happen, leaving it
+    # uninitialized. So we do that now, making sure.
+    variable repo_location $location
+
     debug.fx/fossil {@ $location}
     if {$location eq {}} {
 	# Do not create a repository db if we have no location for it
