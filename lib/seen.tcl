@@ -177,8 +177,8 @@ proc ::fx::seen::regenerate-series {config} {
 	return
     }
 
-    puts [color note "Watched fields:  [dict keys $fields]"]
-    puts [color note "Pending changes: $num"]
+    puts "Watched fields:  [color note [dict keys $fields]]"
+    puts "Pending changes: [color note $num]"
 
     FillSeries
     return
