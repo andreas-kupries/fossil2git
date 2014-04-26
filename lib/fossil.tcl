@@ -35,7 +35,7 @@ namespace eval ::fx::fossil {
 	branch-of changeset reveal user-info users user-config \
 	get-manifest fx-tables fx-enums fx-enum-items \
 	ticket-title ticket-fields global global-location \
-	repository repository-locationset-repository-location \
+	repository repository-location set-repository-location \
 	show-repository-location repository-find repository-open
 	
     namespace ensemble create
