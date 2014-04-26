@@ -47,6 +47,7 @@ namespace eval ::fx::color {
 	warning yellow
 	note    blue
 	good    green
+	name    blue
     }
 }
 
@@ -76,6 +77,8 @@ foreach {cmd color} {
     error     error
     warning   warning
     note      note
+    good      good
+    name      name
 } {
     interp alias {} ::fx::color::$cmd {} ::fx::color::Apply $color
 }
