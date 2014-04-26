@@ -18,6 +18,7 @@
 package require Tcl 8.5
 package require fx::table
 package require fx::fossil
+package require fx::util
 package require textutil::adjust
 package require linenoise
 package require interp
@@ -30,29 +31,20 @@ namespace eval ::fx::enum {
     namespace ensemble create
 
     namespace import ::fx::table::do
-    namespace import ::fx::fossil::fx-enums
+    namespace import ::fx::fossil
+    namespace import ::fx::util
     rename do table
 }
 
 # # ## ### ##### ######## ############# ######################
 
-proc ::fx::enum::MaxL {words} {
-    ::set max 0 
-    foreach w $words {
-	set l [string length $w]
-	if {$l <= $max} continue
-	::set max $l
-    }
-    return $max
-}
-
 proc ::fx::enum::list {config} {
     fossil show-repository-location
     [table t {Name Elements} {
 	::set db    [$config @repository-db]
-	::set enums [fx-enums]
+	::set enums [fossil fx-enums]
 
-	set w [expr {[linenoise columns] - [MaxL $enums] - 7}]
+	set w [expr {[linenoise columns] - [util max-length $enums] - 7}]
 
 	foreach e $enums {
 	    set items [join [$db eval [subst {

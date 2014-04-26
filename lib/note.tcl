@@ -22,6 +22,7 @@ package require fx::mgr::config
 package require fx::seen
 package require fx::color
 package require fx::table
+package require fx::util
 package require fx::validate::event-type
 package require fx::validate::mail-config
 package require interp
@@ -47,6 +48,7 @@ namespace eval ::fx::note {
     namespace import ::fx::mgr::config
     namespace import ::fx::seen
     namespace import ::fx::color
+    namespace import ::fx::util
     namespace import ::fx::table::do
     rename do table
 
@@ -949,11 +951,10 @@ proc ::fx::note::+R {addr} {
     upvar 1 recv recv
     if {$addr eq {}} return
     if {![mailer good-address $addr]} {
-	#puts \trejected_=$addr
-	# TODO: Log rejected string
+	debug.fx/note {rejected}
 	return
     }
-    #puts \tadded____=$addr
+    debug.fx/note {added}
     lappend recv $addr
     return
 }
@@ -962,15 +963,15 @@ proc ::fx::note::+RX {addr} {
     debug.fx/note {}
     upvar 1 recv recv
     # Each level of transformation may introduce an address.
-    #puts \tconcealed=$addr
+    debug.fx/note {concealed = $addr}
     +R $addr
 
     set addr [fossil reveal $addr]
-    #puts \trevealed_=$addr
+    debug.fx/note {revealed  = $addr}
     +R $addr
 
     set addr [fossil user-info $addr]
-    #puts \tuserinfo_=$addr
+    debug.fx/note {contact   = $addr}
     +R $addr
     return
 }
@@ -981,11 +982,9 @@ proc ::fx::note::+RX {addr} {
 proc ::fx::note::RouteAdd {label prefix destinations} {
     debug.fx/note {}
 
-    # TODO: destinations, pad-right for alignment
-
     set added 0
-    foreach dst $destinations {
-	puts -nonewline "  ${label}: Adding [color name $dst] ... "
+    foreach dst $destinations dl [util padr $destinations] {
+	puts -nonewline "  ${label}: Adding [color name $dl] ... "
 
 	set key ${prefix}:$dst
 	if {[config has $key]} {
@@ -1002,11 +1001,9 @@ proc ::fx::note::RouteAdd {label prefix destinations} {
 proc ::fx::note::RouteDrop {label prefix destinations} {
     debug.fx/note {}
 
-    # TODO: destinations, pad-right for alignment
-
     set removed 0
-    foreach pattern $destinations {
-	puts -nonewline "  ${label}: Dropping [color name $pattern] ... "
+    foreach pattern $destinations dl [util padr $destinations] {
+	puts -nonewline "  ${label}: Dropping [color name $dl] ... "
 
 	set key ${prefix}:$pattern
 	set by  [config unset-glob-local $key]
