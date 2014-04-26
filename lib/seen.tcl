@@ -16,6 +16,7 @@
 package require Tcl 8.5
 package require fx::fossil
 package require fx::manifest
+package require fx::color
 
 debug level  fx/seen
 debug prefix fx/seen {[debug caller] | }
@@ -33,6 +34,7 @@ namespace eval ::fx::seen {
 
     namespace import ::fx::fossil
     namespace import ::fx::manifest
+    namespace import ::fx::color
 
     # Progress callback for the timeseries calculations.
     variable progress {}
@@ -163,6 +165,21 @@ proc ::fx::seen::regenerate-series {config} {
     if {[$config @clear]} {
 	Clear
     }
+
+    set fields [map-watched-fields]
+    if {![dict size $fields]} {
+	puts [color warning "No fields watched, history not required"]
+	return
+    }
+    set num [Unprocessed]
+    if {!$num} {
+	puts [color warning "No pending changes"]
+	return
+    }
+
+    puts [color note "Watched fields:  [dict keys $fields]"]
+    puts [color note "Pending changes: $num"]
+
     FillSeries
     return
 }
@@ -194,19 +211,22 @@ proc ::fx::seen::set-watched-fields {fields} {
     debug.fx/seen {F = |$flist|}
     debug.fx/seen {A = |$alist|}
 
-    # Drop all fields not in the list anymore.
-    # Then add all fields, ignoring the existing ones.
+    # Drop all fields not in the list anymore. Then add all fields,
+    # ignoring the existing ones. Skip that part if there is nothing
+    # to add.
     fossil repository transaction {
 	fossil repository eval [subst {
 	    DELETE
 	    FROM fx_aku_watch_tktfield
 	    WHERE name NOT IN ($flist)
-	    ;
-	    INSERT OR IGNORE
-	    INTO fx_aku_watch_tktfield
-	    VALUES (NULL, $alist)
-	    ;
 	}]
+	if {[llength $fields]} {
+	    fossil repository eval [subst {
+		INSERT OR IGNORE
+		INTO fx_aku_watch_tktfield
+		VALUES (NULL, $alist)
+	    }]
+	}
     }
     return
 }
@@ -254,6 +274,10 @@ proc ::fx::seen::FillSeries {} {
     Init
 
     set fields [map-watched-fields]
+
+    # Without fields watched, the history is not needed and computing
+    # it a waste of time.
+    if {![dict size $fields]} return
 
     # Go over all pending ticket events and use them to compute the
     # time series of watched ticket fields. While the initial run has
