@@ -41,6 +41,12 @@ namespace eval ::fx::mailgen {
     namespace ensemble create
 
     namespace import ::fx::fossil
+
+    # Limit for table fields in generated mail, and
+    # Limit marker to use when truncating.
+    # TODO: Make them configurable
+    variable flimit   2048
+    variable flsuffix "\n...((truncated))"
 }
 
 # # ## ### ##### ######## ############# ######################
@@ -74,9 +80,9 @@ proc ::fx::mailgen::artifact {m} {
     return [[dict get $m type] $m]
 }
 
-proc ::fx::mailgen::limit {n text} {
+proc ::fx::mailgen::limit {n text {suffix ...}} {
     if {($n > 0) && ([string length $text]) > $n} {
-	set text [string range $text 0 $n]...
+	set text [string range $text 0 $n]$suffix
     }
     return $text
 }
@@ -450,6 +456,10 @@ proc ::fx::mailgen::Done {} {
 
 proc ::fx::mailgen::+T {field value} {
     upvar 1 T T
+    variable flimit
+    variable flsuffix
+    set value [limit $flimit $value $flsuffix]
+
     if {![info exists T]} {
 	set T [struct::matrix TABLE]
 	$T add columns 2
