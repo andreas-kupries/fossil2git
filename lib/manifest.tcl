@@ -15,9 +15,10 @@
 
 package require Tcl 8.5
 package require clock::iso8601
+package require fx::color
 
 debug level  fx/manifest
-debug prefix fx/manifest {[debug caller] | }
+debug prefix fx/manifest {}
 
 # # ## ### ##### ######## ############# ######################
 
@@ -28,12 +29,14 @@ namespace eval ::fx {
 namespace eval ::fx::manifest {
     namespace export parse
     namespace ensemble create
+
+    namespace import ::fx::color
 }
 
 # # ## ### ##### ######## ############# ######################
 
 proc ::fx::manifest::parse {manifest args} {
-    debug.fx/manifest {}
+    debug.fx/manifest {parse [string length $manifest]}
     # Manifest array/dictionary collecting all important pieces.
 
     # Initalize with general data coming from outside the manifest itself.
@@ -62,57 +65,92 @@ proc ::fx::manifest::parse {manifest args} {
     # Z n/a
 
     while {[regexp "^(\[ABCDEFJKLMNPQRTUWZ\])(\[^\n\]*)\n(.*)$" $manifest -> code data manifest]} {
-	debug.fx/manifest {card $code ($data)}
+	debug.fx/manifest {[color note "card $code"] ($data) left [string length $manifest]}
+
+	# NOTE: We assume that arguments in data are separated by
+	# spaces, without containing spaces of their own.  Values
+	# which could contain spaces are armored.  Note, we have a
+	# leading space in the data, thus will also have a leading
+	# empty element in the resulting list. Instead of chopping
+	# from the front, and shifting down (bad for large data) we
+	# simply take this into account in our indexing.
+
+	# With this in mind, we can and do use [split] to separate the
+	# arguments, instead of [regexp]. Not just simpler, but also
+	# much faster, especially on large data. For example: The
+	# "icomment" J card in artifact
+	#     3f6737f10b365a9248004c4d04cff88538ad85a5
+	# of the Tcl repository. An icomment of over 475KB, an
+	# embedded strace log. A [split] handles this in
+	# sub-seconds. With [regexp] you will wait minutes!.
+
 	switch -exact -- $code {
 	    A {
-		if {[regexp {^ (.*) (.*) (.*)$} $data -> m(attachment,path) m(target) m(attachment,uuid)]} {
+		# Assume that arguments do not contain spaces.
+		set data [split $data]
+
+		if {[llength $data] == 4} {
+		    debug.fx/manifest {-- attachment add}
 		    # Attachment added - Target = uuid of { event, ticket }, or wiki page name
+		    lassign $data _ m(attachment,path) m(target) m(attachment,uuid)
 		    set m(type) attachment
 		    set m(attachment,op) added
 		    continue
 		}
-		if {[regexp {^ (.*) (.*)$} $data -> m(attachment,path) m(target)]} {
+		if {[llength $data] == 3} {
+		    debug.fx/manifest {-- attachment remove}
 		    # Attachment removed - Target = uuid of { event, ticket }, or wiki page name
+		    lassign $data _ m(attachment,path) m(target)
 		    set m(type) attachment
 		    set m(attachment,op) removed
 		    continue
 		}
-		debug.fx/manifest {bad syntax}
+		debug.fx/manifest {-- [color error "bad syntax"]}
 		# error - bad syntax - ignored
 	    }
 	    B -
 	    F -
 	    Q -
 	    R {
+		debug.fx/manifest {-- =checkin}
 		set m(type) checkin
 	    }
 	    C {
+		debug.fx/manifest {-- comment}
 		set m(comment) [Dearmor [string trim $data]]
 	    }
 	    D {
+		debug.fx/manifest {-- when}
 		set m(when) [string trim $data]
 		set m(epoch) [Epoch $m(when)]
 	    }
 	    E {
-		if {[regexp {^ (.*) (.*)$} $data -> m(when-event) m(eventid)]} {
+		set data [split $data { }]
+		if {[llength $data] == 3} {
+		    debug.fx/manifest {-- when/event}
+		    lassign $data _ m(when-event) m(eventid)
 		    set m(epoch-event) [Epoch $m(when-event)]
 		    set m(type) event
 		    continue
 		}
-		debug.fx/manifest {bad syntax}
+		debug.fx/manifest {-- [color error "bad syntax"]}
 		# error - bad syntax - ignored
 	    }
 	    J {
-		if {[regexp {^ (.*) (.*)$} $data -> fname value]} {
+		set data [split $data { }]
+		if {[llength $data] == 3} {
+		    lassign $data _ fname value
+		    debug.fx/manifest {-- field = $fname (#[string length $value])}
 		    dict set m(field) $fname [Dearmor $value]
 		    continue
 		}
-		debug.fx/manifest {bad syntax}
+		debug.fx/manifest {-- [color error "bad syntax"]}
 		# error - bad syntax - ignored
 	    }
 	    K {
 		set m(ticket) [string trim $data]
 		set m(type) ticket
+		debug.fx/manifest {-- =ticket ==> $m(ticket)}
 
 		# NOTE: We do not have to retrieve the current ticket
 		# state here. While we are interested in that, it is
@@ -125,38 +163,58 @@ proc ::fx::manifest::parse {manifest args} {
 	    L {
 		set m(title) [string trim $data]
 		set m(type) wiki
+		debug.fx/manifest {-- =wiki ==> $m(title)}
 	    }
 	    M {
+		debug.fx/manifest {-- =cluster}
 		set m(type) cluster
 	    }
 	    N {
+		debug.fx/manifest {-- mimetype}
 		set m(mimetype) [string trim $data]
 	    }
-	    P {}
+	    P {
+		debug.fx/manifest {-- parent}
+	    }
 	    T {
-		if {[regexp {^ (.*) (.*) (.*)$} $data -> tagname taguuid tagvalue]} {
+		set data [split $data { }]
+		if {[llength $data] == 4} {
+		    debug.fx/manifest {-- tag =}
+		    lassign $data _ tagname taguuid tagvalue
 		    dict set m(tags) $tagname [list $taguuid = [Dearmor $tagvalue]]
 		    continue
-		} elseif {[regexp {^ (.*) (.*)$} $data -> tagname taguuid]} {
+		}
+		if {[llength $data] == 3} {
+		    debug.fx/manifest {-- tag !}
+		    lassign $data _ tagname taguuid
 		    dict set m(tags) $tagname [list $taguuid !]
 		    continue
 		}
-		debug.fx/manifest {bad syntax}
+		debug.fx/manifest {-- [color error "bad syntax"]}
 		# error - bad syntax - ignored
 	    }
 	    U {
+		debug.fx/manifest {-- user}
 		set m(user) [string trim $data]
 	    }
 	    W {
 		set data [string trim $data]
 		# data = number of characters to take
-		# we take one more, which is the closing \n
+		# we take one more, which is the closing \n, and chop
+		# it off in the saved form.
+
 		set text [string range $manifest 0 $data]
 		incr data
+		debug.fx/manifest {-- taken $data}
+
 		set manifest [string range $manifest $data end]
 		set m(text)  [string range $text 0 end-1]
+
+		debug.fx/manifest {left [string length $manifest]}
 	    }
-	    Z {}
+	    Z {
+		debug.fx/manifest {-- manifest checksum}
+	    }
 	}
     }
 
@@ -180,6 +238,7 @@ namespace eval ::fx::manifest {
 
 proc ::fx::manifest::Dearmor {s} {
     variable map
+    debug.fx/manifest {dearmor [string length $s]}
     # Should introduce K here
     return [string map $map $s]
 }
