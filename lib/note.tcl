@@ -199,7 +199,7 @@ proc ::fx::note::test-mail-config {config} {
     fossil show-repository-location
     mailer send \
 	[mailer get-config] \
-	[$config @destination] \
+	[list [$config @destination]] \
 	[mailgen test]
     return
 }
