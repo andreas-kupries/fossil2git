@@ -186,6 +186,15 @@ cmdr create fx::fx [file tail $::argv0] {
 	    # the database command globally accessible.
 	    generate [fx::call fossil repository-open]
 	}
+	option color {
+	    Force the (non-)use of colors in the output. The default
+	    depends on the environment, active when talking to a tty,
+	    and otherwise not.
+	} {
+	    when-set [lambda {p x} {
+		fx color activate $x
+	    }]
+	}
     }
 
     common .global {
@@ -289,6 +298,12 @@ cmdr create fx::fx [file tail $::argv0] {
 	use .event-hidden-validation
 	use .mailaddr-hidden-validation
     }
+    common .no-search {
+	state no-search {
+	    Fake parameter to disable repository search by its mere
+	    presence.
+	} {}
+    }
 
     # # ## ### ##### ######## ############# ######################
 
@@ -314,13 +329,6 @@ cmdr create fx::fx [file tail $::argv0] {
 	    }
 	} [fx::call fossil c_show_repository]
 	default
-
-	common .no-search {
-	    state no-search {
-		Fake parameter to disable repository search by its
-		mere presence.
-	    } {}
-	}
 
 	private default {
 	    section Introspection
@@ -827,16 +835,28 @@ cmdr create fx::fx [file tail $::argv0] {
 	private update-history {
 	    section Notifications Control
 	    description {
-		Update the cached ticket history used to calculate dynamic routes.
+		Update the cached ticket history used to calculate
+		dynamic routes.
 	    }
 	    option clear {
-		Clear the ticket history before updating. I.e. force full update
-		from scratch, instead of doing an incremental one.
+		Clear the ticket history before updating. I.e. force
+		full update from scratch, instead of doing an
+		incremental one.
+
 	    } { presence }
 	} [fx::call seen regenerate-series]
 
-	# TODO: Global routes?
+	private watched {
+	    section Notifications Control
+	    description {
+		Show the list of repositories currently watched
+		(i.e. those which have active routes). These fall
+		under the purview of 'note deliver --all'.
+	    }
+	    use .no-search
+	} [fx::call note watched]
 
+	# TODO: Global routes?
 	officer route {
 	    private list {
 		section Notifications Destinations

@@ -34,7 +34,7 @@ namespace eval ::fx::note {
 	mail-config-show mail-config-set mail-config-unset \
 	mail-config-export mail-config-import route-export \
 	route-import route-add route-drop route-list route-field-add \
-	route-field-drop deliver event-list field-list \
+	route-field-drop watched deliver event-list field-list \
 	mark-pending mark-notified \
 	show-pending test-parse test-mail-gen test-mail-config \
 	test-mail-receivers
@@ -54,6 +54,16 @@ namespace eval ::fx::note {
 
     namespace import ::fx::validate::event-type
     namespace import ::fx::validate::mail-config
+
+    # (global) configuration prefix for watched repositories.
+    variable g_repo_watch "fx-aku-note-watch"
+
+    # configuration prefix for static routes
+    variable g_route_event "fx-aku-note-send2"
+
+    # configuration prefix for dynamic routes
+    variable g_route_field "fx-aku-note-field"
+
 }
 
 # # ## ### ##### ######## ############# ######################
@@ -426,19 +436,55 @@ proc ::fx::note::mail-config-import {config} {
     # hierarchy. This automatically gives us all the validation needed.
     # We catch issues and report them, but do not abort importing.
 
-    variable imported {}
+    variable ikeys   {}
+    variable ivalues {}
 
     set i [interp::createEmpty]
     $i alias mail-config ::fx::note::IMConfig [$config @mailconfig self]
     $i eval $data
     interp delete $i
 
-    foreach {key value} $imported {
+    # Generate the labels.
+    set lkeys {}
+    foreach k $ikeys {
+	lappend lkeys [mail-config external $k]
+    }
+    set lvalues {}
+    foreach v $ivalues {
+	lappend lvalues '$v'
+    }
+    set lvalues [util padr $lvalues]
+
+    # Do the import.
+    foreach key $ikeys lkey [util padr $lkeys] value $ivalues lvalue $lvalues {
 	# Note: The key is the internal rep.
 	try {
-	    ConfigSet $global $key $value Importing { OK}
+	    # Inlined ConfigSet, to allow for vertical alignment of
+	    # the messages with each other.
+	    puts -nonewline "Importing [color note $lkey] = $lvalue "
+	    flush stdout
+
+	    if {$global} {
+		puts -nonewline "(global) ... "
+		flush stdout
+
+		config set-global $key $value
+		set current [config get-global $key]
+	    } else {
+		puts -nonewline "... "
+		flush stdout
+
+		config set-local $key $value
+		set current [config get-local $key]
+	    }
+
+	    if {$current ne $value} {
+		error "Verification mismatch, got '$current'"
+	    }
+
+	    puts [color good OK]
 	} on error {e o} {
-	    puts $e
+	    puts [color error $e]
 	}
     }
     return
@@ -446,11 +492,13 @@ proc ::fx::note::mail-config-import {config} {
 
 proc ::fx::note::IMConfig {p key value} {
     debug.fx/note {}
+    variable ikeys
+    variable ivalues
 
-    variable imported
     # Validate through the hidden parameter
     $p set $key
-    lappend imported [$p value] $value
+    lappend ikeys   [$p value]
+    lappend ivalues $value
     return
 }
 
@@ -515,7 +563,7 @@ proc ::fx::note::mail-config-unset {config} {
 
     set global [$config @global]
     foreach name [$config @key] {
-	puts -nonewline "Unsetting [mail-config external $name]"
+	puts -nonewline "Unsetting [color note [mail-config external $name]]"
 	if {$global} {
 	    config unset-global $name
 	} else {
@@ -527,24 +575,35 @@ proc ::fx::note::mail-config-unset {config} {
 }
 
 
-proc ::fx::note::ConfigSet {global name value {prefix Setting} {gsuffix {}}} {
+proc ::fx::note::ConfigSet {global name value {prefix Setting} {gsuffix OK}} {
     debug.fx/note {}
 
-    puts -nonewline "$prefix [mail-config external $name]: "
+    puts -nonewline "$prefix [color note [mail-config external $name]] = '$value' "
     flush stdout
 
     if {$global} {
+	puts -nonewline "(global) ... "
+	flush stdout
+
 	config set-global $name $value
 	set current [config get-global $name]
-	set suffix  " (global)"
     } else {
+	puts -nonewline "... "
+	flush stdout
+
 	config set-local $name $value
 	set current [config get-local $name]
-	set suffix  {}
     }
 
-    puts '$current'$suffix$gsuffix
-    flush stdout
+    if {$current ne $value} {
+	error "Verification mismatch, got '$current'"
+    }
+
+    if {$gsuffix ne {}} {
+	puts [color good $gsuffix]
+    } else {
+	puts ""
+    }
     return
 }
 
@@ -610,6 +669,8 @@ proc ::fx::note::route-import {config} {
     # hierarchy. This automatically gives us all the validation needed.
     # We catch issues and report them, but do not abort importing.
 
+    variable g_route_event
+    variable g_route_field
     variable routes {}
     variable fields {}
 
@@ -622,42 +683,45 @@ proc ::fx::note::route-import {config} {
 
     set changes 0
     if {!$extend} {
-	puts "Import replaces the existing routing ..."
+	puts [color warning "Import replaces the existing routing ..."]
 	incr changes
 	# Inlined drop of all routes and fields.
-	RouteDrop "Event *"       fx-aku-note-send2-* *
-	RouteDrop "Ticket Fields" fx-aku-note-field *	     
+	RouteDrop "Event *      " ${g_route_event}-* *
+	RouteDrop "Ticket Fields" $g_route_field     *	     
     } else {
-	puts "Import extends the existing routing ..."
+	puts [color note "Import extends the existing routing ..."]
     }
 
-    puts "New routes ..."
-    foreach {event destination} $routes {
-	# Inlined route-add.
-	set e [event-type external $event]
-	set l [event-type label    $event]
-	if {![RouteAdd \
-		  "Event [color name $l]" \
-		  fx-aku-note-send2-${e} \
-		  $destination]
-	} continue
-	WatchMe [$config @repository]
+    if {[dict size $routes]} {
+	puts "New routes ..."
+	foreach {event destinations} [util dictsort $routes] {
+	    # Inlined route-add.
+	    set e [event-type external $event]
+	    set l [color name [event-type label $event]]
+	    if {![RouteAdd \
+		      "Event $l" ${g_route_event}-${e} $destinations]
+	    } continue
+	    WatchMe [$config @repository]
+	}
+    } else {
+	puts [color note {No routes}]
     }
 
-    puts "New fields ..."
-    foreach field $fields {
+    if {[llength $fields]} {
+	puts "New fields ..."
 	# Inlined route-field-add.
-	if {![RouteAdd \
-		  "Ticket Fields" \
-		  fx-aku-note-field \
-		  $field]
-	} continue
-	incr changes
-	WatchMe [$config @repository]
-    }
+	if {[RouteAdd \
+		 "Ticket Fields" $g_route_field $fields]
+	} {
+	    incr changes
+	    WatchMe [$config @repository]
+	}
 
-    if {$changes} {
-	seen set-watched-fields [Fields]
+	if {$changes} {
+	    seen set-watched-fields [Fields]
+	}
+    } else {
+	puts [color note {No fields}]
     }
 
     puts [color good OK]
@@ -672,7 +736,7 @@ proc ::fx::note::IRoute {pe pd event destination} {
     $pe set $event
     $pd set $destination
 
-    lappend routes [$pe value] [$pd value]
+    dict lappend routes [$pe value] [$pd value]
     return
 }
 
@@ -702,13 +766,12 @@ proc ::fx::note::route-add {config} {
 	set el [list [event-type external $e]]
     }
 
+    variable g_route_event
     set watch 0
     foreach e $el {
-	set l [event-type label $e]
+	set l [color name [event-type label $e]]
 	if {![RouteAdd \
-		  "Event [color name $l]" \
-		  fx-aku-note-send2-${e} \
-		  [$config @to]]
+		  "Event $l" ${g_route_event}-${e} [$config @to]]
 	} continue
 	incr watch
     }
@@ -733,13 +796,12 @@ proc ::fx::note::route-drop {config} {
 	set el [list [event-type external $e]]
     }
 
+    variable g_route_event
     set remove 0
     foreach e $el {
-	set l [event-type label $e]
+	set l [color name [event-type label $e]]
 	if {![RouteDrop \
-		  "Event [color name $l]" \
-		  fx-aku-note-send2-$e \
-		  [$config @to]]
+		  "Event $l" ${g_route_event}-$e [$config @to]]
 	} continue
 	incr remove
     }
@@ -780,14 +842,12 @@ proc ::fx::note::route-field-add {config} {
     # @field (list)
 
     fossil show-repository-location
+    variable g_route_field
     if {![RouteAdd \
-	      "Ticket Fields" \
-	      fx-aku-note-field \
-	      [$config @field]]
+	      "Ticket Fields" ${g_route_field} [$config @field]]
     } return
 
     seen set-watched-fields [Fields]
-
     WatchMe [$config @repository]
     return
 }
@@ -797,10 +857,9 @@ proc ::fx::note::route-field-drop {config} {
     # @field (list), @repository(-db)
 
     fossil show-repository-location
+    variable g_route_field
     if {![RouteDrop \
-	      "Ticket Fields" \
-	      fx-aku-note-field \
-	      [$config @field]]
+	      "Ticket Fields" ${g_route_field} [$config @field]]
     } return
 
     seen set-watched-fields [Fields]
@@ -816,16 +875,11 @@ proc ::fx::note::route-field-drop {config} {
 
 proc ::fx::note::route-deliver {config} {
     debug.fx/note {}
-    # @repository, @global, /... ?? --all how ?
+    # @repository, @all
 
     if {[$config @all]} {
-	# TODO: Encapsulate conversions (repo list) ...
-	config get-list-global {
-	    # name, value, mtime
-	    if {![string match fx-aku-note-watch:* $name]} continue
-	    # Run single-repository deliver on the named repository.
-	    # Recursive call through the cli
-	    regsub {^fx-aku-note-watch:} $name {} name
+	# Delivery for all watched repositories.
+	foreach path [Watched] {
 	    [$config context root] do deliver -R $name
 	}
 	return
@@ -988,7 +1042,7 @@ proc ::fx::note::RouteAdd {label prefix destinations} {
 
 	set key ${prefix}:$dst
 	if {[config has $key]} {
-	    puts [color note "Already known"]
+	    puts [color warning "Ignored, already known"]
 	} else {
 	    config set-local $key 1
 	    puts [color good OK]
@@ -1019,23 +1073,29 @@ proc ::fx::note::RouteDrop {label prefix destinations} {
 
 proc ::fx::note::HasRoutes {} {
     debug.fx/note {}
-    return [expr { [config has-glob fx-aku-note-send2-*:*] ||
-		   [config has-glob fx-aku-note-field:*]      }]
+    variable g_route_event
+    variable g_route_field
+    return [expr { [config has-glob ${g_route_event}-*:*] ||
+		   [config has-glob ${g_route_field}:*]      }]
 }
 
 proc ::fx::note::Fields {} {
     debug.fx/note {}
-    # TODO: config get-glob (get-keys-glob) ...
-    set settings [config get-list]
-    set fields {}
-    dict for {k __} $settings {
-	# dynamic route through ticket field
-	if {![string match fx-aku-note-field:* $k]} continue
+    variable g_route_field
+    return [util strip-prefix ${g_route_field}: \
+		[config names-glob ${g_route_field}:*]]
+}
 
-	regsub {^fx-aku-note-field:} $k {} field
-	lappend fields $field
+proc ::fx::note::Statics {} {
+    debug.fx/note {}
+    variable g_route_event
+    set map {}
+    foreach item [util strip-prefix ${g_route_event}- \
+		      [config names-glob ${g_route_event}-*]] {
+	regexp {^([^:]*):(.*)$} $item -> event addr
+	lappend map $event $addr
     }
-    return $fields
+    return $map
 }
 
 proc ::fx::note::RouteMap {config} {
@@ -1049,50 +1109,30 @@ proc ::fx::note::RouteMap {config} {
     # static = boolean, true -> dest = email
     #                   true -> dest = field 
 
-    # TODO: Create a "config get-glob" method and use it.
-
-    set settings [config get-list]
-
-    # We have a mix of routes and other settings.
-
     # Note: The event types in the saved route information is
     # external, therefore conversion is not required for display.
     # It may be needed for internal use.
 
-    # Anyway, the data we pull out of the repository is validated as
-    # it can be manipulated with other tools (anything providing
-    # access to the sqlite3 database file).
+    # Collect the dynamic routes, i.e. ticket fields, for ticket changes.
+    foreach field [Fields] {
+	# Note: We are checking the validity of the field names found
+	# in the route map. The map is stored in a place where it can
+	# be manipulated, accidental or intentional.
 
-    set map {}
-    dict for {k __} $settings {
-	# dynamic route through ticket field
-	if {[string match fx-aku-note-field:* $k]} {
-	    regsub {^fx-aku-note-field:} $k {} field
+	$config @field set $field
+	dict lappend map ticket [list 0 [$config @field]]
+    }
 
-	    # Note: We are checking the validity of the field names
-	    # found in the route map. The map is stored in a place
-	    # where it can be manipulated, accidental or intentional.
-	    $config @field set $field
+    # Collect the static routes for all events.
+    foreach {event addr} [Statics] {
+	# Note: We are checking the validity of the events and
+	# addresses found in the route map. The map is stored in a
+	# place where it can be manipulated, accidental or
+	# intentional.
 
-	    dict lappend map ticket [list 0 [$config @field]]
-	    continue
-	}
-	# static route for event
-	if {[string match fx-aku-note-send2-*:* $k]} {
-	    regexp {^fx-aku-note-send2-([^:]*):(.*)$} $k -> event addr
-
-	    # Note: We are checking the validity of the events and
-	    # addresses found in the route map. The map is stored in a
-	    # place where it can be manipulated, accidental or
-	    # intentional.
-
-	    $config @event    set $event
-	    $config @mailaddr set $addr
-
-	    dict lappend map $event [list 1 $addr]
-	    continue
-	}
-	# ignore everything else
+	$config @event    set $event
+	$config @mailaddr set $addr
+	dict lappend map $event [list 1 $addr]
     }
 
     # First reduction pass to weed out the static duplicates, if any.
@@ -1107,15 +1147,36 @@ proc ::fx::note::RouteMap {config} {
 ## Internal helpers.
 ## (De)register the repository in the global database, 'deliver all'
 
+proc ::fx::note::watched {config} {
+    debug.fx/note {}
+    # TODO: MAYBE: Show #routes, or route details ?
+    [table t {Watching} {
+	foreach p [lsort -dict [Watched]] {
+	    $t add $p
+	}
+    }] show
+    return
+}
+
+proc ::fx::note::Watched {} {
+    variable g_repo_watch
+    return [util strip-prefix ${g_repo_watch}: \
+		[config names-glob-global ${g_repo_watch}:*]]
+}
+
 proc ::fx::note::WatchMe {r} {
     debug.fx/note {}
-    config set-global fx-aku-note-watch:$r 1
+    variable g_repo_watch
+    set r [file normalize $r]
+    config set-global ${g_repo_watch}:$r 1
     return
 }
 
 proc ::fx::note::RemoveMe {r} {
     debug.fx/note {}
-    config unset-global fx-aku-note-watch:$r
+    variable g_repo_watch
+    set r [file normalize $r]
+    config unset-global ${g_repo_watch}:$r
     return
 }
 
