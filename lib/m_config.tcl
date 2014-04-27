@@ -30,7 +30,8 @@ namespace eval ::fx::mgr::config {
 	get-local get-global has-glob unset-glob \
 	get-list-global get-extended-with-default \
 	set-global set-local unset-global unset-local \
-	unset-glob-global unset-glob-local has-local
+	unset-glob-global unset-glob-local has-local \
+	names-glob names-glob-local names-glob-global
     namespace ensemble create
 
     namespace import ::fx::fossil
@@ -118,6 +119,12 @@ proc ::fx::mgr::config::has-glob {pattern} {
 		   [has-glob-global $pattern] }]
 }
 
+proc ::fx::mgr::config::names-glob {pattern} {
+    set     matches    [names-glob-local $pattern]
+    lappend matches {*}[names-glob-global $pattern]
+    return [lsort -unique $matches]
+}
+
 # # ## ### ##### ######## ############# ######################
 
 proc ::fx::mgr::config::get-list-local {script} {
@@ -202,6 +209,22 @@ proc ::fx::mgr::config::has-glob-local {pattern} {
 proc ::fx::mgr::config::has-glob-global {pattern} {
     return [fossil global onecolumn {
 	SELECT count(*)
+	FROM  global_config
+	WHERE name GLOB :pattern
+    }]
+}
+
+proc ::fx::mgr::config::names-glob-local {pattern} {
+    return [fossil repository eval {
+	SELECT name
+	FROM  config
+	WHERE name GLOB :pattern
+    }]
+}
+
+proc ::fx::mgr::config::names-glob-global {pattern} {
+    return [fossil global eval {
+	SELECT name
 	FROM  global_config
 	WHERE name GLOB :pattern
     }]
