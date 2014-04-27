@@ -303,6 +303,12 @@ proc ::fx::fossil::repository-find {p} {
 	    FROM  global_config
 	    WHERE name  = :rkey
 	} {
+	    if {[file pathtype $location] ne "absolute"} {
+		return -code error \
+		    -errorcode {FX REPOSITORY DEFAULT PATHTYPE} \
+		    "Bad default repository, expected an absolute path, got $location"
+	    }
+
 	    set-repository-location $location default
 	    debug.fx/fossil {done ==> default $location}
 	    return $location
