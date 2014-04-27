@@ -64,6 +64,16 @@ proc ::fx::manifest::parse {manifest args} {
     # W     text
     # Z n/a
 
+    if {[string match {-----BEGIN PGP SIGNED MESSAGE-----*} $manifest]} {
+	# Remove the leading lines of the signer's envelope until we
+	# have the beginning of the manifest.
+	debug.fx/manifest {[color note "trim envelope"]}
+	set  pos [string first \n\n $manifest]
+	incr pos 2
+	set manifest [string range $manifest $pos end]
+	debug.fx/manifest {left [string length $manifest]}
+    }
+
     while {[regexp "^(\[ABCDEFJKLMNPQRTUWZ\])(\[^\n\]*)\n(.*)$" $manifest -> code data manifest]} {
 	debug.fx/manifest {[color note "card $code"] ($data) left [string length $manifest]}
 
@@ -214,6 +224,9 @@ proc ::fx::manifest::parse {manifest args} {
 	    }
 	    Z {
 		debug.fx/manifest {-- manifest checksum}
+		break
+		# prevent data from after the checksum to upset the parser.
+		# like the trailing part of a signer's envelope.
 	    }
 	}
     }
