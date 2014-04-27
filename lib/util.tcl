@@ -36,7 +36,7 @@ namespace eval ::fx {
 
 namespace eval ::fx::util {
     namespace export padr padl dictsort reflow indent undent \
-	max-length
+	max-length strip-prefix
     namespace ensemble create
 }
 
@@ -47,6 +47,18 @@ debug level  fx/util
 debug prefix fx/util {[debug caller] | }
 
 # # ## ### ##### ######## ############# #####################
+
+proc ::fx::util::strip-prefix {prefix words} {
+    # DANGER: A prefix containing glob/regex meta characters will not
+    # work properly (unwanted matches, missing matches, bad removal).
+    set results {}
+    foreach w $words {
+	if {![string match ${prefix}* $w]} continue
+	regsub ^${prefix} $w {} w
+	lappend results $w
+    }
+    return $results
+}
 
 proc ::fx::util::padr {words} {
     debug.fx/util {}
