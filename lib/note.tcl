@@ -227,7 +227,7 @@ proc ::fx::note::test-mail-receivers {config} {
 		puts -nonewline stderr "\r\033\[K\r[format $fmt $n]/$max: $uuid"
 		flush stderr
 
-		lassign [MailCore $uuid $type $map] recv m
+		lassign [MailCore $uuid $type $comment $map] recv m
 		$t add $uuid [llength $recv] [join [lsort -dict $recv] {, }]
 	    }
 	}] show
@@ -235,7 +235,7 @@ proc ::fx::note::test-mail-receivers {config} {
     } else {
 	# Single uuid, show in details
 
-	lassign [MailCore $uuid {} $map] recv m
+	lassign [MailCore $uuid {} {} $map] recv m
 
 	fossil show-repository-location
 	[table t [list "Destinations $uuid"] {
@@ -247,7 +247,7 @@ proc ::fx::note::test-mail-receivers {config} {
     return
 }
 
-proc ::fx::note::MailCore {uuid type map {context {}}} {
+proc ::fx::note::MailCore {uuid type comment map {context {}}} {
     debug.fx/note {}
     # Timeline event types, and associated artifact types.
     #
@@ -301,8 +301,9 @@ proc ::fx::note::MailCore {uuid type map {context {}}} {
     # dynamic routes
     set m [manifest parse \
 	       [fossil get-manifest $uuid] \
-	       etype $extype  \
-	       self  $uuid \
+	       ecomment $comment \
+	       etype    $extype  \
+	       self     $uuid \
 	       {*}$context]
 
     #array set mm $m ; parray mm
@@ -873,7 +874,7 @@ proc ::fx::note::route-field-drop {config} {
 ## API. Run over (all) repository/ies and generate notifications
 ## for all events not yet handled (i.e. not marked as seen).
 
-proc ::fx::note::route-deliver {config} {
+proc ::fx::note::deliver {config} {
     debug.fx/note {}
     # @repository, @all
 
@@ -909,8 +910,8 @@ proc ::fx::note::route-deliver {config} {
 	# TODO: Dry run for testing.
 	# TODO: switchable progress animation
 
-        seen touch $id
-	lassign [MailCore $uuid $type $map $pinfo] recv m
+        seen mark-notified $id
+	lassign [MailCore $uuid $type $comment $map $pinfo] recv m
 
 	if {[llength $recv]} {
 	    mailer send $mc $recv [mailgen artifact $m]
