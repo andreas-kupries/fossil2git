@@ -1,23 +1,27 @@
 
-Use Case / Scenario / Story 0
+Use Case / Scenario / Story 2
 =============================
 
 Background
 ==========
 
-	You have to generate notification emails for some or all
+	You wish to generate notification emails for some or all
 	changes to a fossil repository R.
 
-	While you do _not_ have access to the hosted repository file
-	itself, you are a superuser, or at least somebody with the
-	permissions to pull the configuration areas "user", "email"
-	and "ticket".
+	You are a simple developer with no direct access to the
+	repository file, nor are you a superuser with access to the
+	repository configuration.
 
-	This situation happens, for example, when you are the
-	maintainer of some project and you are hosting it with a
-	hosting provider like chiselapp. While you are the master of
-	the project you are definitely not an admin for the hosting
-	infrastructure.
+	While you will not be able to generate dynamic destination
+	addresses based on the information in ticket fields static
+	routing to fixed addresses, like your own, is still possible.
+
+	As long as anybody is allowed to clone and pull from the
+	project you do not even need an account.
+
+	This situation happens, for example, when you are a developer
+	with interest in a project which does not generate
+	notification emails of its own.
 
 Here is how you do this with FX, the eXtended Fossil manager
 ============================================================
@@ -28,42 +32,17 @@ I. Basic Setup
 First choose a directory D to work in, then create a local clone of the
 repository R in D. Name the local file as you see fit.
 
-Next, pull the configuration areas "user", "email" and "ticket" into
-your clone. If you are a superuser you can make it easier on you by
-simply using area "all". This actually makes general sense, as your
-local clone now is a proper full backup of the hosted repository, in
-both content and configuration.
-
-Going forward it is now necessary to _rebuild_ your local
-repository. The reason behind this needs a few sentences to
-explain:
-
--	As a basic clone it started out with the standatd ticketing
-	setup.
-
--	While pulling the "ticket" area has updated the local
-	configuration, it has _not_ updated the derived tables,
-	i.e. TICKET and TICKETCHNG.
-
--	The rebuild takes care of that.
-
-My last steps in the basic setup are then to export the configuration
-to a file and make a copy of the repository file as well. It is always
-a good idea to have a backup.
+The last step in this simplified basic setup is then to make a copy of
+the repository file. It is always a good idea to have a backup.
 
 Using my own setup of the Tcl core repository as example, this looks
 roughly like
 
 	cd ~/Project/Sentinel/Tcl
 
-	USER=aku     ; # Use your own account
-	PASS=******* ; # Use your own account
-	LOCT="http://${USER}:${PASS}@core.tcl.tk/tcl"
+	LOCT="http://core.tcl.tk/tcl"
 
 	fossil clone           $LOCT source.fossil
-	fossil config pull all $LOCT           -R source.fossil
-	fossil rebuild                         -R source.fossil
-	fossil config export all source.config -R source.fossil
 
 	cp source.fossil source.fossil.bak
 
@@ -178,22 +157,9 @@ In a more general setup the destination address would more likely be
 the mailing list people can subscribe to for notifications from the
 repository.
 
-The second part of the routing is about dynamic addressing. This is
-something we can only do for ticket changes, and is the reason why we
-wanted the "ticket" configuration" at the beginning. The introspection command
-
-       fx note route fields
-
-shows which ticket fields are available. In my setup, for Tcl, I then use
-
-	fx note route field add assignee closer login private_contact submitter username
-
-to tell FX which of these fields may contain email addresses.
-
-FX will automatically maintain a per-ticket history of these fields
-and use the information to send mail notifications to all people
-relevant to a new ticket change, i.e. the people doing the change,
-being assigned to the ticket, etc.
+If we had (read) access to the configuration of the project (areas
+"user", "email" and "ticket") we could do dynamic adressing as shown
+in case 0. As we don't, we must skip this. The above is all we can do.
 
 The last action is again the generation of a readable backup of the
 routing setup. Together with the complementary 'note route import'
@@ -214,14 +180,6 @@ first before jumping in.
 The first, above, is a general test that the configured mail settings
 work. It sends a fixed mail to the specified destination address,
 using all the settings of chapter II.
-
-	fx note update-history
-
-This command explicitly updates the cached history of the ticket
-fields mentioning in the dynamic routing (see last chapter). As this
-initial run can take some time, having to process the entire existing
-history it feels nicer to do this separately instead as part of the
-following commands.
 
 	fx test manifest-parse --all
 	fx test mail-receivers --all
@@ -275,7 +233,6 @@ called from a cron job.
 Here are my commands:
 
 	fossil pull            -R $r
-	fossil config pull all -R $r
 	#fossil rebuild         -R $r
 	#fx note show-pending   -R $r
 	fx note deliver        -R $r
@@ -283,7 +240,6 @@ Here are my commands:
 which does
 
 - Get the new content
-- Get updates to the configuration (especiallly new users!)
 - Do NOT rebuild to follow fossil schema changes.
   This removes all information from our custom FX tables.
   (They are left existing, just empty).
