@@ -910,7 +910,7 @@ proc ::fx::note::deliver {config} {
 	# TODO: Dry run for testing.
 	# TODO: switchable progress animation
 
-        seen mark-notified $id
+        seen mark-notified $uuid
 	lassign [MailCore $uuid $type $comment $map $pinfo] recv m
 
 	if {[llength $recv]} {
@@ -987,6 +987,14 @@ proc ::fx::note::Receivers {routes manifest} {
 	}
 
 	+RX [seen get-field $tuuid $dest $mtime]
+    }
+
+    # One thing which is always dynamic, for any change. Destination
+    # based on the user who made the change.
+
+    debug.fx/note {user=[dict exists $manifest user]}
+    if {[dict exists $manifest user]} {
+	+RX [dict get $manifest user]
     }
 
     # Dynamic fields may have introduced duplicate destinations.
