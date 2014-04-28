@@ -171,7 +171,7 @@ proc ::fx::note::test-mail-gen {config} {
 		    # No lines for ok artifacts. Not of interest.
 		    #$t add $uuid OK
 		} on error {e o} {
-		    $t add $uuid $e ;#"ERROR: $e"
+		    $t add $uuid $e
 		}
 	    }
 	}] show

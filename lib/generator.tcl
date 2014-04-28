@@ -34,7 +34,7 @@ namespace eval ::fx::mailgen {
     # manifest types
     # - attachment OK
     # - checkin    OK (to test: branch/changeset extraction)
-    # - control    
+    # - control    OK
     # - event      OK
     # - ticket     OK
     # - wiki       OK
@@ -77,7 +77,12 @@ proc ::fx::mailgen::artifact {m} {
     # pages, and require different urls to reference this context
     # artifact.
 
-    return [[dict get $m type] $m]
+    try {
+	set text [[dict get $m type] $m]
+    } finally {
+	catch { TABLE destroy }
+    }
+    return $text
 }
 
 proc ::fx::mailgen::limit {n text {suffix ...}} {
@@ -112,9 +117,7 @@ proc ::fx::mailgen::attachment {m} {
     # ------            ------     -----
 
     dict with m {}
-    if {$etype ni {event ticket wiki}} {
-	error "Unexpected etype \"$etype\" for attachment"
-    }
+    CheckType attachment {event ticket wiki}
 
     if {![info exists comment]} {
 	set comment "<no description given>"
@@ -166,7 +169,7 @@ proc ::fx::mailgen::checkin {m} {
     # ------      ------     -----
 
     dict with m {}
-    if {$etype ne "commit"} { error "Unexpected etype \"$etype\" for checkin" }
+    CheckType checkin commit
 
     set changes [fossil changeset $self]
     set branch  [fossil branch-of $self]
@@ -224,9 +227,7 @@ proc ::fx::mailgen::control {m} {
     # ------      ------         -----
 
     dict with m {}
-    if {$etype ne "control"} {
-	error "Unexpected etype \"$etype\" for control"
-    }
+    CheckType control control
 
     Begin
     Headers $project $location [Subject] $epoch
@@ -234,6 +235,7 @@ proc ::fx::mailgen::control {m} {
     +T By      $user
     +T For     "$project"
     +T On      $when
+    =T
 
     # Rewrite tags :: dict( name -> (ref, action, ?value?) )
     # into    map  :: dict( ref -> list( (name, action, ?value? )))
@@ -259,7 +261,6 @@ proc ::fx::mailgen::control {m} {
 	    }
 	}
     }
-
     =T
     Done
 }
@@ -277,7 +278,7 @@ proc ::fx::mailgen::event {m} {
     #   location    sys config   Project repository web location
     #   project     sys config   Project name
     #   self        system       Manifest uuid
-    #   tags        Manifest     Dictionary of event tag settings/changes
+    #   tags        Manifest     Dictionary of event tag settings/changes /optional
     #   text        Manifest     Text of the event page.
     #   type        Manifest     Fixed "event"
     #   user        Manifest     Committer
@@ -286,7 +287,7 @@ proc ::fx::mailgen::event {m} {
     # ------        ------       -----
 
     dict with m {}
-    if {$etype ne "event"} { error "Unexpected etype \"$etype\" for event change" }
+    CheckType {event change} event
 
     Begin
     Headers $project $location [Subject] $epoch
@@ -298,12 +299,15 @@ proc ::fx::mailgen::event {m} {
     +T Details    [InfoLink event $eventid]
     +T "To occur" ${when-event}
 
-    foreach tag [lsort -dict [dict keys $tags]] {
-	lassign [dict get $tags $tag] _ action value
-	if {$action eq "="} {
-	    +T "Tag $tag" $value
-	} else {
-	    +T "Tag $tag" ""
+    # Note, tag information is optional.
+    if {[info exists tags]} {
+	foreach tag [lsort -dict [dict keys $tags]] {
+	    lassign [dict get $tags $tag] _ action value
+	    if {$action eq "="} {
+		+T "Tag $tag" $value
+	    } else {
+		+T "Tag $tag" ""
+	    }
 	}
     }
     =T
@@ -329,8 +333,8 @@ proc ::fx::mailgen::ticket {m} {
     #   when      Manifest   Commit timestamp
     # ------      ------     -----
 
-    dict with m {} ; # => data put into local variables.
-    if {$etype ne "ticket"} { error "Unexpected etype \"$etype\" for ticket change" }
+    dict with m {}
+    CheckType {ticket change} ticket
 
     Begin
     Headers $project $location [Subject] $epoch
@@ -374,7 +378,6 @@ proc ::fx::mailgen::ticket {m} {
 	+T ${f}: $v
     }
     =T
-
     Done
 }
 
@@ -396,7 +399,7 @@ proc ::fx::mailgen::wiki {m} {
     # ------      ------     -----
 
     dict with m {}
-    if {$etype ne "wiki"} { error "Unexpected etype \"$etype\" for wiki change" }
+    CheckType {wiki change} wiki
 
     Begin
     Headers $project $location [Subject] $epoch
@@ -415,6 +418,12 @@ proc ::fx::mailgen::wiki {m} {
 }
 
 # # ## ### ##### ######## ############# ######################
+
+proc ::fx::mailgen::CheckType {label legal} {
+    upvar 1 etype etype
+    if {$etype in $legal} return
+    error "Unexpected etype \"$etype\" for $label"
+}
 
 proc ::fx::mailgen::InfoText {type} {
     debug.fx/mailgen {}
@@ -461,6 +470,10 @@ proc ::fx::mailgen::+T {field value} {
     set value [limit $flimit $value $flsuffix]
 
     if {![info exists T]} {
+	# Note: Even without T a TABLE instance may be left over from
+	# a previous generator call which failed with an error and
+	# thus did not clean up properly.
+	catch { TABLE destroy }
 	set T [struct::matrix TABLE]
 	$T add columns 2
     }
