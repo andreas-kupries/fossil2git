@@ -18,6 +18,7 @@ package require struct::matrix
 package require textutil::adjust
 package require clock::iso8601
 package require fx::fossil
+package require fx::manifest
 package require http
 
 debug level  fx/mailgen
@@ -41,6 +42,7 @@ namespace eval ::fx::mailgen {
     namespace ensemble create
 
     namespace import ::fx::fossil
+    namespace import ::fx::manifest
 
     # Limit for table fields in generated mail, and
     # Limit marker to use when truncating.
@@ -248,8 +250,8 @@ proc ::fx::mailgen::control {m} {
 
     # Show tag information per modified artifact.
     foreach ref [lsort -dict [dict keys $map]] {
-	+ "$ref"
-	# TODO: pull artifact, determine type, display proper link
+	+ ""
+	+ "Changed [InfoLink [dict get [manifest parse [fossil get-manifest $ref]] type] $ref]"
 
 	foreach taginfo [dict get $map $ref] {
 	    lassign $taginfo tag action value
@@ -459,6 +461,7 @@ proc ::fx::mailgen::Begin {} {
 
 proc ::fx::mailgen::Done {} {
     upvar 1 lines lines T T
+    + ""
     catch { $T destroy }
     return -code return [join $lines \n]
 }
