@@ -31,7 +31,7 @@ namespace eval ::fx {
     namespace ensemble create
 }
 namespace eval ::fx::mailgen {
-    namespace export test artifact limit
+    namespace export test artifact limit for-error
     # manifest types
     # - attachment OK
     # - checkin    OK (to test: branch/changeset extraction)
@@ -56,6 +56,21 @@ namespace eval ::fx::mailgen {
 ## timeline event types. For attachments we have a context
 ## which tells the type of change artifact (ticket, wiki, event)
 ## to configure the mail in detail.
+
+proc ::fx::mailgen::for-error {stacktrace} {
+    Begin
+    Headers \
+	FX \
+	http://core.tcl.tk/akupries/fx \
+	"FX Internal Error" [clock seconds]
+    Body
+    + Context
+    + ""
+    + StackTrace
+    +T "" $stacktrace
+    =T
+    Done
+}
 
 proc ::fx::mailgen::test {} {
     debug.fx/mailgen {}

@@ -200,7 +200,7 @@ proc ::fx::note::test-mail-config {config} {
     mailer send \
 	[mailer get-config] \
 	[list [$config @destination]] \
-	[mailgen test]
+	[mailgen test] on
     return
 }
 
@@ -905,18 +905,26 @@ proc ::fx::note::deliver {config} {
     # Other general configuration identical across all notifications.
     set pinfo [ProjectInfo]
 
+    set verbose [$config @verbose]
+    set changes 0
+
     seen forall-pending type id uuid comment {
 	# TODO: no mail and such when suspended.
 	# TODO: Dry run for testing.
 	# TODO: switchable progress animation
 
+	incr changes
         seen mark-notified $uuid
 	lassign [MailCore $uuid $type $comment $map $pinfo] recv m
 
 	if {[llength $recv]} {
-	    mailer send $mc $recv [mailgen artifact $m]
+	    puts [color note "Change $uuid :: $comment"]
+	    mailer send $mc $recv [mailgen artifact $m] $verbose
 	}
     }
+
+    if {$changes} return
+    puts [color warning "No changes"]
     return
 }
 
@@ -952,7 +960,6 @@ proc ::fx::note::Receivers {routes manifest} {
     #array set ff $field ; parray ff
 
     set mtime [dict get $manifest epoch]
-
     if {[dict exists $manifest ticket]} {
 	set tuuid [dict get $manifest ticket]
     } elseif {[dict exists $manifest target]} {
@@ -1006,6 +1013,7 @@ proc ::fx::note::Receivers {routes manifest} {
     # TODO: Check list against a table of bad addresses and ignore these.
     # Must be noted in a log.
 
+    debug.fx/note {/done}
     return $recv
 }
 

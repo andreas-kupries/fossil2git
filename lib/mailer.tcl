@@ -171,15 +171,16 @@ proc ::fx::mailer::Get {listify setting} {
 
 # # ## ### ##### ######## ############# ######################
 
-proc ::fx::mailer::send {config receivers corpus} {
+proc ::fx::mailer::send {config receivers corpus {verbose 0}} {
     debug.fx/mailer {}
     #if {[suspended]} return
     #if {![llength $receivers]} return
 
-    puts "    ================================================"
-    puts [textutil::adjust::indent $corpus {        }]
-    puts "    ================================================"
-
+    if {$verbose} {
+	puts "    ================================================"
+	puts [textutil::adjust::indent $corpus {        }]
+	puts "    ================================================"
+    }
     #return
 
     set token [mime::initialize -string $corpus]

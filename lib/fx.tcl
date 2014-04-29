@@ -75,11 +75,23 @@ proc ::fx::main {argv} {
 	debug.fx {[debug pdict $o]}
 	# TODO: nicer formatting of internal errors.
 	puts stderr [color error $::errorInfo]
+	mail-error $::errorInfo
 	return 1
     }
 
     debug.fx {done, ok}
     return 0
+}
+
+proc ::fx::mail-error {e} {
+    package require fx::mailer
+    package require fx::mailgen
+    set config [::fx mailer get-config]
+    set admin  [lindex [dict get $config -header] end]
+
+    ::fx mailer send $config $admin \
+	[::fx mailgen for-error $e] on
+    return
 }
 
 # # ## ### ##### ######## ############# ######################
@@ -222,6 +234,12 @@ cmdr create fx::fx [file tail $::argv0] {
 	    Do this for all repositories watched by fx.
 	} { alias A; presence }
 	# See also the note in option repository above.
+    }
+
+    common .verbose {
+	option verbose {
+	    Activate more chatter.
+	} { alias v; presence }
     }
 
     common .uuid-or-all {
@@ -995,6 +1013,7 @@ cmdr create fx::fx [file tail $::argv0] {
 	    }
 	    use .all
 	    use .routemap
+	    use .verbose
 	} [fx::call note deliver]
 
 	private mark-pending {
