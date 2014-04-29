@@ -86,33 +86,33 @@ credentials, etc.
 Continuing my example for the Tcl repository below, relevant comments
 will be interspersed with the commands themselves.
 
-	fx repository set source.fossil
+"fx" supports the same -R option as "fossil" itself. While it has some
+notion of a "default" repository for scripts it is better to use -R,
+as that allows you to run similar scripts in parallel without them
+interfering with each, as they would do with the "default", which is
+global, i.e. shared state.
 
-While "fx" supports the same -R option as "fossil" itself it also does
-have the concept of a "default repository". Setting this information
-means that all the following commands will use that repository without
-requiring an explicit specification. While that is not as important in
-scripts (*) it does makes interactive use easier, due to less
-(repetitive) typing.
+	fx note config set -R source.fossil host     shawmail.glb.shawcable.net
+	fx note config set -R source.fossil user     ****
+	fx note config set -R source.fossil password ****
+	fx note config set -R source.fossil sender   akupries@shaw.ca
 
-	fx note config set host     shawmail.glb.shawcable.net
-	fx note config set user     ************ use your mail credentials as per your ISP or network admin
-	fx note config set password ************
-	fx note config set sender   akupries@shaw.ca
-
-Setting the variable 'debug' (not shown here) to 1 tells FX to show the
-SMTP dialog with the configured server when sending mail. Usually we
-do not need this, except when having to debug problems in this
-area. (**)
+Setting the variable 'debug' (not shown here) to 1 tells FX to show
+the SMTP dialog with the configured server when sending mail. Usually
+we do not need this, except when having to debug problems in this area
+(The details of mailing is handled by the smtp and mime packages in
+Tcllib.).
 
 The 'host' is the machine to talk to for sending mail. The example
-contains the name I got from my ISP, Shaw.ca.
+contains the name I got from my ISP, shaw.ca. You have to use whatever
+your ISP or administrator has told you.
 
 The 'port' setting is not shown here, leaving it at the default of 25,
 which is the standard SMTP port.
 
 The credentials 'user' and 'password' are what is required for the
-shaw server to accept mail from me.
+shaw server to accept mail from me. Use your mail credentials as per
+your ISP or network admin in place of the ****.
 
 The 'tls' setting, again not shown, has to be set to true if the host
 can accept connections secured with TLS/SSL, or maybe even only
@@ -133,7 +133,7 @@ This is actually the only setting which MUST be configured for each
 repository. All the other settings are something which can be
 configured globally for all repositories, like with
 
-	fx note config set -global host shawmail.glb.shawcable.net
+	fx note config set -R source.fossil -global host shawmail.glb.shawcable.net
 
 thus sharing the mail setup. In this example of watching just a single
 repository this is not as important than when we go and watch multiple
@@ -144,15 +144,7 @@ the mail setup. Together with the complementary 'note config import'
 command this is another way of copying a setup around and applying it
 to multiple repositories.
 
-	fx note config export -o source.mail-config
-
-
---
-(Ad *): In scripts this may actually be a bad thing, as it introduces
-	state we have reset/unset in case of errors.
-
-(Ad **): This is handled by the smtp and mime packages in Tcllib.
-
+	fx note config export -R source.fossil -o source.mail-config
 
 III. Routing setup
 ------------------
@@ -165,14 +157,14 @@ when they happen.
 In my case I am interested in all of them and want to be notified in
 my personal account, thus I run
 
-	fx note route add all 'Andreas Kupries <akupries@shaw.ca>'
+	fx note route add -R source.fossil \
+	   all 'Andreas Kupries <akupries@shaw.ca>'
 
-The "all" is a catch-all term for all possible events|changes. For
-details use the introspection command
+The "all" is a catch-all term for all possible changes. Use the
+introspection command below to see a list of the individual
+possibilities we can use instead of "all":
 
-	fx note route events
-
-which will list the possible event we can use instead of "all" above.
+	fx note route events -R source.fossil
 
 In a more general setup the destination address would more likely be
 the mailing list people can subscribe to for notifications from the
@@ -180,13 +172,17 @@ repository.
 
 The second part of the routing is about dynamic addressing. This is
 something we can only do for ticket changes, and is the reason why we
-wanted the "ticket" configuration" at the beginning. The introspection command
+wanted the "ticket" configuration" at the beginning. The introspection
+command
 
-       fx note route fields
+       fx note route fields -R source.fossil
 
-shows which ticket fields are available. In my setup, for Tcl, I then use
+shows which ticket fields are available. In my setup, for Tcl, I then
+use
 
-	fx note route field add assignee closer login private_contact submitter username
+	fx note route field add -R source.fossil \
+	   assignee closer login private_contact \
+	   submitter username
 
 to tell FX which of these fields may contain email addresses.
 
@@ -200,7 +196,7 @@ routing setup. Together with the complementary 'note route import'
 command this is enables us to apply the same routing setup to multiple
 repositories. (We currently do not support global shared routing).
 
-	fx note route export -o source.routes
+	fx note route export -R source.fossil -o source.routes
 
 IV. Testing
 -----------
@@ -215,7 +211,7 @@ The first, above, is a general test that the configured mail settings
 work. It sends a fixed mail to the specified destination address,
 using all the settings of chapter II.
 
-	fx note update-history
+	fx note update-history -R source.fossil
 
 This command explicitly updates the cached history of the ticket
 fields mentioning in the dynamic routing (see last chapter). As this
@@ -223,9 +219,9 @@ initial run can take some time, having to process the entire existing
 history it feels nicer to do this separately instead as part of the
 following commands.
 
-	fx test manifest-parse --all
-	fx test mail-receivers --all
-	fx test mail-for       --all
+	fx test manifest-parse --all -R source.fossil
+	fx test mail-receivers --all -R source.fossil
+	fx test mail-for       --all -R source.fossil
 
 These commands go over all the changes and check that FX is able to
 parse their manifests, can generate the list of destination mail
@@ -243,24 +239,16 @@ for example, signed manifests, huge manifests, etc).
 V. Cleanup
 ----------
 
-Remember the first command in chapter II.
-Setting the default repository ?
+A last thing we really should do is
 
-Now that we have configured everything we need it is time to drop
-this.
+	fx note mark-notified --all -R source.fossil
 
-	fx repository reset
-
-And another thing we really should do is
-
-	fx note mark-notified --all
-
-This tells FX that anything in the timeline i.e. change history should
-NOT get notification mail.
+This tells the system that anything in the timeline i.e. change
+history should NOT get notification mail.
 
 If you forget this the first delivery run will generate mail for the
 entire past history, thousands of them if the repository contains a
-large one. Not a good idea to spam notifications for somethjing
+large one. Not a good idea to spam notifications for something
 several years in the past.
 
 VI. Monitoring
@@ -274,19 +262,13 @@ called from a cron job.
 
 Here are my commands:
 
-	fossil pull            -R $r
-	fossil config pull all -R $r
-	#fossil rebuild         -R $r
-	#fx note show-pending   -R $r
-	fx note deliver        -R $r
+	fossil pull              -R $r
+	fossil config pull email -R $r
+	fossil config pull users -R $r
+	fx note deliver          -R $r
 
 which does
 
 - Get the new content
-- Get updates to the configuration (especiallly new users!)
-- Do NOT rebuild to follow fossil schema changes.
-  This removes all information from our custom FX tables.
-  (They are left existing, just empty).
-
-- Showing the pending changes we got from the pull is not really needed either.
-- But the last is import, run the mail generation and delivery
+- Get updates to the configuration (new users, concealed addresses)
+- Run the mail generation and delivery
