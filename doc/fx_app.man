@@ -1,0 +1,26 @@
+[comment {-*- tcl -*- --- doctools ---}]
+[include include/definitions.inc]
+[manpage_begin [vset PROJECT]_app n 1]
+[include include/general.inc]
+[titledesc "[vset PROJECT] - Application"]
+[description]
+[para]
+[include include/welcome.inc]
+[para]
+
+Here we document the [vset PROJECT] application available to a user of
+[vset PROJECT], i.e. anybody  using (or wishing to use) [vset PROJECT]
+to help with their management of [term fossil] repositories.
+
+[para] Actually we are only refering to the help system built into
+the application and accessible through the [cmd help] command, i.e.
+[syscmd {fx help}]. This documents all commands, their arguments
+and options.
+
+[para] As it is integral to the [package Cmdr]-based cli specification
+used in the implementation it will always be up-to-date in a way
+this manpage cannot be.
+
+[include include/license.inc]
+[include include/feedback.inc]
+[manpage_end]

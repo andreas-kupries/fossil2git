@@ -1,0 +1,17 @@
+[comment {-*- tcl -*- --- doctools ---}]
+[include include/definitions.inc]
+[manpage_begin [vset PROJECT]_changes n 1]
+[include include/general.inc]
+[titledesc "[vset PROJECT] - Changes"]
+[description]
+[para]
+[include include/welcome.inc]
+[para]
+
+This document provides an overview of the changes
+[package [vset PROJECT]]
+underwent from version to version.
+
+[include include/changes.inc]
+[include include/feedback.inc]
+[manpage_end]

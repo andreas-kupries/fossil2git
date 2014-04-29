@@ -1,0 +1,6 @@
+[comment {-*- tcl -*- --- !doctools --- manpage}]
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[vset PROJECT fx]
+[vset P_NAME FX]
+[vset P_LOCATION_1 https://core.tcl.tk/akupries/fx]
+[vset P_LOCATION_2 https://chiselapp.com/user/andreas_kupries/repository/Fossil2git/index]

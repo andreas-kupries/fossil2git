@@ -1,0 +1,38 @@
+[comment {-*- tcl -*- doctools manpage}]
+[include include/definitions.inc]
+[manpage_begin [vset PROJECT]_introduction n 1]
+[include include/general.inc]
+[titledesc "[vset PROJECT] - Introduction to [vset PROJECT]"]
+[description]
+[include include/welcome_basic.inc]
+
+[vset PROJECT] is an application with supporting packages
+to provide users of the Fossil SCM with extended management
+facilities going beyond the regular command line.
+
+[section {Related Documents}]
+
+[list_begin enumerated]
+[enum] [term "[vset PROJECT] - License"].
+[enum] [term "[vset PROJECT] - How To Get The Sources"].
+[enum] [term "[vset PROJECT] - The Installer's Guide"].
+[enum] [term "[vset PROJECT] - The Developer's Guide"].
+[list_end]
+
+[para] The manpages relevant to a user of [vset PROJECT] are:
+
+[list_begin enumerated]
+[enum] [term"[vset PROJECT] - Application"]
+[list_end]
+
+[para] For the developers and maintainers of [vset PROJECT], and power users
+wishing to extend the system to handle their custom circumstances, we
+additionally have:
+
+[list_begin enumerated]
+[enum] [term "[vset PROJECT] - The Developer's Guide"].
+[list_end]
+
+[include include/feedback.inc]
+[manpage_end]
+

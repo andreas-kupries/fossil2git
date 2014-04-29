@@ -1,0 +1,77 @@
+[comment {-*- tcl -*- doctools manpage}]
+
+[comment {-*- tcl -*- doctools manpage}]
+[include include/definitions.inc]
+[manpage_begin [vset PROJECT]_sources n 1]
+[include include/general.inc]
+[titledesc "[vset PROJECT] - How To Get The Sources"]
+[description]
+[include include/welcome.inc]
+
+[para] The audience of this document is anyone wishing to either have
+just a look at [vset PROJECT]'s source code, or build the application
+and packages, or to extend and modify them.
+
+[para] For builders and developers we additionally provide
+
+[list_begin enum]
+[enum] [term "[vset PROJECT] - License"].
+[enum] [term "[vset PROJECT] - The Installer's Guide"].
+[enum] [term "[vset PROJECT] - The Developer's Guide"].
+[list_end]
+
+respectively.
+
+[section {Source Location}]
+
+The official repository for [vset PROJECT] can be found at
+[uri [vset P_LOCATION_1]].
+
+For backup in case the primary location is not accessible it is also
+available at 
+[uri [vset P_LOCATION_2]].
+
+[section Retrieval]
+
+Assuming that you simply wish to look at the sources, or build a
+specific revision, the easiest way of retrieving it is to:
+
+[list_begin enum]
+[enum] Log into this site, as "anonymous", using the semi-random password in the captcha.
+[enum] Go to the "Timeline".
+[enum] Choose the revision you wish to have and 
+[enum] follow its link to its detailed information page.
+[enum] On that page, choose either the "ZIP" or "Tarball" link to get
+a copy of this revision in the format of your choice.
+[list_end]
+
+[section {Source Code Management}]
+
+For the curious (or a developer-to-be), the sources are managed by the
+[uri http://www.fossil-scm.org {Fossil SCM}]. Note that this is the same
+SCM this project is a management extension to.
+
+Binaries for popular platforms can be found directly at its
+[uri http://www.fossil-scm.org/download.html {download page}].
+
+[para]
+
+With that tool available the full history can be retrieved via:
+
+[example_begin]
+fossil clone [vset P_LOCATION_1] [vset PROJECT].fossil
+[example_end]
+
+followed by
+
+[example_begin]
+    mkdir [vset PROJECT]
+    cd [vset PROJECT]
+    fossil open ../[vset PROJECT].fossil
+[example_end]
+
+to get a checkout of the head of the trunk.
+
+[include include/feedback.inc]
+[manpage_end]
+

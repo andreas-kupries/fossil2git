@@ -1,0 +1,80 @@
+[comment {-*- tcl -*- doctools manpage}]
+[include include/definitions.inc]
+[manpage_begin [vset PROJECT]_devguide n 1]
+[include include/general.inc]
+[titledesc "[vset PROJECT] - The Developer's Guide"]
+[description]
+[include include/welcome.inc]
+
+[para] This document is a guide for developers working on [vset PROJECT],
+i.e. maintainers fixing bugs, extending the functionality of
+application or packages, etc.
+
+[para] Please read
+
+[list_begin enum]
+[enum] [term "[vset PROJECT] - License"].
+[enum] [term "[vset PROJECT] - How To Get The Sources"].
+[enum] [term "[vset PROJECT] - The Installer's Guide"].
+[list_end]
+
+first, if that was not done already.
+
+[para] Here we assume that the sources are already available in a directory
+of your choice, and that you not only know how to build and install
+them, but also have all the necessary requisites to actually do
+so. The guide to the sources in particular also explains which source
+code management system is used, where to find it, how to set it up,
+etc.
+
+[section "Developing for [vset PROJECT]"]
+
+[comment @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@]
+[subsection {Architecture}]
+
+[comment { - todo - }]
+
+[comment @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@]
+[subsection {Directory structure}]
+
+[list_begin definitions][comment {___1___}]
+
+[comment =====================================================================]
+[def Helpers]
+
+[comment =====================================================================]
+[def Documentation]
+
+[list_begin definitions]
+[def [file doc/]]
+
+This directory contains the documentation sources. The texts are written
+in [term doctools] format, whereas the figures are a mixture of TeX (math
+formulas), and tklib's [package dia](gram) package and application.
+
+[def [file embedded/]]
+
+This directory contains the documentation converted to regular manpages
+(nroff) and HTML.
+
+It is called embedded because these files, while derived, are part of the
+fossil repository, i.e. embedded into it. This enables fossil to access
+and display these files when serving the repositories' web interface.
+The "Command Reference" link at
+
+[uri [vset PROJECT_LOCATION_1]]
+
+is, for example, accessing the generated HTML.
+
+[list_end]
+
+[comment =====================================================================]
+[def {Package Code, General structure}]
+
+See the second image in section [sectref Architecture], and the
+associated explanations.
+
+[list_end][comment {___1___}]
+
+[include include/feedback.inc]
+[manpage_end]
