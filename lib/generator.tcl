@@ -18,6 +18,7 @@ package require struct::matrix
 package require textutil::adjust
 package require clock::iso8601
 package require fx::fossil
+package require fx::mailer
 package require fx::manifest
 package require http
 
@@ -42,6 +43,7 @@ namespace eval ::fx::mailgen {
     namespace ensemble create
 
     namespace import ::fx::fossil
+    namespace import ::fx::mailer
     namespace import ::fx::manifest
 
     # Limit for table fields in generated mail, and
@@ -69,7 +71,7 @@ proc ::fx::mailgen::for-error {stacktrace} {
     + StackTrace
     +T "" $stacktrace
     =T
-    Done
+    Done {} {}
 }
 
 proc ::fx::mailgen::test {} {
@@ -81,7 +83,7 @@ proc ::fx::mailgen::test {} {
 	[clock seconds]
     Body
     + "Testing ... 1, 2, 3 ..."
-    Done
+    Done {} {}
 }
 
 proc ::fx::mailgen::artifact {m} {
@@ -124,9 +126,11 @@ proc ::fx::mailgen::attachment {m} {
     #   ecomment        EVENT      Timeline text
     #   epoch           (when)     Unix epoch of commit timestamp
     #   etype           EVENT      ASSERT {event, ticket, wiki}
+    #   footer          sys config Project-specific mail footer/signature
     #   location        sys config Project repository web location
     #   project         sys config Project name
     #   self            system     Manifest uuid
+    #   sender          sys config Mail sender address
     #   target          Manifest   Reference to holder of attachment.
     #   type            Manifest   Fixed "attachment"
     #   user            Manifest   Committer
@@ -166,7 +170,7 @@ proc ::fx::mailgen::attachment {m} {
     +T "" [Reformat $comment]
     =T
 
-    Done
+    Done $sender $footer
 }
 
 proc ::fx::mailgen::checkin {m} {
@@ -177,9 +181,11 @@ proc ::fx::mailgen::checkin {m} {
     #   ecomment  EVENT      Timeline text (= comment, 1st line)
     #   epoch     (when)     Unix epoch of commit timestamp
     #   etype     EVENT      Fixed "commit" ASSERT
+    #   footer    sys config Project-specific mail footer/signature
     #   location  sys config Project repository web location
     #   project   sys config Project name
     #   self      system     Manifest uuid
+    #   sender    sys config Mail sender address
     #   type      Manifest   Fixed "checkin"
     #   user      Manifest   Committer
     #   when      Manifest   Commit timestamp
@@ -222,7 +228,7 @@ proc ::fx::mailgen::checkin {m} {
     }
     =T
 
-    Done
+    Done $sender $footer
 }
 
 proc ::fx::mailgen::control {m} {
@@ -234,9 +240,11 @@ proc ::fx::mailgen::control {m} {
     #   ecomment    EVENT        Timeline text
     #   epoch       (when)       Unix epoch of commit timestamp
     #   etype       EVENT        ASSERT {checkin, event}
+    #   footer      sys config   Project-specific mail footer/signature
     #   location    sys config   Project repository web location
     #   project     sys config   Project name
     #   self        system       Manifest uuid
+    #   sender      sys config   Mail sender address
     #   tags        Manifest     Dictionary of event tag settings/changes
     #   type        Manifest     Fixed "event"
     #   user        Manifest     Committer
@@ -279,7 +287,7 @@ proc ::fx::mailgen::control {m} {
 	}
     }
     =T
-    Done
+    Done $sender $footer
 }
 
 proc ::fx::mailgen::event {m} {
@@ -292,9 +300,11 @@ proc ::fx::mailgen::event {m} {
     #   epoch-event (when-event) Unix epoch of event occurence
     #   etype       EVENT        Fixed "event" ASSERT
     #   eventid     Manifest     Uuid of the event (page)
+    #   footer      sys config   Project-specific mail footer/signature
     #   location    sys config   Project repository web location
     #   project     sys config   Project name
     #   self        system       Manifest uuid
+    #   sender      sys config   Mail sender address
     #   tags        Manifest     Dictionary of event tag settings/changes /optional
     #   text        Manifest     Text of the event page.
     #   type        Manifest     Fixed "event"
@@ -330,7 +340,7 @@ proc ::fx::mailgen::event {m} {
     =T
 
     # Text of event left out. Follow the "Details" link.
-    Done
+    Done $sender $footer
 }
 
 proc ::fx::mailgen::ticket {m} {
@@ -341,9 +351,11 @@ proc ::fx::mailgen::ticket {m} {
     #   epoch     (when)     Unix epoch of commit timestamp
     #   etype     EVENT      Fixed "ticket" ASSERT
     #   field     Manifest   Dictionary of the changed fields and their new values.
+    #   footer    sys config Project-specific mail footer/signature
     #   location  sys config Project repository web location
     #   project   sys config Project name
     #   self      system     Manifest uuid
+    #   sender    sys config Mail sender address
     #   ticket    Manifest   Ticket uuid, of the changed ticket
     #   type      Manifest   Fixed "ticket"
     #   user      Manifest   Committer
@@ -395,7 +407,7 @@ proc ::fx::mailgen::ticket {m} {
 	+T ${f}: $v
     }
     =T
-    Done
+    Done $sender $footer
 }
 
 proc ::fx::mailgen::wiki {m} {
@@ -405,9 +417,11 @@ proc ::fx::mailgen::wiki {m} {
     #   ecomment  EVENT      "Changes to wiki page [...]"
     #   epoch     (when)     Unix epoch of commit timestamp
     #   etype     EVENT      Fixed "wiki" ASSERT
+    #   footer    sys config Project-specific mail footer/signature
     #   location  sys config Project repository web location
     #   project   sys config Project name
     #   self      system     Manifest uuid
+    #   sender    sys config Mail sender address
     #   text      Manifest   Text of the wiki page.
     #   title     Manifest   Name of the wiki page.
     #   type      Manifest   Fixed "wiki"
@@ -430,8 +444,7 @@ proc ::fx::mailgen::wiki {m} {
     =T
 
     # Text of page left out. Follow the "Details" link.
-
-    Done
+    Done $sender $footer
 }
 
 # # ## ### ##### ######## ############# ######################
@@ -474,10 +487,20 @@ proc ::fx::mailgen::Begin {} {
     return
 }
 
-proc ::fx::mailgen::Done {} {
+proc ::fx::mailgen::Done {sender footer} {
     upvar 1 lines lines T T
-    + ""
     catch { $T destroy }
+
+    if {$footer ne {}} {
+	# separate footer from mail body
+	+ ""
+	+ [string repeat - 60]
+
+	lappend map @sender $sender
+	+ [string map $map $footer]
+    }
+
+    + ""
     return -code return [join $lines \n]
 }
 
