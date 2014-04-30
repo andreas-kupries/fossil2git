@@ -33,7 +33,7 @@ namespace eval ::fx {
 }
 namespace eval ::fx::mailer {
     namespace export get-config get send \
-	good-address dedup-addresses test-address \
+	good-address dedup-addresses test-address
     namespace ensemble create
 
     namespace import ::fx::fossil
