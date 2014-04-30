@@ -933,16 +933,12 @@ proc ::fx::note::deliver {config} {
 
 proc ::fx::note::ProjectInfo {} {
     debug.fx/note {}
-
-    set name [config get-with-default \
-		  project-name \
-		  [file rootname [file tail [fossil repository-location]]]]
-
-    set location [config get-with-default \
-		      fx-aku-note-project-location \
-		      [mail-config default-of location]]
-
-    return [dict create project $name location $location]
+    return [dict create \
+		footer   [mailer get footer]	  \
+		location [mailer get location]	  \
+		project  [mailer get project-name] \
+		sender   [mailer get sender]      \
+	       ]
 }
 
 proc ::fx::note::Receivers {routes manifest} {
