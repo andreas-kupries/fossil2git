@@ -200,7 +200,9 @@ proc ::fx::note::test-mail-config {config} {
     mailer send \
 	[mailer get-config] \
 	[list [$config @destination]] \
-	[mailgen test] on
+	[mailgen test \
+	     [mailer get sender] \
+	     [mailer get footer]] on
     return
 }
 

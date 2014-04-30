@@ -18,7 +18,6 @@ package require struct::matrix
 package require textutil::adjust
 package require clock::iso8601
 package require fx::fossil
-package require fx::mailer
 package require fx::manifest
 package require http
 
@@ -43,7 +42,6 @@ namespace eval ::fx::mailgen {
     namespace ensemble create
 
     namespace import ::fx::fossil
-    namespace import ::fx::mailer
     namespace import ::fx::manifest
 
     # Limit for table fields in generated mail, and
@@ -74,7 +72,7 @@ proc ::fx::mailgen::for-error {stacktrace} {
     Done {} {}
 }
 
-proc ::fx::mailgen::test {} {
+proc ::fx::mailgen::test {sender footer} {
     debug.fx/mailgen {}
     Begin
     Headers \
@@ -83,7 +81,7 @@ proc ::fx::mailgen::test {} {
 	[clock seconds]
     Body
     + "Testing ... 1, 2, 3 ..."
-    Done {} {}
+    Done $sender $footer
 }
 
 proc ::fx::mailgen::artifact {m} {
