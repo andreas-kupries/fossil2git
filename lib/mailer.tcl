@@ -17,6 +17,7 @@ package require Tcl 8.5
 package require tls
 package require smtp
 package require mime
+package require fx::fossil
 package require fx::table
 package require fx::mgr::config
 package require fx::validate::mail-config
@@ -31,12 +32,14 @@ namespace eval ::fx {
     namespace ensemble create
 }
 namespace eval ::fx::mailer {
-    namespace export get-config get-sender send \
-	good-address dedup-addresses test-address
+    namespace export get-config get send \
+	good-address dedup-addresses test-address \
     namespace ensemble create
 
+    namespace import ::fx::fossil
     namespace import ::fx::mgr::config
     namespace import ::fx::validate::mail-config
+
     namespace import ::fx::table::do
     rename do table
 }
@@ -132,13 +135,11 @@ proc ::fx::mailer::good-address {addr} {
     #array set aa $r ; parray aa ; unset aa
 
     # TODO: Filter out addresses with domains matching the local host.
-
     return 1
 }
 
-proc ::fx::mailer::get-sender {} {
-    debug.fx/mailer {}
-    return [Get 0 sender]
+proc ::fx::mailer::get {setting} {
+    return [Get 0 $setting]
 }
 
 proc ::fx::mailer::get-config {} {
@@ -162,9 +163,17 @@ proc ::fx::mailer::get-config {} {
 
 proc ::fx::mailer::Get {listify setting} {
     debug.fx/mailer {}
-    set v [config get-with-default \
-	       [mail-config internal   $setting] \
-	       [mail-config default-of $setting]]
+
+    if {$setting eq "project-name"} {
+	# Pseudo mail config item
+	set v [config get-with-default \
+		   project-name \
+		   [file rootname [file tail [fossil repository-location]]]]
+    } else {
+	set v [config get-with-default \
+		   [mail-config internal   $setting] \
+		   [mail-config default-of $setting]]
+    }
     if {$listify} { set v [list $v] }
     return $v
 }
