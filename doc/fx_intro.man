@@ -22,7 +22,7 @@ facilities going beyond the regular command line.
 [para] The manpages relevant to a user of [vset PROJECT] are:
 
 [list_begin enumerated]
-[enum] [term"[vset PROJECT] - Application"]
+[enum] [term "[vset PROJECT] - Application"]
 [list_end]
 
 [para] For the developers and maintainers of [vset PROJECT], and power users

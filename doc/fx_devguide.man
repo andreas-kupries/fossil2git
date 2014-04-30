@@ -62,7 +62,7 @@ fossil repository, i.e. embedded into it. This enables fossil to access
 and display these files when serving the repositories' web interface.
 The "Command Reference" link at
 
-[uri [vset PROJECT_LOCATION_1]]
+[uri [vset P_LOCATION_1]]
 
 is, for example, accessing the generated HTML.
 

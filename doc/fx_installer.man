@@ -39,7 +39,7 @@ To install [vset PROJECT] simply run
 }]
 
 where [file /path/to/tclsh8.5] is the tclsh of your Tcl installation, and
-[file /path/to/fx] the location of the [Vset PROJECT] sources on your system.
+[file /path/to/fx] the location of the [vset PROJECT] sources on your system.
 
 [para]
 
