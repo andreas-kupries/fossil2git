@@ -14,6 +14,10 @@
 # @@ Meta End
 
 package require Tcl 8.5
+package require debug
+package require debug::caller
+package require interp
+
 package require fx::fossil
 package require fx::mailer
 package require fx::mailgen
@@ -25,7 +29,6 @@ package require fx::table
 package require fx::util
 package require fx::validate::event-type
 package require fx::validate::mail-config
-package require interp
 
 # # ## ### ##### ######## ############# ######################
 
@@ -41,19 +44,19 @@ namespace eval ::fx::note {
 
     namespace ensemble create
 
+    namespace import ::fx::color
     namespace import ::fx::fossil
     namespace import ::fx::mailer
     namespace import ::fx::mailgen
     namespace import ::fx::manifest
     namespace import ::fx::mgr::config
     namespace import ::fx::seen
-    namespace import ::fx::color
     namespace import ::fx::util
-    namespace import ::fx::table::do
-    rename do table
-
     namespace import ::fx::validate::event-type
     namespace import ::fx::validate::mail-config
+
+    namespace import ::fx::table::do
+    rename do table
 
     # (global) configuration prefix for watched repositories.
     variable g_repo_watch "fx-aku-note-watch"
@@ -63,7 +66,6 @@ namespace eval ::fx::note {
 
     # configuration prefix for dynamic routes
     variable g_route_field "fx-aku-note-field"
-
 }
 
 # # ## ### ##### ######## ############# ######################
