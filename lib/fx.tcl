@@ -1102,6 +1102,23 @@ cmdr create fx::fx [file tail $::argv0] {
 	    }
 	    use .uuid-or-all
 	} [fx::call note test-parse]
+
+	private tags {
+	    section Testing
+	    description {
+		Determine the names, types, and values of all tags
+		associated with a checkin.
+	    }
+	    use .uuid
+	} [fx::call fossil test-tags]
+
+	private branch {
+	    section Testing
+	    description {
+		Determine the branch of a checkin.
+	    }
+	    use .uuid
+	} [fx::call fossil test-branch]
     }
 
     officer debug {

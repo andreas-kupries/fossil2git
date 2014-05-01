@@ -18,6 +18,7 @@ package require sqlite3
 package require debug
 package require debug::caller
 package require fx::color
+package require fx::table
 
 debug level  fx/fossil
 debug prefix fx/fossil {[debug caller] | }
@@ -31,7 +32,7 @@ namespace eval ::fx {
 namespace eval ::fx::fossil {
     namespace export \
 	c_show_repository c_set_repository c_reset_repository \
-	c_default_repository \
+	c_default_repository test-tags test-branch \
 	branch-of changeset reveal user-info users user-config \
 	get-manifest fx-tables fx-enums fx-enum-items \
 	ticket-title ticket-fields global global-location \
@@ -41,6 +42,8 @@ namespace eval ::fx::fossil {
     namespace ensemble create
 
     namespace import ::fx::color
+    namespace import ::fx::table::do
+    rename do table
 
     # Cached location of the repository we are working with.
     variable repo_location {}
@@ -54,6 +57,38 @@ namespace eval ::fx::fossil {
 
     # Configuration key used to save/read the current repository.
     variable rkey "fx-aku-current-repository"
+}
+
+# # ## ### ##### ######## ############# ######################
+
+proc ::fx::fossil::test-branch {config} {
+    debug.fx/fossil {}
+    show-repository-location
+    puts [branch-of [$config @uuid]]
+    return
+}
+
+proc ::fx::fossil::test-tags {config} {
+    debug.fx/fossil {}
+    show-repository-location
+
+    set uuid [$config @uuid]
+    [table t {{Tag Name} Type Value} {
+	repository eval {
+	    SELECT T.tagname AS name,
+	           X.tagtype AS type,
+	           X.value AS value
+	    FROM  blob    B,
+	          tagxref X,
+	          tag     T
+	    WHERE B.uuid  = :uuid
+	    AND   B.rid   = X.rid
+	    AND   X.tagid = T.tagid
+	} {
+	    $t add $name $type $value
+	}
+    }] show puts
+    return
 }
 
 # # ## ### ##### ######## ############# ######################
@@ -492,12 +527,13 @@ proc ::fx::fossil::get-manifest {uuid} {
 proc ::fx::fossil::branch-of {uuid} {
     debug.fx/fossil {}
     return [repository onecolumn {
-	SELECT tag.tagname
-	FROM blob, tagxref, tag
-	WHERE blob.uuid = :uuid
-	AND blob.rid = tagxref.rid
-	AND tagxref.tagtype > 0
-	AND tagxref.tagid = tag.tagid
+	SELECT X.value
+	FROM blob B, tagxref X, tag T
+	WHERE B.uuid = :uuid
+	AND   B.rid = X.rid
+	AND   X.tagtype > 0
+	AND   X.tagid = T.tagid
+	AND   T.tagname = 'branch'
     }]
 }
 
