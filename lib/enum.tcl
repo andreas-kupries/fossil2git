@@ -25,6 +25,7 @@ package require try
 
 package require fx::color
 package require fx::fossil
+package require fx::mgr::enum
 package require fx::table
 package require fx::util
 package require fx::validate::enum
@@ -42,6 +43,9 @@ namespace eval ::fx::enum {
 
     namespace import ::fx::table::do
     rename do table
+
+    namespace import ::fx::mgr::enum
+    rename enum mgr
 }
 
 # # ## ### ##### ######## ############# ######################
@@ -58,15 +62,11 @@ proc ::fx::enum::list {config} {
     set enums [fossil fx-enums]
     set w     [expr {[linenoise columns] - [util max-length $enums] - 7}]
 
+    # TODO: different modes of item formatting ? (one per line, vs block (current))
+
     [table t {Name Elements} {
 	foreach e $enums {
-	    set etable [enum table-of $e]
-	    set item [fossil repository eval [subst {
-		SELECT item
-		FROM   "$etable"
-		ORDER BY item
-	    }]]
-	    set items [join $items {, }]
+	    set items [join [mgr items $e] {, }]
 	    set items [textutil::adjust::adjust $items -length $w]
 	    $t add $e $items
 	}
@@ -78,27 +78,16 @@ proc ::fx::enum::create {config} {
     debug.fx/enum {}
     fossil show-repository-location
 
-    set etable [$config @newenum]
-    set enum   [$config @newenum string]
-    puts -nonewline "Creating enum \"$enum\" ... "
+    $config @newenum
+    set enum [$config @newenum string]
 
+    puts -nonewline "Creating enumeration \"$enum\" ... "
     fossil repository transaction {
-	fossil repository eval [subst {
-	    CREATE TABLE "$etable" (
-		id   INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-		item TEXT    UNIQUE
-	    );
-	}]
-
-	set prefix \n
-	foreach item [lsort -unique [$config @items]] {
-	    puts "$prefix  Adding item \"$item\" ... "
-	    fossil repository eval [subst {
-		INSERT
-		INTO "$etable"
-		VALUES (NULL, :item)
-	    }]
-	    set prefix {}
+	mgr create $enum
+	set items [$config @items]
+	if {[llength $items]} {
+	    puts ""
+	    AddBulk $enum $items
 	}
     }
     puts [color good OK]
@@ -109,16 +98,11 @@ proc ::fx::enum::delete {config} {
     debug.fx/enum {}
     fossil show-repository-location
 
-    set etable [$config @enum]
-    set enum   [$config @enum string]
-    puts -nonewline "Deleting enum \"$enum\" ..."
+    $config @enum
+    set enum [$config @enum string]
 
-    fossil repository transaction {
-	fossil repository eval [subst {
-	    DROP TABLE "$etable"
-	}]
-    }
-
+    puts -nonewline "Deleting enumeration \"$enum\" ..."
+    mgr delete $enum
     puts [color good OK]
     return
 }
@@ -129,22 +113,23 @@ proc ::fx::enum::add {config} {
     debug.fx/enum {}
     fossil show-repository-location
 
-    set etable [$config @enum]
-    set enum   [$config @enum string]
-    puts "Enum \"$enum\":"
+    $config @enum
+    set enum [$config @enum string]
 
+    puts "Enumeration \"$enum\":"
+    AddBulk $enum [$config @items]
+    puts [color good OK]
+    return
+}
+
+proc ::fx::enum::AddBulk {enum items} {
+    debug.fx/enum {}
     fossil repository transaction {
-	foreach item [lsort -unique [$config @items]] {
+	foreach item $items {
 	    puts "  Adding item \"$item\" ... "
-	    fossil repository eval [subst {
-		INSERT
-		INTO "$etable"
-		VALUES (NULL, :item)
-	    }]
+	    mgr add1 $enum $item
 	}
     }
-
-    puts [color good OK]
     return
 }
 
@@ -152,21 +137,16 @@ proc ::fx::enum::remove {config} {
     debug.fx/enum {}
     fossil show-repository-location
 
-    set etable [$config @enum]
-    set enum   [$config @enum string]
-    puts "Enum \"$enum\":"
+    $config @enum
+    set enum [$config @enum string]
 
+    puts "Enumeration \"$enum\":"
     fossil repository transaction {
-	foreach item [lsort -unique [$config @items]] {
+	foreach item [$config @items] {
 	    puts "  Removing item \"$item\" ... "
-	    fossil repository eval [subst {
-		DELETE
-		FROM "$etable"
-		WHERE item = :item
-	    }]
+	    mgr remove1 $enum $item
 	}
     }
-
     puts [color good OK]
     return
 }
@@ -175,22 +155,14 @@ proc ::fx::enum::change {config} {
     debug.fx/enum {}
     fossil show-repository-location
 
-    set etable [$config @enum]
-    set enum   [$config @enum string]
-    set old    [$config @item]
-    set new    [$config @newitem]
+    $config @enum
+    set enum [$config @enum string]
+    set old  [$config @item]
+    set new  [$config @newitem]
 
-    puts "Enum \"$enum\":"
-
+    puts "Enumeration \"$enum\":"
     puts "  Renaming item \"$old\" to \"$new\" ... "
-    fossil repository transaction {
-	fossil repository eval [subst {
-	    UPDATE "$etable"
-	    SET   item = :new
-	    WHERE item = :old
-	}]
-    }
-
+    mgr change $enum $old $new
     puts [color good OK]
     return
 }
@@ -201,20 +173,15 @@ proc ::fx::enum::export {config} {
     debug.fx/enum {}
     #fossil show-repository-location
 
-    set etables [$config @enums]
-    set enums   [$config @enums string]
-    set chan    [$config @output]
+    $config @enums
+    set enums [$config @enums string]
+    set chan  [$config @output]
 
     lappend data "\# fx enumeration export @ [clock format [clock seconds]]"
 
-    foreach etable $etables enum $enums {
+    foreach enum $enums {
 	lappend data [::list enum $enum]
-
-	fossil repository eval [subst {
-	    SELECT item
-	    FROM   "$etable"
-	    ORDER BY item
-	}] {
+	foreach item [mgr items $enum] {
 	    lappend data [::list item $item]
 	}
 	lappend data end
@@ -244,6 +211,9 @@ proc ::fx::enum::import {config} {
     $i alias end  ::fx::enum::IEnd
     $i eval $data
     interp delete $i
+
+    # TODO: Import: --keep/replace difference.
+    # TODO: Validate internally, avoid cli recursion.
 
     variable imported
     foreach {enum items} $imported {

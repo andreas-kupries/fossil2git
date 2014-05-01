@@ -47,6 +47,7 @@ proc ::fx::mgr::enum::items {name} {
     return [fossil repository eval [subst {
 	SELECT item
 	FROM   "$etable"
+	ORDER BY id
     }]]
     return
 }
