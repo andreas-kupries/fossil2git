@@ -399,6 +399,7 @@ proc ::fx::note::test-parse {config} {
 
 proc ::fx::note::mail-config-export {config} {
     debug.fx/note {}
+    fossil show-repository-location
     #fossil show-repository-location
 
     set chan      [$config @output]
@@ -430,10 +431,10 @@ proc ::fx::note::mail-config-import {config} {
     fossil show-repository-location
 
     set global [$config @global]
-    set input  [$config @import]
 
+    set input [$config @input]
     set data [read $input]
-    $config @import forget
+    $config @input forget
 
     # Run the import script in a safe interpreter with just the import
     # commands. This generates internal data structures from which we
@@ -643,6 +644,7 @@ proc ::fx::note::route-list {config} {
 
 proc ::fx::note::route-export {config} {
     debug.fx/note {}
+    fossil show-repository-location
 
     set chan [$config @output]
     dict for {event routes} [RouteMap $config] {
@@ -663,10 +665,10 @@ proc ::fx::note::route-import {config} {
     fossil show-repository-location
 
     set extend [$config @extend]
-    set input  [$config @import]
 
+    set input [$config @input]
     set data [read $input]
-    $config @import forget
+    $config @input forget
 
     # Run the import script in a safe interpreter with just the import
     # commands. This generates internal data structures from which we

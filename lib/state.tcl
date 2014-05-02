@@ -58,9 +58,9 @@ proc ::fx::state::restore {config} {
     debug.fx/state {}
     fossil show-repository-location
 
-    set input [$config @import]
+    set input [$config @input]
     set data  [read $input]
-    $config @import forget
+    $config @input forget
 
     # TODO: Some sort of progress callback ?
     fossil repository transaction {

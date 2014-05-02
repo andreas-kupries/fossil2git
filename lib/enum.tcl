@@ -192,14 +192,13 @@ proc ::fx::enum::items {config} {
 
 proc ::fx::enum::export {config} {
     debug.fx/enum {}
-    #fossil show-repository-location
+    fossil show-repository-location
 
     $config @enums
     set enums [$config @enums string]
     set chan  [$config @output]
 
     lappend data "\# fx enumeration export @ [clock format [clock seconds]]"
-
     foreach enum $enums {
 	lappend data [::list enum $enum]
 	foreach item [mgr items $enum] {
@@ -216,9 +215,9 @@ proc ::fx::enum::import {config} {
     debug.fx/enum {}
     fossil show-repository-location
 
-    set input [$config @import]
+    set input [$config @input]
     set data [read $input]
-    $config @import forget
+    $config @input forget
 
     # Run the import script in a safe interpreter with just the import
     # commands. This generates internal data structures from which we

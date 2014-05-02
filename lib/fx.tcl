@@ -272,6 +272,24 @@ cmdr create fx::fx [file tail $::argv0] {
 	}
     }
 
+    common .export {
+	input output {
+	    The path of the file to save the exported data into.
+	} {
+	    validate wchan
+	}
+    }
+
+    common .import {
+	input input {
+	    The path of the file to read the data from.
+	    Defaults to stdin.
+	} {
+	    optional
+	    validate rchan
+	}
+    }
+
     # # ## ### ##### ######## ############# ######################
 
     common .event-hidden-validation {
@@ -338,22 +356,14 @@ cmdr create fx::fx [file tail $::argv0] {
 	description {
 	    Save all fx-managed state of the repository.
 	}
-	input output {
-	    The file to save the state into.
-	} {
-	    validate wchan
-	}
+	use .export
     } [fx::call state save]
 
     private restore {
 	description {
 	    Load all fx-managed state of a repository.
 	}
-	input import {
-	    The file to load the state from.
-	} {
-	    validate rchan
-	}
+	use .import
     } [fx::call state restore]
 
     officer repository {
@@ -693,13 +703,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		Save the specified enumeration(s).
 		Defaults to all.
 	    }
-	    option output {
-		The file to save the enumeration(s) into.
-		Defaults to stdout.
-	    } {
-		alias o
-		validate wchan
-	    }
+	    use .export
 	    input enums {
 		Names of the enumerations to export.
 	    } {
@@ -715,13 +719,7 @@ cmdr create fx::fx [file tail $::argv0] {
 	    description {
 		Import an enumeration from a save file.
 	    }
-	    input import {
-		The file to read the enumeration from.
-		Defaults to stdin.
-	    } {
-		optional
-		validate rchan ;# cmdr - *file => *chan, default: stdin
-	    }
+	    use .import
 	} [fx::call enum import]
 
 	private add {
@@ -854,13 +852,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		    Save the notification configuration into a file.
 		}
 		use .global
-		option output {
-		    The file to save the configuration into.
-		    Defaults to stdout.
-		} {
-		    alias o
-		    validate wchan
-		}
+		use .export
 	    } [fx::call note mail-config-export]
 
 	    private import {
@@ -869,13 +861,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		    Import the notification configuration from a save file.
 		}
 		use .global
-		input import {
-		    The file to read the configuration from.
-		    Defaults to stdin.
-		} {
-		    optional
-		    validate rchan ;# cmdr - *file => *chan, default: stdin
-		}
+		use .import
 		use .mailconfig-hidden-validation
 	    } [fx::call note mail-config-import]
 	}
@@ -921,13 +907,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		description {
 		    Save the configured mail destinations into a file.
 		}
-		option output {
-		    The file to save the routes into.
-		    Defaults to stdout.
-		} {
-		    alias o
-		    validate wchan
-		}
+		use .export
 		use .routemap
 	    } [fx::call note route-export]
 
@@ -937,13 +917,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		    Import mail destinations from a save file.
 		}
 		use .extend
-		input import {
-		    The file to read the mail destinations from.
-		    Defaults to stdin.
-		} {
-		    optional
-		    validate rchan ;# cmdr - *file => *chan, default: stdin
-		}
+		use .import
 		use .routemap
 	    } [fx::call note route-import]
 
