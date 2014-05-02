@@ -20,6 +20,7 @@ package require debug
 package require debug::caller
 
 package require fx::fossil
+package require fx::mgr::state
 package require fx::validate::enum
 
 # # ## ### ##### ######## ############# ######################
@@ -31,7 +32,16 @@ namespace eval ::fx::mgr::enum {
     namespace ensemble create
 
     namespace import ::fx::fossil
+    namespace import ::fx::mgr::state
     namespace import ::fx::validate::enum
+
+    variable dropsql   {DROP TABLE "$etable"}
+    variable createsql {
+	CREATE TABLE "$etable" (
+	    id   INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+	    item TEXT    UNIQUE
+	);
+    }
 }
 
 # # ## ### ##### ######## ############# ######################
@@ -54,25 +64,22 @@ proc ::fx::mgr::enum::items {name} {
 
 proc ::fx::mgr::enum::create {name} {
     debug.fx/mgr/enum {}
+    variable createsql
     set etable [enum table-of $name]
     fossil repository transaction {
-	fossil repository eval [subst {
-	    CREATE TABLE "$etable" (
-		id   INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-		item TEXT    UNIQUE
-	    );
-	}]
+	# etable is subst'ed
+	fossil repository eval [subst $createsql]
     }
     return
 }
 
 proc ::fx::mgr::enum::delete {name} {
     debug.fx/mgr/enum {}
+    variable dropsql
     set etable [enum table-of $name]
     fossil repository transaction {
-	fossil repository eval [subst {
-	    DROP TABLE "$etable"
-	}]
+	# etable is subst'ed
+	fossil repository eval [subst $dropsql]
     }
     return
 }
@@ -146,6 +153,25 @@ proc ::fx::mgr::enum::change {name old new} {
 	    WHERE item = :old
 	}]
     }
+    return
+}
+
+# # ## ### ##### ######## ############# ######################
+fx::mgr::state::register ::fx::mgr::enum::DUMP
+
+proc ::fx::mgr::enum::DUMP {} {
+    variable dropsql
+    variable createsql
+
+    state module enum
+    foreach enum [fossil fx-enums] {
+	set etable [table-of $enum]
+	# etable is subst'ed
+	state sql [subst $dropsql]
+	state sql [subst $createsql]
+	state table $etable {id 0 item 1}
+    }
+    state sep
     return
 }
 

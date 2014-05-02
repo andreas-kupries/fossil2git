@@ -17,6 +17,7 @@ package require Tcl 8.5
 package require fx::fossil
 package require fx::manifest
 package require fx::color
+package require fx::mgr::state
 
 debug level  fx/seen
 debug prefix fx/seen {[debug caller] | }
@@ -32,9 +33,10 @@ namespace eval ::fx::seen {
 	set-progress get-field regenerate-series
     namespace ensemble create
 
+    namespace import ::fx::color
     namespace import ::fx::fossil
     namespace import ::fx::manifest
-    namespace import ::fx::color
+    namespace import ::fx::mgr::state
 
     # Progress callback for the timeseries calculations.
     variable progress {}
@@ -440,7 +442,24 @@ proc ::fx::seen::Progress {text} {
 
 proc ::fx::seen::Init {} {
     debug.fx/seen {}
-    fossil repository eval {
+    variable createsql
+
+    fossil repository eval $createsql
+
+    # Disable further calls.
+    proc ::fx::seen::Init {} {}
+
+    debug.fx/seen {done}
+    return
+}
+
+# # ## ### ##### ######## ############# ######################
+
+namespace eval ::fx::seen {
+    # SQL code for table creation and destruction.
+    # The latter is used when dumping state, to clear old state on import.
+
+    variable createsql {
 
 	-- Table holding the set of timeline events we have processed
 	-- already, i.e. which do not require the delivery of a
@@ -489,10 +508,37 @@ proc ::fx::seen::Init {} {
 	);
     }
 
-    # Disable further calls.
-    proc ::fx::seen::Init {} {}
+    variable dropsql {
+	DROP TABLE fx_aku_watch_seen
+	DROP TABLE fx_aku_watch_tktfield
+	DROP TABLE fx_aku_watch_tkt
+	DROP TABLE fx_aku_watch_tktseries
+	DROP TABLE fx_aku_watch_tktseen
+    }
 
-    debug.fx/seen {done}
+    variable dumpsep    "-- [string repeat 69 -]"
+    variable dumpheader "-- FX State Dump - Module <seen>"
+}
+
+# # ## ### ##### ######## ############# ######################
+fx::mgr::state::register ::fx::seen::DUMP
+
+proc ::fx::seen::DUMP {} {
+    variable dropsql
+    variable createsql
+    variable dumpheader
+    variable dumpsep
+
+    state module seen
+    state sql $dropsql
+    state sql $createsql
+    state sep
+    state table fx_aku_watch_tktfield  {id 0 name 1}
+    state table fx_aku_watch_tkt       {id 0 uuid 1}
+    state table fx_aku_watch_tktseries {tid 0 fid 0 mtime 0 val 1}
+    state table fx_aku_watch_tktseen   {id 0}
+    state table fx_aku_watch_seen      {id 0}
+    state sep
     return
 }
 
