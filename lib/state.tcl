@@ -46,12 +46,11 @@ proc ::fx::state::save {config} {
     fossil show-repository-location
 
     # TODO: Some sort of progress callback ?
-    set chan [$config @output]
+    mgr begin [$config @output]
     foreach dump [mgr list] {
-	{*}$dump $chan
+	{*}$dump
     }
-
-    close $chan
+    mgr done
     return
 }
 
