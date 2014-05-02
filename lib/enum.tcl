@@ -33,7 +33,10 @@ package require fx::validate::enum
 # # ## ### ##### ######## ############# ######################
 
 namespace eval ::fx::enum {
-    namespace export list create delete export import add remove change
+    namespace export \
+	list create delete \
+	export import \
+	add remove change items
     namespace ensemble create
 
     namespace import ::fx::color
@@ -164,6 +167,24 @@ proc ::fx::enum::change {config} {
     puts "  Renaming item \"$old\" to \"$new\" ... "
     mgr change $enum $old $new
     puts [color good OK]
+    return
+}
+
+proc ::fx::enum::items {config} {
+    debug.fx/enum {}
+    fossil show-repository-location
+
+    $config @enum
+    set enum [$config @enum string]
+
+    puts "Enumeration \"$enum\":"
+    [table t {\# Item} {
+	set id 0
+	foreach item [mgr items enum] {
+	    $t add $id $item
+	    incr id
+	}
+    }] show
     return
 }
 

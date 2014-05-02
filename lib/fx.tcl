@@ -773,6 +773,14 @@ cmdr create fx::fx [file tail $::argv0] {
 		validate [fx::vt not-enum-item]
 	    }
 	} [fx::call enum change]
+
+	private items {
+	    section Enumerations
+	    description {
+		Show the items in the specified enumeration.
+	    }
+	    use .enum
+	} [fx::call enum items]
     }
 
     alias enums = enum list
