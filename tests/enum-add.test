@@ -1,0 +1,77 @@
+# -*- tcl -*- tcl.tk//DSL tcltest//EN//2.0 tcl.tk//DSL tcltest//EN//2.0
+## (c) 2014 Andreas Kupries
+# # ## ### ##### ######## ############# #####################
+## client enum add - Extend existing enumerations.
+
+kt check Tcl     8.5
+kt check tcltest 2
+
+# # ## ### ##### ######## ############# #####################
+
+kt source support/common.tcl
+
+# TODO: Prevent --global for unshareable per-repo settings! --> location
+
+# # ## ### ##### ######## ############# #####################
+
+test enum-add-1.0 {client enum add, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run enum add
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "wrong#args, not enough*"
+
+test enum-add-1.1 {client enum add, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run enum add E
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "wrong#args, not enough*"
+
+test enum-add-1.2 {client enum add, duplicate item} -setup {
+    stage-open
+    run enum create foo
+    run enum add    foo a
+} -body {
+    run enum add foo a
+} -cleanup {
+    run enum delete foo
+    stage-close
+} -match glob -returnCodes error -result ""
+
+test enum-add-1.3 {client enum add, unknown enumeration} -setup {
+    stage-open
+} -body {
+    run enum add foo a
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result ""
+
+# # ## ### ##### ######## ############# #####################
+
+test enum-add-2.0 {client enum add, one item} -setup {
+    stage-open
+    run enum create foo
+} -body {
+    run enum add   foo a
+    run enum items foo
+} -cleanup {
+    run enum delete foo
+    stage-close
+} -result [viewFile support/ea-20.txt]
+
+test enum-add-2.1 {client enum add, multiple items} -setup {
+    stage-open
+    run enum create foo
+} -body {
+    run enum add   foo a b c d e
+    run enum items foo
+} -cleanup {
+    run enum delete foo
+    stage-close
+} -result [viewFile support/ea-21.txt]
+
+# # ## ### ##### ######## ############# #####################
+cleanupTests

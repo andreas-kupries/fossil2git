@@ -1,0 +1,87 @@
+# -*- tcl -*- tcl.tk//DSL tcltest//EN//2.0 tcl.tk//DSL tcltest//EN//2.0
+## (c) 2014 Andreas Kupries
+# # ## ### ##### ######## ############# #####################
+## client enum remove - Shrink existing enumerations.
+
+kt check Tcl     8.5
+kt check tcltest 2
+
+# # ## ### ##### ######## ############# #####################
+
+kt source support/common.tcl
+
+# TODO: Prevent --global for unshareable per-repo settings! --> location
+
+# # ## ### ##### ######## ############# #####################
+
+test enum-remove-1.0 {client enum remove, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run enum remove
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "wrong#args, not enough*"
+
+test enum-remove-1.1 {client enum remove, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run enum remove E
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "wrong#args, not enough*"
+
+test enum-remove-1.2 {client enum remove, unknown item} -setup {
+    stage-open
+    run enum create foo
+} -body {
+    run enum remove foo a
+} -cleanup {
+    run enum delete foo
+    stage-close
+} -match glob -returnCodes error -result ""
+
+test enum-remove-1.3 {client enum remove, unknown enumeration} -setup {
+    stage-open
+} -body {
+    run enum remove foo a
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result ""
+
+# # ## ### ##### ######## ############# #####################
+
+test enum-remove-2.0 {client enum remove, one item} -setup {
+    stage-open
+    run enum create foo a b
+} -body {
+    run enum remove foo a
+    run enum items foo
+} -cleanup {
+    run enum delete foo
+    stage-close
+} -result [viewFile support/er-20.txt]
+
+test enum-remove-2.1 {client enum remove, multiple items} -setup {
+    stage-open
+    run enum create foo a b c d e f
+} -body {
+    run enum remove foo a b c d e
+    run enum items  foo
+} -cleanup {
+    run enum delete foo
+    stage-close
+} -result [viewFile support/er-21.txt]
+
+test enum-remove-2.2 {client enum remove, all items} -setup {
+    stage-open
+    run enum create foo a b c d e
+} -body {
+    run enum remove foo a b c d e
+    run enum items  foo
+} -cleanup {
+    run enum delete foo
+    stage-close
+} -result [viewFile support/er-22.txt]
+
+# # ## ### ##### ######## ############# #####################
+cleanupTests

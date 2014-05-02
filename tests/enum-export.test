@@ -1,0 +1,70 @@
+# -*- tcl -*- tcl.tk//DSL tcltest//EN//2.0 tcl.tk//DSL tcltest//EN//2.0
+## (c) 2014 Andreas Kupries
+# # ## ### ##### ######## ############# #####################
+## client enum export - Export (named) enumerations.
+
+kt check Tcl     8.5
+kt check tcltest 2
+
+# # ## ### ##### ######## ############# #####################
+
+kt source support/common.tcl
+
+# TODO: Prevent --global for unshareable per-repo settings! --> location
+
+# # ## ### ##### ######## ############# #####################
+
+test enum-export-1.0 {client enum export, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run enum expor
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "wrong#args, not enough*"
+
+test enum-export-1.1 {client enum export, unknown enumeration} -setup {
+    stage-open
+} -body {
+    run enum export E foo
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result ""
+
+# # ## ### ##### ######## ############# #####################
+
+test enum-export-1.0 {client enum export, default none} -setup {
+    stage-open
+} -body {
+    in-ckout {
+	run enum export E
+    }
+} -cleanup {
+    stage-close
+} -result [viewFile support/e-empty.txt]
+
+test enum-export-1.1 {client enum export, export named} -setup {
+    stage-open
+    enum create foo a b c
+    enum create bar 0 1 2
+} -body {
+    in-ckout {
+	run enum export E bar
+    }
+} -cleanup {
+    stage-close
+} -result [viewFile support/ee-11.txt]
+
+test enum-export-1.2 {client enum export, export all} -setup {
+    stage-open
+    enum create foo a b c
+    enum create bar 0 1 2
+} -body {
+    in-ckout {
+	run enum export E
+    }
+} -cleanup {
+    stage-close
+} -result [viewFile support/ee-12.txt]
+
+# # ## ### ##### ######## ############# #####################
+cleanupTests

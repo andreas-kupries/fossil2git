@@ -1,0 +1,69 @@
+# -*- tcl -*- tcl.tk//DSL tcltest//EN//2.0 tcl.tk//DSL tcltest//EN//2.0
+## (c) 2014 Andreas Kupries
+# # ## ### ##### ######## ############# #####################
+## client enum list - Show the known enumerations.
+
+kt check Tcl     8.5
+kt check tcltest 2
+
+# # ## ### ##### ######## ############# #####################
+
+kt source support/common.tcl
+
+# TODO: Prevent --global for unshareable per-repo settings! --> location
+
+# # ## ### ##### ######## ############# #####################
+
+test enum-list-1.0 {client enum list, default = list, initial empty} -setup {
+    stage-open
+} -body {
+    in-ckout {
+	run enum
+    }
+} -cleanup {
+    stage-close
+} -result [viewFile support/e-empty.txt]
+
+test enum-list-1.1 {client enum list alias, initial empty} -setup {
+    stage-open
+} -body {
+    in-ckout {
+	run enums
+    }
+} -cleanup {
+    stage-close
+} -result [viewFile support/e-empty.txt]
+
+test enum-list-1.2 {client enum list, initial empty} -setup {
+    stage-open
+} -body {
+    in-ckout {
+	run enum list
+    }
+} -cleanup {
+    stage-close
+} -result [viewFile support/e-empty.txt]
+
+# # ## ### ##### ######## ############# #####################
+
+test enum-list-2.0 {client enum list, wrong args, too many} -setup {
+    stage-open
+} -body {
+    run enum list X
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "wrong#args, too many*"
+
+
+test enum-list-2.1 {client enum list} -setup {
+    stage-open
+    run enum create foo a b c
+} -body {
+    run enum list
+} -cleanup {
+    run enum delete foo
+    stage-close
+} -result [viewFile support/e-20.txt]
+
+# # ## ### ##### ######## ############# #####################
+cleanupTests

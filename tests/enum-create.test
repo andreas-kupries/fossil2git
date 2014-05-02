@@ -1,0 +1,76 @@
+# -*- tcl -*- tcl.tk//DSL tcltest//EN//2.0 tcl.tk//DSL tcltest//EN//2.0
+## (c) 2014 Andreas Kupries
+# # ## ### ##### ######## ############# #####################
+## client enum create - Define new enumerations.
+
+kt check Tcl     8.5
+kt check tcltest 2
+
+# # ## ### ##### ######## ############# #####################
+
+kt source support/common.tcl
+
+# TODO: Prevent --global for unshareable per-repo settings! --> location
+
+# # ## ### ##### ######## ############# #####################
+
+test enum-create-1.0 {client enum create, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run enum create
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "wrong#args, not enough*"
+
+test enum-create-1.1 {client enum create, duplicate definition} -setup {
+    stage-open
+    run enum create foo
+} -body {
+    run enum create foo
+} -cleanup {
+    run enum delete foo
+    stage-close
+} -match glob -returnCodes error -result ""
+
+test enum-create-1.2 {client enum create, bad name (illegal character)} -setup {
+    stage-open
+} -body {
+    run enum create foo!
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result ""
+
+# # ## ### ##### ######## ############# #####################
+
+test enum-create-2.1 {client enum create, no items} -setup {
+    stage-open
+} -body {
+    run enum create foo
+    run enums
+} -cleanup {
+    run enum delete foo
+    stage-close
+} -result [viewFile support/ec-21.txt]
+
+test enum-create-2.2 {client enum create, one item} -setup {
+    stage-open
+} -body {
+    run enum create foo a
+    run enums
+} -cleanup {
+    run enum delete foo
+    stage-close
+} -result [viewFile support/ec-22.txt]
+
+test enum-create-2.3 {client enum create, multiple items} -setup {
+    stage-open
+} -body {
+    run enum create foo a b c d e
+    run enums
+} -cleanup {
+    run enum delete foo
+    stage-close
+} -result [viewFile support/ec-23.txt]
+
+# # ## ### ##### ######## ############# #####################
+cleanupTests
