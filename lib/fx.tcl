@@ -334,6 +334,28 @@ cmdr create fx::fx [file tail $::argv0] {
 	puts "[file tail $::argv0] [package present fx]"
     }]
 
+    private save {
+	description {
+	    Save all fx-managed state of the repository.
+	}
+	input output {
+	    The file to save the state into.
+	} {
+	    validate wchan
+	}
+    } [fx::call state save]
+
+    private restore {
+	description {
+	    Load all fx-managed state of a repository.
+	}
+	input import {
+	    The file to load the state from.
+	} {
+	    validate rchan
+	}
+    } [fx::call state restore]
+
     officer repository {
 	description {
 	    Manage the repository to work with.
