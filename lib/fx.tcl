@@ -170,17 +170,11 @@ cmdr create fx::fx [file tail $::argv0] {
     # # ## ### ##### ######## ############# ######################
     ## Common pieces across the various commands.
 
-    common *all* {
-	option debug {
-	    Placeholder. Processed before reaching cmdr.
-	} {
-	    undocumented
-	    validate str
-	}
+    common .repository {
 	option repository {
-	    The repository to work with.
-	    Defaults to the repository of the
-	    checkout we are in.
+	    The repository to work with. Defaults to the repository of
+	    the checkout we are in, or, outside of a checkout, the
+	    explicitly configured "default" repository.
 	} {
 	    alias R
 	    validate rwfile
@@ -189,6 +183,7 @@ cmdr create fx::fx [file tail $::argv0] {
 	    # commands with an "all" parameter, and disables itself
 	    # (*) if that parameter is active/set.
 	    # (Ad *): I.e. returns an empty string.
+	    # See also .no-search
 	}
 	state repository-db {
 	    The repository database we are working with.
@@ -197,6 +192,15 @@ cmdr create fx::fx [file tail $::argv0] {
 	    # Ensures that this is run before the action code, making
 	    # the database command globally accessible.
 	    generate [fx::call fossil repository-open]
+	}
+    }
+
+    common *all* {
+	option debug {
+	    Placeholder. Processed before reaching cmdr.
+	} {
+	    undocumented
+	    validate str
 	}
 	option color {
 	    Force the (non-)use of colors in the output. The default
@@ -207,6 +211,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		fx color activate $x
 	    }]
 	}
+	use .repository
     }
 
     common .global {
