@@ -32,8 +32,8 @@ namespace eval ::fx {
     namespace ensemble create
 }
 namespace eval ::fx::mailer {
-    namespace export get-config get send \
-	good-address dedup-addresses test-address
+    namespace export get-config get get-global has has-global \
+	has-local send good-address dedup-addresses test-address
     namespace ensemble create
 
     namespace import ::fx::fossil
@@ -142,6 +142,10 @@ proc ::fx::mailer::get {setting} {
     return [Get 0 $setting]
 }
 
+proc ::fx::mailer::get-global {setting} {
+    return [GetGlobal 0 $setting]
+}
+
 proc ::fx::mailer::get-config {} {
     debug.fx/mailer {}
 
@@ -176,6 +180,37 @@ proc ::fx::mailer::Get {listify setting} {
     }
     if {$listify} { set v [list $v] }
     return $v
+}
+
+proc ::fx::mailer::GetGlobal {listify setting} {
+    debug.fx/mailer {}
+    set v [config get-global [mail-config internal $setting]]
+    if {$listify} { set v [list $v] }
+    return $v
+}
+
+proc ::fx::mailer::has {setting} {
+    debug.fx/mailer {}
+    if {$setting eq "project-name"} {
+	return 1
+    }
+    return [config has [mail-config internal $setting]]
+}
+
+proc ::fx::mailer::has-global {setting} {
+    debug.fx/mailer {}
+    if {$setting eq "project-name"} {
+	return 0
+    }
+    return [config has-global [mail-config internal $setting]]
+}
+
+proc ::fx::mailer::has-local {setting} {
+    debug.fx/mailer {}
+    if {$setting eq "project-name"} {
+	return 1
+    }
+    return [config has-local [mail-config internal $setting]]
 }
 
 # # ## ### ##### ######## ############# ######################

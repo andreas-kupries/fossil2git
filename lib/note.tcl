@@ -35,10 +35,10 @@ package require fx::validate::mail-config
 namespace eval ::fx::note {
     namespace export \
 	mail-config-show mail-config-set mail-config-unset \
-	mail-config-export mail-config-import route-export \
-	route-import route-add route-drop route-list route-field-add \
-	route-field-drop watched deliver event-list field-list \
-	mark-pending mark-notified \
+	mail-config-reset mail-config-export mail-config-import \
+	route-export route-import route-add route-drop route-list \
+	route-field-add route-field-drop watched deliver \
+	event-list field-list mark-pending mark-notified \
 	show-pending test-parse test-mail-gen test-mail-config \
 	test-mail-receivers
 
@@ -400,29 +400,54 @@ proc ::fx::note::test-parse {config} {
 proc ::fx::note::mail-config-export {config} {
     debug.fx/note {}
     fossil show-repository-location
-    #fossil show-repository-location
 
-    set chan      [$config @output]
     set useglobal [$config @global]
+    set uselocal  [$config @local]
 
+    # Cmdr made sure that we cannot have both set.
+    # Leaving 3 possibilities:
+    #
+    # 1. Global: Export the global defined settings.
+    # 2. Local:  Export the locally defined settings.
+    # 3. Mix (Default): Collect as the repository sees it, mixing local, and global (but not defaults).
+
+    set data {}
     # Retrieve and assemble semi-table.
-    foreach k [mail-config all] {
-	# NOTE: k :: mail-config external (string) rep.
-	# See mailer::Get
-	set v [config get-extended-with-default \
-		   [mail-config internal   $k] \
-		   [mail-config default-of $k]]
-
-	lassign $v isglobal mtime v
-
-	# Ignore defaults
-	if {$isglobal < 0} continue
-
-	# Ignore values specified by the unwanted section
-	if {(!$useglobal && $isglobal) ||
-	    ($useglobal && !$isglobal)} continue
-	puts $chan [list mail-config $k $v]
+    if {$useglobal} {
+	foreach k [lsort -dict [mail-config all]] {
+	    if {![mailer has-global $k]} continue
+	    lappend data [list $k [mailer get-global $k]]
+	}
+    } elseif {$uselocal} {
+	foreach k [lsort -dict [mail-config all]] {
+	    if {![mailer has-local $k]} continue
+	    lappend data [list $k [mailer get-local $k]]
+	}
+    } else {
+	foreach k [mail-config all] {
+	    # NOTE: k :: mail-config external (string) rep.
+	    # See mailer::get
+	    # Difference! Extended => origin information.
+	    # Filter out (i.e. ignore) defaults
+	    set v [config get-extended-with-default \
+		       [mail-config internal   $k] \
+		       {}]
+	    lassign $v isglobal mtime v
+	    if {$isglobal < 0} continue
+	    lappend data [list $k $v]
+	}
     }
+
+    if {!$useglobal} {
+	fossil show-repository-location
+    }
+
+    # Write the assembled configuration
+    set chan [$config @output]
+    foreach item $data {
+	puts $chan [linsert $item 0 mail-config]
+    }
+    $config @output forget]
     return
 }
 
@@ -510,14 +535,46 @@ proc ::fx::note::IMConfig {p key value} {
 
 proc ::fx::note::mail-config-show {config} {
     debug.fx/note {}
+    set data {}
 
+    if {[$config @global]} {
+	# Show global data without fallbacks.
+	[table t {Key Value} {
+	    foreach k [lsort -dict [mail-config all]] {
+		if {![mailer has-global $k]} continue
+		$t add $k [mailer get-global $k]
+	    }
+	}] show
+	return
+    }
+
+    if {[$config @local]} {
+	# Show repository-specific data without fallbacks.
+	[table t {Key Value Last-Changed} {
+	    foreach k [lsort -dict [mail-config all]] {
+		if {![mailer has-local $k]} continue
+		set v [config get-extended-with-default \
+			   [mail-config internal $k] {}]
+		lassign $v isglobal mtime v
+		set mtime [expr {($mtime ne {})
+				 ? [clock format $mtime]
+				 : "" }]
+		$t add $k $v $mtime
+	    }
+
+	    fossil show-repository-location
+	}] show
+	return
+    }
+
+    # Show repository-specific data, with origin information.
     # Retrieve and assemble semi-table.
     foreach k [mail-config all] {
-	# See mailer::Get
+	# See mailer::get
+	# Difference! Extended data => origin, mtime
 	set v [config get-extended-with-default \
 		   [mail-config internal   $k] \
 		   [mail-config default-of $k]]
-
 	lassign $v isglobal mtime v
 
 	if {$isglobal < 0} {
@@ -580,6 +637,26 @@ proc ::fx::note::mail-config-unset {config} {
     return
 }
 
+proc ::fx::note::mail-config-reset {config} {
+    debug.fx/note {}
+
+    if {[$config @global]} {
+	foreach name [mail-config all] {
+	    puts -nonewline "Unsetting [color note [mail-config external $name]]"
+	    config unset-global $name
+	    puts ""
+	}
+	return
+    }
+
+    fossil show-repository-location
+    foreach name [mail-config all] {
+	puts -nonewline "Unsetting [color note [mail-config external $name]]"
+	config unset-local $name
+	puts ""
+    }
+    return
+}
 
 proc ::fx::note::ConfigSet {global name value {prefix Setting} {gsuffix OK}} {
     debug.fx/note {}

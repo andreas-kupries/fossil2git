@@ -212,8 +212,24 @@ cmdr create fx::fx [file tail $::argv0] {
     common .global {
 	# Used by officers 'config' and 'note config'.
 	option global {
-	    Set the configuration globally
-	} { alias g ; presence }
+	    Operate on the global configuration.
+	} { alias G ; presence }
+    }
+
+    common .global-local {
+	# Used by officers 'config' and 'note config'.
+	option global {
+	    Operate on the global configuration.
+	} {
+	    alias G ; presence
+	    ::fx::exclude local
+	}
+	option local {
+	    Operate strictly on the local configuration.
+	} {
+	    alias L ; presence
+	    ::fx::exclude global
+	}
     }
 
     common .extend {
@@ -545,8 +561,7 @@ cmdr create fx::fx [file tail $::argv0] {
 	    use .setting
 	    input value {
 		The new value of the configuration setting.
-	    } {
-	    }
+	    } {}
 	} [fx::call config set]
 
 	private unset {
@@ -805,25 +820,29 @@ cmdr create fx::fx [file tail $::argv0] {
 	    description {
 		Manage the mail setup for notification emails.
 	    }
-	    private show {
-		section Notifications {Mail setup}
-		section Introspection
-		description {
-		    Show the current mail setup for notifications.
-		}
-	    } [fx::call note mail-config-show]
-	    default
 
 	    common .key {
 		input key {
 		    The part of the mail setup to (re)configure.
 		} { validate [fx::vt mail-config] }
 	    }
+
 	    common .key-list {
 		input key {
-		    The parts of the mail setup to (re)configure.
+		    The parts of the mail setup to unset.
 		} { list ; validate [fx::vt mail-config] }
 	    }
+
+	    private show {
+		section Notifications {Mail setup}
+		section Introspection
+		description {
+		    Show the current mail setup for notifications.
+		}
+		use .global-local
+	    } [fx::call note mail-config-show]
+	    default
+
 	    private set {
 		section Notifications {Mail setup}
 		description {
@@ -846,12 +865,21 @@ cmdr create fx::fx [file tail $::argv0] {
 		use .key-list
 	    } [fx::call note mail-config-unset]
 
+	    private reset {
+		section Notifications {Mail setup}
+		description {
+		    Reset all parts of the mail setup for notifications
+		    to their defaults.
+		}
+		use .global
+	    } [fx::call note mail-config-reset]
+
 	    private export {
 		section Notifications {Mail setup}
 		description {
 		    Save the notification configuration into a file.
 		}
-		use .global
+		use .global-local
 		use .export
 	    } [fx::call note mail-config-export]
 
