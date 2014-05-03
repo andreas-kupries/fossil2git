@@ -305,13 +305,8 @@ proc ::fx::fossil::repository-find {p} {
     debug.fx/fossil {}
     # cmdr generate callback
 
-    if {[$p config has @no-search] ||
-	([$p config has @all] && [$p config @all set?])} {
-	# Leave the single repository undefined, do not even try to
-	# find it. This way we cannot run into an error when an "all"
-	# operation is run outside of a checkout and without a
-	# "repository".
-	debug.fx/fossil {skip on --all, or <no-search>}
+    if {![$p config @repository-active]} {
+	debug.fx/fossil {<no-search>}
 	return {}
     }
 

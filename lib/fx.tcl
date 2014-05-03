@@ -97,6 +97,12 @@ proc ::fx::mail-error {e} {
 # # ## ### ##### ######## ############# ######################
 ## Support commands constructing glue for various callbacks.
 
+proc ::fx::no-search {} {
+    lambda {p x} {
+	$p config @repository-active set off
+    }
+}
+
 proc ::fx::call {p args} {
     lambda {p args} {
 	package require fx::$p
@@ -109,6 +115,14 @@ proc ::fx::vt {p args} {
 	package require fx::validate::$p
 	fx::validate::$p {*}$args
     } $p {*}$args
+}
+
+proc ::fx::sequence {args} {
+    lambda {p x cmds} {
+	foreach c $cmds {
+	    {*}$c $p $x
+	}
+    } $args
 }
 
 proc ::fx::exclude {locked} {
@@ -171,6 +185,15 @@ cmdr create fx::fx [file tail $::argv0] {
     ## Common pieces across the various commands.
 
     common .repository {
+	state repository-active {
+	    This hidden field can be used by other fields to disable
+	    the search for a local fossil rpeository. This is for use
+	    by all commands which have global and local operation modes.
+	} {
+	    immediate
+	    validate boolean
+	    default on
+	}
 	option repository {
 	    The repository to work with. Defaults to the repository of
 	    the checkout we are in, or, outside of a checkout, the
@@ -179,11 +202,6 @@ cmdr create fx::fx [file tail $::argv0] {
 	    alias R
 	    validate rwfile
 	    generate [fx::call fossil repository-find]
-	    # Note: This generator command dynamically recognizes
-	    # commands with an "all" parameter, and disables itself
-	    # (*) if that parameter is active/set.
-	    # (Ad *): I.e. returns an empty string.
-	    # See also .no-search
 	}
 	state repository-db {
 	    The repository database we are working with.
@@ -210,30 +228,6 @@ cmdr create fx::fx [file tail $::argv0] {
 	    when-set [lambda {p x} {
 		fx color activate $x
 	    }]
-	}
-	use .repository
-    }
-
-    common .global {
-	# Used by officers 'config' and 'note config'.
-	option global {
-	    Operate on the global configuration.
-	} { alias G ; presence }
-    }
-
-    common .global-local {
-	# Used by officers 'config' and 'note config'.
-	option global {
-	    Operate on the global configuration.
-	} {
-	    alias G ; presence
-	    ::fx::exclude local
-	}
-	option local {
-	    Operate strictly on the local configuration.
-	} {
-	    alias L ; presence
-	    ::fx::exclude global
 	}
     }
 
@@ -355,12 +349,6 @@ cmdr create fx::fx [file tail $::argv0] {
 	use .event-hidden-validation
 	use .mailaddr-hidden-validation
     }
-    common .no-search {
-	state no-search {
-	    Fake parameter to disable repository search by its mere
-	    presence.
-	} {}
-    }
 
     # # ## ### ##### ######## ############# ######################
 
@@ -377,6 +365,7 @@ cmdr create fx::fx [file tail $::argv0] {
 	description {
 	    Save all fx-managed state of the repository.
 	}
+	use .repository
 	use .export
     } [fx::call state save]
 
@@ -384,6 +373,7 @@ cmdr create fx::fx [file tail $::argv0] {
 	description {
 	    Load all fx-managed state of a repository.
 	}
+	use .repository
 	use .import
     } [fx::call state restore]
 
@@ -398,6 +388,7 @@ cmdr create fx::fx [file tail $::argv0] {
 	    description {
 		Print the name of the repository we are working on, if any.
 	    }
+	    use .repository
 	} [fx::call fossil c_show_repository]
 	default
 
@@ -407,7 +398,6 @@ cmdr create fx::fx [file tail $::argv0] {
 	    description {
 		Print the name of the default repository, if any.
 	    }
-	    use .no-search
 	} [fx::call fossil c_default_repository]
 
 	private reset {
@@ -415,7 +405,6 @@ cmdr create fx::fx [file tail $::argv0] {
 	    description {
 		Unset the current default repository.
 	    }
-	    use .no-search
 	} [fx::call fossil c_reset_repository]
 
 	private set {
@@ -423,7 +412,6 @@ cmdr create fx::fx [file tail $::argv0] {
 	    description {
 		Set the path to the current default repository.
 	    }
-	    use .no-search
 	    input target {
 		The path to the current repository to use when all else fails.
 	    } {
@@ -446,6 +434,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		Push local changes to the users to the
 		configured remote
 	    }
+	    use .repository
 	} [fx::call user push]
 
 	private pull {
@@ -454,6 +443,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		Push user information from the
 		configured remote to here.
 	    }
+	    use .repository
 	} [fx::call user pull]
 
 	private sync {
@@ -462,6 +452,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		Sync the user information at the configured
 		remote and here.
 	    }
+	    use .repository
 	} [fx::call user sync]
 
 	private list {
@@ -469,6 +460,7 @@ cmdr create fx::fx [file tail $::argv0] {
 	    description {
 		Show all known users, their information and capabilities
 	    }
+	    use .repository
 	} [fx::call user list]
 
 	private broadcast {
@@ -483,6 +475,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		optional
 		validate rchan
 	    }
+	    use .repository
 	} [fx::call user broadcast]
 
 	private contact {
@@ -505,6 +498,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		validate str
 		interact
 	    }
+	    use .repository
 	} [fx::call user update-contact]
     }
 
@@ -545,6 +539,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		List all changed configuration settings of the
 		repository, and their values.
 	    }
+	    use .repository
 	} [fx::call config list]
 	default
 
@@ -554,6 +549,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		Print the value of the named configuration setting.
 	    }
 	    use .setting
+	    use .repository
 	} [fx::call config get]
 
 	private set {
@@ -567,6 +563,7 @@ cmdr create fx::fx [file tail $::argv0] {
 	    input value {
 		The new value of the configuration setting.
 	    } {}
+	    use .repository
 	} [fx::call config set]
 
 	private unset {
@@ -575,6 +572,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		Remove the specified local configuration setting.
 		This sets it back to the system default.
 	    }
+	    use .repository
 	    use .setting-list
 	} [fx::call config unset]
 
@@ -596,6 +594,10 @@ cmdr create fx::fx [file tail $::argv0] {
     officer report {
 	description {
 	    Management of a fossil repositories' set of ticket reports.
+	}
+
+	common *all* {
+	    use .repository
 	}
 
 	# execute a report ... proper matrix output, json output, nested tcl
@@ -672,6 +674,11 @@ cmdr create fx::fx [file tail $::argv0] {
 	description {
 	    Management of enumerations for the ticketing system.
 	}
+
+	common *all* {
+	    use .repository
+	}
+
 	common .enum {
 	    input enum {
 		Name of the enumeration to operate on.
@@ -826,6 +833,32 @@ cmdr create fx::fx [file tail $::argv0] {
 		Manage the mail setup for notification emails.
 	    }
 
+	    common .global {
+		option global {
+		    Operate on the global configuration.
+		} {
+		    alias G ; presence
+		    when-set [::fx::no-search]
+		}
+	    }
+
+	    common .global-local {
+		option global {
+		    Operate on the global configuration.
+		} {
+		    alias G ; presence
+		    when-set [::fx::sequence \
+				  [::fx::exclude local] \
+				  [::fx::no-search]]
+		}
+		option local {
+		    Operate strictly on the local configuration.
+		} {
+		    alias L ; presence
+		    when-set [::fx::exclude global]
+		}
+	    }
+
 	    common .key {
 		input key {
 		    The part of the mail setup to (re)configure.
@@ -845,6 +878,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		    Show the current mail setup for notifications.
 		}
 		use .global-local
+		use .repository
 	    } [fx::call note mail-config-show]
 	    default
 
@@ -854,6 +888,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		    Set the specified part of the mail setup for notifications.
 		}
 		use .global
+		use .repository
 		use .key
 		input value {
 		    The new value of the configuration.
@@ -867,6 +902,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		    to its default.
 		}
 		use .global
+		use .repository
 		use .key-list
 	    } [fx::call note mail-config-unset]
 
@@ -877,6 +913,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		    to their defaults.
 		}
 		use .global
+		use .repository
 	    } [fx::call note mail-config-reset]
 
 	    private export {
@@ -885,6 +922,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		    Save the notification configuration into a file.
 		}
 		use .global-local
+		use .repository
 		use .export
 	    } [fx::call note mail-config-export]
 
@@ -894,6 +932,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		    Import the notification configuration from a save file.
 		}
 		use .global
+		use .repository
 		use .import
 		use .mailconfig-hidden-validation
 	    } [fx::call note mail-config-import]
@@ -911,6 +950,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		incremental one.
 
 	    } { presence }
+	    use .repository
 	} [fx::call seen regenerate-series]
 
 	private watched {
@@ -920,11 +960,14 @@ cmdr create fx::fx [file tail $::argv0] {
 		(i.e. those which have active routes). These fall
 		under the purview of 'note deliver --all'.
 	    }
-	    use .no-search
 	} [fx::call note watched]
 
 	# TODO: Global routes?
 	officer route {
+	    common *all* {
+		use .repository
+	    }
+
 	    private list {
 		section Notifications Destinations
 		section Introspection
@@ -1049,6 +1092,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		for all new events (since the last delivery).
 	    }
 	    use .all
+	    use .repository
 	    use .routemap
 	    use .verbose
 	} [fx::call note deliver]
@@ -1061,6 +1105,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		notification for them on the next invokation of
 		"note deliver".
 	    }
+	    use .repository
 	    use .uuid-or-all
 	} [fx::call note mark-pending]
 
@@ -1072,6 +1117,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		notification for them on the next invokation of
 		"note deliver".
 	    }
+	    use .repository
 	    use .uuid-or-all
 	} [fx::call note mark-notified]
 
@@ -1080,6 +1126,7 @@ cmdr create fx::fx [file tail $::argv0] {
 	    description {
 		Show all events in the timeline marked as pending.
 	    }
+	    use .repository
 	} [fx::call note show-pending]
     }
 
@@ -1106,6 +1153,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		Generate a test mail and send it using the current
 		mail configuration.
 	    }
+	    use .repository
 	    input destination {
 		The destination address to send the test mail to.
 	    } { }
@@ -1117,6 +1165,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		Generate the notification mail for the specified artifact,
 		and print it to stdout.
 	    }
+	    use .repository
 	    use .uuid-or-all
 	} [fx::call note test-mail-gen]
 
@@ -1127,6 +1176,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		of mail addresses to send a notification to, fixed
 		and field-based.
 	    }
+	    use .repository
 	    use .uuid-or-all
 	    use .routemap
 	} [fx::call note test-mail-receivers]
@@ -1137,6 +1187,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		Parse the specified artifact as manifest and print the
 		resulting array/dictionary to stdout.
 	    }
+	    use .repository
 	    use .uuid-or-all
 	} [fx::call note test-parse]
 
@@ -1146,6 +1197,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		Determine the names, types, and values of all tags
 		associated with a checkin.
 	    }
+	    use .repository
 	    use .uuid
 	} [fx::call fossil test-tags]
 
@@ -1154,6 +1206,7 @@ cmdr create fx::fx [file tail $::argv0] {
 	    description {
 		Determine the branch of a checkin.
 	    }
+	    use .repository
 	    use .uuid
 	} [fx::call fossil test-branch]
     }
@@ -1167,8 +1220,9 @@ cmdr create fx::fx [file tail $::argv0] {
 	private levels {
 	    section Debugging
 	    description {
-		List all debug levels known to the system,
-		we can enable for narrative
+		List all the debug levels known to the system,
+		which we can enable to gain a (partial) narrative
+		of the application-internal actions.
 	    }
 	} [fx::call debug levels]
     }
