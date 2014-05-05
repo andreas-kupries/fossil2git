@@ -7,6 +7,7 @@ exec kettle -f "$0" "${1+$@}"
 
 # New general tool (Fossil eXtended)
 kettle tclapp fx
+kettle tclapp cron_lock ;# Actually a sh app.
 kettle tcl
 
 ## One-way mirroring of fossil repositories to git

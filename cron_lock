@@ -1,0 +1,40 @@
+#!/bin/sh
+# Syntax = $0 lock-name cmd...
+# # ## ### ##### ######## ############# ######################
+## Argument processing
+
+lock="$1"
+shift
+if [ \( X$lock = X \) -o \( X$1 = X \) ] ; then
+    echo >2 Usage: $0 lock cmd...
+    exit 1
+fi
+
+lock="$HOME/.lock.$lock"
+
+# # ## ### ##### ######## ############# ######################
+## Aquire lock
+
+if [ -f "$lock" ] ; then
+    # still running, abort
+    exit 0
+fi
+
+touch  "$lock"
+
+# NOTE: The above is not fully protected. There is a TOCTOU race
+# between the -f (test) and the touch (create/use). As we do not
+# expect cron-jobs on the same lock to run multiple times per second,
+# but every X > 2 seconds, or even X minutes, we should be able to
+# live with this.
+
+# # ## ### ##### ######## ############# ######################
+## Invoke the protected command.
+
+$*
+
+# # ## ### ##### ######## ############# ######################
+## Release lock
+
+rm "$lock"
+exit 0
