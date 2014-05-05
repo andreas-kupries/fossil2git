@@ -14,6 +14,7 @@ facilities going beyond the regular command line.
 [section Examples]
 [list_begin enumerated]
 [enum]	[term "[vset PROJECT] - Example, Ticket Notifications with full access."]
+[enum]	[term "[vset PROJECT] - Example, Ticket Notifications with full remote access."]
 [list_end]
 
 

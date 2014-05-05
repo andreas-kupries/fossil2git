@@ -1,5 +1,5 @@
 
-With all preparatory work finally done we can go and start the
+With all the preparatory work finally done we can go and start the
 monitoring. Note however that [vset PROJECT] does not fully do
 everything by itself.
 

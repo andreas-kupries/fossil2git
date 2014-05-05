@@ -1,8 +1,8 @@
 [comment {-*- tcl -*- doctools manpage}]
 [include include/definitions.inc]
-[manpage_begin [vset PROJECT]_example_tkt_full n 1]
+[manpage_begin [vset PROJECT]_example_tkt_full_remote n 1]
 [include include/general.inc]
-[titledesc "[vset PROJECT] - Example, Ticket Notifications with full access."]
+[titledesc "[vset PROJECT] - Example, Ticket Notifications with full remote access."]
 [description]
 [include include/welcome_basic.inc]
 
@@ -21,21 +21,21 @@ reference documentation via
 [enum]	You have to generate notification emails for some or all
 	changes to a fossil repository R.
 
-[enum]	You have full access to the master repository file of the
+[enum]	You have no direct access to the master repository file of the
 	project.
 
-[enum]	You are providing access to the project (file) through a
-	web server under your control.
+[enum]	You are a super user or similar of the project.
+	As such you have full remote access to it.
 
 [list_end]
 
 [section {Solution to the Example}]
-[subsection {Basics}]		[include include/ex_basics_none.inc]
-[subsection {Sending Mail}]	[include include/ex_mail_sender.inc]
+[subsection {Basics}]		[include include/ex_basics.inc]
+[subsection {Sending Mail}]	[include include/ex_mail_sender_remote.inc]
 [subsection {Routing}]		[include include/ex_routing.inc]
 [subsection {Testing}]		[include include/ex_testing.inc]
 [subsection {Nearly done}]	[include include/ex_lastprep.inc]
-[subsection {Go}]		[include include/ex_monitor_local.inc]
+[subsection {Go}]		[include include/ex_monitor_remote_full.inc]
 
 [include include/feedback.inc]
 [manpage_end]
