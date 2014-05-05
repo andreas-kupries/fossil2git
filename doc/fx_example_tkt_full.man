@@ -1,8 +1,8 @@
 [comment {-*- tcl -*- doctools manpage}]
 [include include/definitions.inc]
-[manpage_begin [vset PROJECT]_example_tkt_full n 1]
+[manpage_begin [vset M_EX_TKT_LOCAL] n 1]
 [include include/general.inc]
-[titledesc "[vset PROJECT] - Example, Ticket Notifications with full access."]
+[titledesc [vset T_EX_TKT_LOCAL]]
 [description]
 [include include/welcome_basic.inc]
 
@@ -12,8 +12,7 @@ extended management facilities going beyond the regular command line.
 
 [para] It is one in a set of related examples demonstrating the
 abilities of the system. The interested reader can then go on into to
-reference documentation via
-[term "[vset PROJECT] - Introduction to [vset PROJECT]"].
+reference documentation via [term [vset T_INTRO]].
 
 [section {Background to the Example}]
 [list_begin enumerated]
@@ -36,6 +35,11 @@ reference documentation via
 [subsection {Testing}]		[include include/ex_testing.inc]
 [subsection {Nearly done}]	[include include/ex_lastprep.inc]
 [subsection {Go}]		[include include/ex_monitor_local.inc]
+
+[section {More examples}]
+[list_begin enumerated]
+[enum] [term [vset T_EX_TKT_REMOTE_ROOT]]
+[list_end]
 
 [include include/feedback.inc]
 [manpage_end]

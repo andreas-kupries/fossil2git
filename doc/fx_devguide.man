@@ -1,8 +1,8 @@
 [comment {-*- tcl -*- doctools manpage}]
 [include include/definitions.inc]
-[manpage_begin [vset PROJECT]_devguide n 1]
+[manpage_begin [vset M_DEVGUIDE] n 1]
 [include include/general.inc]
-[titledesc "[vset PROJECT] - The Developer's Guide"]
+[titledesc [vset T_DEVGUIDE]]
 [description]
 [include include/welcome.inc]
 
@@ -13,9 +13,9 @@ application or packages, etc.
 [para] Please read
 
 [list_begin enum]
-[enum] [term "[vset PROJECT] - License"].
-[enum] [term "[vset PROJECT] - How To Get The Sources"].
-[enum] [term "[vset PROJECT] - The Installer's Guide"].
+[enum] [term [vset T_LICENSE]].
+[enum] [term [vset T_GETSOURCES]].
+[enum] [term [vset T_INSTALLER]].
 [list_end]
 
 first, if that was not done already.

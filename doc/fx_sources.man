@@ -1,10 +1,8 @@
 [comment {-*- tcl -*- doctools manpage}]
-
-[comment {-*- tcl -*- doctools manpage}]
 [include include/definitions.inc]
-[manpage_begin [vset PROJECT]_sources n 1]
+[manpage_begin [vset M_GETSOURCES] n 1]
 [include include/general.inc]
-[titledesc "[vset PROJECT] - How To Get The Sources"]
+[titledesc [vset T_GETSOURCES]]
 [description]
 [include include/welcome.inc]
 
@@ -15,9 +13,9 @@ and packages, or to extend and modify them.
 [para] For builders and developers we additionally provide
 
 [list_begin enum]
-[enum] [term "[vset PROJECT] - License"].
-[enum] [term "[vset PROJECT] - The Installer's Guide"].
-[enum] [term "[vset PROJECT] - The Developer's Guide"].
+[enum] [term [vset T_LICENSE]].
+[enum] [term [vset T_INSTALLER]].
+[enum] [term [vset T_DEVGUIDE]].
 [list_end]
 
 respectively.

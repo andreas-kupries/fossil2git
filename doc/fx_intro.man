@@ -1,8 +1,8 @@
 [comment {-*- tcl -*- doctools manpage}]
 [include include/definitions.inc]
-[manpage_begin [vset PROJECT]_introduction n 1]
+[manpage_begin [vset M_INTRO] n 1]
 [include include/general.inc]
-[titledesc "[vset PROJECT] - Introduction to [vset PROJECT]"]
+[titledesc [vset T_INTRO]]
 [description]
 [include include/welcome_basic.inc]
 
@@ -13,24 +13,23 @@ facilities going beyond the regular command line.
 [comment =======================================================]
 [section Examples]
 [list_begin enumerated]
-[enum]	[term "[vset PROJECT] - Example, Ticket Notifications with full access."]
-[enum]	[term "[vset PROJECT] - Example, Ticket Notifications with full remote access."]
+[enum]	[term [vset T_EX_TKT_LOCAL]]
+[enum]	[term [vset T_EX_TKT_REMOTE_ROOT]]
 [list_end]
-
 
 [comment =======================================================]
 [section {Related Documents}]
 [list_begin enumerated]
-[enum] [term "[vset PROJECT] - License"].
-[enum] [term "[vset PROJECT] - How To Get The Sources"].
-[enum] [term "[vset PROJECT] - The Installer's Guide"].
-[enum] [term "[vset PROJECT] - The Developer's Guide"].
+[enum] [term [vset T_LICENSE]].
+[enum] [term [vset T_GETSOURCES]].
+[enum] [term [vset T_INSTALLER]].
+[enum] [term [vset T_DEVGUIDE]].
 [list_end]
 
 [para] The manpages relevant to a user of [vset PROJECT] are:
 
 [list_begin enumerated]
-[enum] [term "[vset PROJECT] - Application"]
+[enum] [term [vset T_APP]].
 [list_end]
 
 [para] For the developers and maintainers of [vset PROJECT], and power users
@@ -38,7 +37,7 @@ wishing to extend the system to handle their custom circumstances, we
 additionally have:
 
 [list_begin enumerated]
-[enum] [term "[vset PROJECT] - The Developer's Guide"].
+[enum] [term [vset T_DEVGUIDE]].
 [list_end]
 
 [comment =======================================================]

@@ -1,8 +1,8 @@
 [comment {-*- tcl -*- doctools manpage}]
 [include include/definitions.inc]
-[manpage_begin [vset PROJECT]_license n 1]
+[manpage_begin [vset M_LICENSE] n 1]
 [include include/general.inc]
-[titledesc "[vset PROJECT] - License"]
+[titledesc [vset T_LICENSE]]
 [description]
 [include include/welcome.inc]
 
