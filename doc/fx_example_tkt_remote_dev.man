@@ -1,10 +1,8 @@
 [comment {-*- tcl -*- doctools manpage}]
 [include include/definitions.inc]
-[manpage_begin [vset M_EX_TKT_REMOTE_ROOT] n 1]
-
- [vset PROJECT]_example_tkt_full_remote n 1]
+[manpage_begin [vset M_EX_TKT_REMOTE_DEV] n 1]
 [include include/general.inc]
-[titledesc [vset T_EX_TKT_REMOTE_ROOT]]
+[titledesc [vset T_EX_TKT_REMOTE_DEV]]
 [description]
 [include include/welcome_basic.inc]
 
@@ -25,22 +23,22 @@ reference documentation via [term [vset T_INTRO]].
 [enum]	You have no direct access to the master repository file of the
 	project.
 
-[enum]	You are a super user or similar of the project.
-	As such you have full remote access to it.
-
+[enum]	You are a a regular user of the project.
+	As such you have no remote access to the configuration, only the content.
 [list_end]
 
 [section {Solution to the Example}]
-[subsection {Basics}]		[include include/ex_basics.inc]
-[subsection {Sending Mail}]	[include include/ex_mail_sender_remote.inc]
-[subsection {Routing}]		[include include/ex_routing.inc]
+[subsection {Basics}]		[include include/ex_basics_dev.inc]
+[subsection {Sending Mail}]	[include include/ex_mailconfig_remote.inc]
+[subsection {Routing}]		[include include/ex_routing_staticonly.inc]
 [subsection {Testing}]		[include include/ex_testing.inc]
 [subsection {Nearly done}]	[include include/ex_lastprep.inc]
-[subsection {Go}]		[include include/ex_monitor_remote_full.inc]
+[subsection {Go}]		[include include/ex_monitor_remote_dev.inc]
 
 [section {More examples}]
 [list_begin enumerated]
 [enum] [term [vset T_EX_TKT_LOCAL]]
+[enum] [term [vset T_EX_TKT_REMOTE_ROOT]]
 [list_end]
 
 [include include/feedback.inc]

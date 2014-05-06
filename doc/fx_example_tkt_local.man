@@ -1,0 +1,47 @@
+[comment {-*- tcl -*- doctools manpage}]
+[include include/definitions.inc]
+[manpage_begin [vset M_EX_TKT_LOCAL] n 1]
+[include include/general.inc]
+[titledesc [vset T_EX_TKT_LOCAL]]
+[description]
+[include include/welcome_basic.inc]
+
+This is an introductory document to [vset PROJECT], an application
+with supporting packages providing users of the Fossil SCM with
+extended management facilities going beyond the regular command line.
+
+[para] It is one in a set of related examples demonstrating the
+abilities of the system. The interested reader can then go on into to
+reference documentation via [term [vset T_INTRO]].
+
+[section {Background to the Example}]
+[list_begin enumerated]
+
+[enum]	You have to generate notification emails for some or all
+	changes to a fossil repository R.
+
+[enum]	You have full access to the master repository file of the
+	project.
+
+[enum]	You are providing access to the project (file) through a
+	web server under your control.
+
+[list_end]
+
+[section {Solution to the Example}]
+[subsection {Basics}]		[include include/ex_basics_none.inc]
+[subsection {Sending Mail}]	[include include/ex_mailconfig_local.inc]
+[subsection {Routing}]		[include include/ex_routing.inc]
+[subsection {Testing}]		[include include/ex_testing.inc]
+[subsection {Nearly done}]	[include include/ex_lastprep.inc]
+[subsection {Go}]		[include include/ex_monitor_local.inc]
+
+[section {More examples}]
+[list_begin enumerated]
+[enum] [term [vset T_EX_TKT_REMOTE_ROOT]]
+[enum] [term [vset T_EX_TKT_REMOTE_DEV]]
+[list_end]
+
+[include include/feedback.inc]
+[manpage_end]
+
