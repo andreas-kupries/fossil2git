@@ -295,9 +295,9 @@ additionally provide
 \fIfx - The Developer's Guide\fR\&.
 .PP
 .PP
-Please read \fIfx - How To Get The Sources\fR first, if
-that was not done already\&. Here we assume that the sources are already
-available in a directory of your choice\&.
+Please read \fIfx - How To Get The Sources\fR first, if that was not done
+already\&. Here we assume that the sources are already available in
+a directory of your choice\&.
 .PP
 .SH REQUISITES
 .SS TCL

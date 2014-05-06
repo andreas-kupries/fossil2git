@@ -1,0 +1,638 @@
+'\"
+'\" Generated from file 'fx_example_tkt_remote_root\&.man' by tcllib/doctools with format 'nroff'
+'\"
+.TH "fx_example_tkt_remote_root" n 1 doc "FX - Extended Fossil Management"
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+.\"	# Start an argument description
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1 \\fI\\$2\\fP (\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+.\"	# define tabbing values for .AP
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+.\"	# BE - end boxed text (draw box now)
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+.\"	# VE - end of vertical sidebar
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+.\"	# DS - begin display
+.de DS
+.RS
+.nf
+.sp
+..
+.\"	# DE - end display
+.de DE
+.fi
+.RE
+.sp
+..
+.\"	# SO - start of list of standard options
+.de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 5.5c 11c
+.ft B
+..
+.\"	# SE - end of list of standard options
+.de SE
+.fi
+.ft R
+.LP
+See the \\*(So manual entry for details on the standard options.
+..
+.\"	# OP - start of full description for a single option
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+.\"	# CS - begin code excerpt
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+..
+.\"	# CE - end code excerpt
+.de CE
+.fi
+.RE
+..
+.\"	# UL - underline word
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
+.BS
+.SH NAME
+fx_example_tkt_remote_root \- fx - Example of Ticket Notifications - Full remote access\&.
+.SH SYNOPSIS
+package require \fBTcl  8\&.5\fR
+.sp
+.BE
+.SH DESCRIPTION
+.PP
+Welcome to fx, an application and set of packages providing
+extended management commands for the \fBfossil\fR SCM\&.
+This is an introductory document to fx, an application
+with supporting packages providing users of the Fossil SCM with
+extended management facilities going beyond the regular command line\&.
+.PP
+It is one in a set of related examples demonstrating the
+abilities of the system\&. The interested reader can then go on into to
+reference documentation via \fIfx - Introduction to fx\fR\&.
+.SH "BACKGROUND TO THE EXAMPLE"
+.IP [1]
+You have to generate notification emails for some or all
+changes to a fossil repository R\&.
+.IP [2]
+You have no direct access to the master repository file of the
+project\&.
+.IP [3]
+You are a super user or similar of the project\&.
+As such you have full remote access to it\&.
+.PP
+.SH "SOLUTION TO THE EXAMPLE"
+.SS BASICS
+The key to the solution demonstrated here is to transform the case
+from remote access to local access\&.
+At that point most of \fIfx - Example of Ticket Notifications - Full (local) access\&.\fR can be applied,
+with some modifications which ensure that all relevant pieces of the
+local repository are kept up to date\&.
+.PP
+First choose a directory D to work in, then create a local
+clone C of the project repository R in D\&.
+.PP
+Then pull the configuration areas \fIuser\fR, \fIemail\fR and
+\fIticket\fR into the clone\&. As a superuser it can be made simpler by
+using the area \fIall\fR\&. This actually makes general sense, as your
+local clone now is a proper full backup of the hosted repository, in
+both content and configuration\&.
+.PP
+Note however that during monitoring getting the entire
+configuration can take much longer than just what is then needed\&.
+.PP
+Going forward it is now necessary to \fIrebuild\fR the local
+repository\&. Because:
+.IP \(bu
+As a basic clone it started out with the standard setup
+for the ticketing system\&.
+.IP \(bu
+While pulling the \fIticket\fR area has updated the local
+configuration, it has \fInot\fR updated the derived tables,
+i\&.e\&. TICKET and TICKETCHNG\&.
+.IP \(bu
+The rebuild takes care of that\&.
+.PP
+.PP
+As the last steps make backup copies and exports of
+configuration and clone\&. It is always a good idea to have a backup\&.
+.PP
+Here it means that problems in the coming section only require
+copying the backup back into place instead of having to perform
+another (expensive) clone operation over the network\&.
+All of the above in a generalized example:
+.CS
+
+
+    cd /the/chosen/directory
+    USER=your-superuser-account
+    PASS=your-superuser-password
+    REMOTE="http://${USER}:${PASS}@remote-host/path/to/project"
+
+    fossil clone           $REMOTE    source\&.fossil
+    fossil config pull all $REMOTE -R source\&.fossil
+
+    fossil rebuild                         -R source\&.fossil
+    fossil config export all source\&.config -R source\&.fossil
+
+    cp source\&.fossil source\&.fossil\&.bak
+
+.CE
+.SS "SENDING MAIL"
+First we deal with the mail configuration\&. This is all about which
+host to use for injecting mail into the network, on which port,
+encrypted or not, the necessary credentials, etc\&.
+.PP
+Here are the relevant commands:
+.CS
+
+
+    fx repository set /path/to/the/fossil/repository/file
+    fx note config set host     your-mail-host
+    fx note config set user     your-mail-username
+    fx note config set password your-mail-password
+    fx note config set sender   your-project-maintainer-email-address
+
+    fx note config export /path/to/mail-config-backup
+    fx repository reset
+
+.CE
+.PP
+Some notes:
+.IP \(bu
+The example uses the \fBfx repository set|reset\fR commands
+to avoid typing
+.CS
+
+
+    -R /path/to/the/fossil/repository/file
+
+.CE
+.IP
+in each configuration command of the example\&. This is just visual
+clutter\&. In actual script it is recommended to use \fB-R\fR
+however, as this allows the parallel execution of the script for
+different repositories\&. The set|reset commands involve global state,
+the "default repository", which forces serialization to avoid the
+script instances from intefering with each other\&.
+.IP \(bu
+The attributes \fIhost\fR, \fIuser\fR, and \fIpassword\fR
+should be self-explanatory\&. They are the mail host to talk to, as
+specified by your network administrator and/or ISP, and the
+credentials it expects to allow access\&.
+.sp
+There is a \fIport\fR attribte as well, which needs to be set
+if and only if a non-standard port is used for SMTP\&.
+.sp
+Similarly the \fItls\fR attribute (a boolean) has to be set
+only if the mail system requires a TLS/SSL-encrypted connection\&.
+.IP \(bu
+The value of \fIsender\fR should be some thought put
+into\&.
+This email address will appear as the 'From' header in all generated
+mails\&. If a receiver of some notification has an issue they will
+likely respond to this address\&.
+Mail delivery errors, i\&.e\&. bounces will be sent to this address as
+well\&.
+Lastly, fx will send the stacktraces of all internal
+errors caught during operation there\&.
+As such it is strongly recommended to make this a proper and valid
+address, for the person or group which manages this setup\&.
+.IP \(bu
+Note that the attribute \fIlocation\fR is not configured\&.
+As we are using a local clone of a remote project this information
+can be and is infered from the remote url we cloned from\&.
+.IP \(bu
+Of all the settings above the \fIlocation\fR is the only one
+which is a decidedly per-repository item\&.
+For all other settings it makes sense to configure them at the global
+level, to be shared across all managed repositories\&. Assuming that
+there is more than one repository getting managed\&.
+To do so is as simple as adding the option \fB--global\fR to the
+configuration commands, like
+.CS
+
+
+    fx note config set --global host your-mail-host
+
+.CE
+.IP \(bu
+The last command in the example, the \fBnote config export\fR
+is technically not required, as it \fIonly\fR makes a backup of the
+configuration in a text file\&.
+.sp
+It is in the example due to my belief that having a backup,
+always, is good policy, and to drive this belief\&.
+.sp
+And together with the complementary \fBnote config import\fR
+command this is also another way of copying a mail setup around and
+applying it to multiple repositories\&.
+.PP
+.SS ROUTING
+Next after the low-level mail configuration we have to determine for
+which events of the timeline we wish to get notifications, and where
+to send them\&. This is called \fIrouting\fR\&.
+.PP
+For our example we go with the simplest possible setup and
+declare that we are interested in all of them, and to send their
+notifications to the same address\&. The command for that is
+.CS
+
+
+    fx note route add all the-destination-email-address
+
+.CE
+Note that for clarity the option \fB-R\fR was left out of the
+command\&. Use either it or the "default repository", as shown in the
+previous section\&.
+.PP
+The \fIall\fR argument is a catch-all term for all possible
+events we might be interested in\&. Use the introspection command
+.CS
+
+
+    fx note route events
+
+.CE
+to list the possible events we can use instead of \fIall\fR\&.
+.PP
+The destination mail address can be anything, i\&.e\&. a single
+person, a mail alias, a mailing list, etc\&. The latter would allow
+people to subscribe to notifications from the repository without
+having to deal directly with it\&.
+.PP
+The above has handled the \fIstatic\fR routing\&. Destinations
+for notifications which are fixed for the repository and event\&.
+.PP
+For ticket changes we can further configure the \fIdynamic\fR
+routing\&. This enables the system to dynamically generate mail for the
+people involved in a ticket in some way, be it submitter, developer,
+commenter, etc\&.
+.PP
+This is done by telling the system which fields of a ticket can
+contain user names and/or email addresses\&. These are expanded through
+the account information of the repository into the addresses to send
+mail to, beyond the static destinations\&. The introspection command
+.CS
+
+
+   fx note route fields
+
+.CE
+will print a table of all ticket fields which are available\&. It is the
+maintainers responsibility to then declare which of them to inspect\&.
+.PP
+Using the Tcl core repository as an example the command declaring the
+fields to inspect is:
+.CS
+
+
+    fx note route field add assignee closer login private_contact submitter username
+
+.CE
+.PP
+To capture changes to these fields themselves the system will
+automatically maintain an extended per-ticket history of the declared
+fields and send mail to both current and previous value of a field\&.
+.PP
+After the routing has been set up it is recommended to make a
+backup, using
+.CS
+
+
+    fx note route export /path/to/the/routes-backup
+
+.CE
+Having a backup is always good idea, I believe\&. And together with the
+complementary \fBnote route import\fR command this enables us to
+apply the same routing setup to multiple repositories\&. Especially
+important as we currently do not support global shared routing\&.
+.SS TESTING
+While the setup is in principle done with the two previous sections I
+believe that it is a not good idea to immediately jump to the
+monitoring\&. Better test the setup first\&.
+To start, a general test that the configured mail settings work:
+.CS
+
+
+    fx test mail-setup 'Andreas Kupries <andreask@activestate\&.com>'
+
+.CE
+.PP
+The command in the example sends a fixed mail to the specified
+destination address, using all the settings of section
+\fBSending Mail\fR\&.
+.PP
+If that is ok, do
+.CS
+
+
+    fx note update-history
+
+.CE
+This command explicitly updates the cached history of the ticket
+fields mentioning for the dynamic routing (see last section)\&.
+.PP
+The initial run can take some time, depending on the size of
+the pre-existing timeline, thus it feels nicer to me to do this
+separately instead of as part of the next group of commands\&.
+.CS
+
+
+    fx test manifest-parse --all
+    fx test mail-receivers --all
+    fx test mail-for       --all
+
+.CE
+.PP
+These commands go over all the changes i nthe repository and
+checks that the system is able to parse their manifests, can generate
+a list of destination mail addresses for them, and generate mail for
+them\&.
+.PP
+Any problems will be shown in the resulting table\&.
+.PP
+This is less of a test of the repository and setup but more a
+test that the system can deal with all the data found in the
+repository\&. This is especially useful when operating on large
+repositories, like Tcl, Tk, etc\&. as this is essentially a stress-test
+of the tool internals, with a higher probability of testing even
+things which are usually not found or simply rare (like, for example,
+signed manifests, huge manifests, etc)\&.
+.SS "NEARLY DONE"
+Now that we have configured all the big obvious things needed for the
+generation and distribution of the notifications we have one last
+thing to do:
+.CS
+
+
+    fx note mark-notified --all -R /path/to/the/fossil/repository/file
+
+.CE
+This tells fx that we do not wish to generate and send
+notification mails for everything which is already in the timeline of
+the project at this moment\&.
+This is \fIespecially important\fR when setting up the
+notifications for a project which has already run for some time\&.
+The project's developers and ticket submitters will most emphatically
+not wish to receive a deluge of emails for changes which have already
+been done in the past\&.
+.SS GO
+With all the preparatory work finally done we can go and start the
+monitoring\&. Note however that fx does not fully do
+everything by itself\&.
+.PP
+It assumes that it will be called from a cron job, i\&.e\&. that
+all the timing-related things are handled by the system, as is the
+prevention of multiple parallel notification runs, and where log files
+will be located\&.
+.PP
+As we have no direct access to the master fossil repository
+file of the project we not only have to generate and send mail, but
+also have to make sure that our local clone is kept up to date, for
+both content and relevant configuration, i\&.e\&. the areas \fIusers\fR
+and \fIemail\fR\&.
+.CS
+
+
+    R=/path/to/the/fossil/repository/file
+
+    fossil pull              -R $R
+    fossil config pull email -R $R
+    fossil config pull users -R $R
+    fx note deliver -R $R
+
+.CE
+.SH "MORE EXAMPLES"
+.IP [1]
+\fIfx - Example of Ticket Notifications - Full (local) access\&.\fR
+.IP [2]
+\fIfx - Example of Ticket Notifications - Limited remote access\&.\fR
+.PP
+.SH "BUGS, IDEAS, FEEDBACK"
+This document, and the package it describes, will undoubtedly contain
+bugs and other problems\&.
+Please report such at the \fIfx Tracker\fR [https://core\&.tcl\&.tk/akupries/fx]\&.
+Please also report any ideas for enhancements you may have for either
+package and/or documentation\&.
+.SH KEYWORDS
+fossil, scm
+.SH CATEGORY
+Fossil support

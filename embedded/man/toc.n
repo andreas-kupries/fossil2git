@@ -282,6 +282,15 @@ doc
 \fBfx_devguide\fR
 \fIfiles/fx_devguide\&.n\fR: fx - The Developer's Guide
 .TP
+\fBfx_example_tkt_local\fR
+\fIfiles/fx_example_tkt_local\&.n\fR: fx - Example of Ticket Notifications - Full (local) access\&.
+.TP
+\fBfx_example_tkt_remote_dev\fR
+\fIfiles/fx_example_tkt_remote_dev\&.n\fR: fx - Example of Ticket Notifications - Limited remote access\&.
+.TP
+\fBfx_example_tkt_remote_root\fR
+\fIfiles/fx_example_tkt_remote_root\&.n\fR: fx - Example of Ticket Notifications - Full remote access\&.
+.TP
 \fBfx_install_guide\fR
 \fIfiles/fx_installer\&.n\fR: fx - The Installer's Guide
 .TP

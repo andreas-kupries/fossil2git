@@ -283,6 +283,12 @@ extended management commands for the \fBfossil\fR SCM\&.
 fx is an application with supporting packages
 to provide users of the Fossil SCM with extended management
 facilities going beyond the regular command line\&.
+.SH EXAMPLES
+.IP [1]
+\fIfx - Example of Ticket Notifications - Full (local) access\&.\fR
+.IP [2]
+\fIfx - Example of Ticket Notifications - Full remote access\&.\fR
+.PP
 .SH "RELATED DOCUMENTS"
 .IP [1]
 \fIfx - License\fR\&.
@@ -296,7 +302,7 @@ facilities going beyond the regular command line\&.
 .PP
 The manpages relevant to a user of fx are:
 .IP [1]
-\fIfx - Application\fR
+\fIfx - Application\fR\&.
 .PP
 .PP
 For the developers and maintainers of fx, and power users

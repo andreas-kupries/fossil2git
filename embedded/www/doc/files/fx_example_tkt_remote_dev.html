@@ -1,0 +1,391 @@
+
+<html><head>
+<title>fx_example_tkt_remote_dev - FX - Extended Fossil Management</title>
+<style type="text/css"><!--
+    HTML {
+	background: 	#FFFFFF;
+	color: 		black;
+    }
+    BODY {
+	background: 	#FFFFFF;
+	color:	 	black;
+    }
+    DIV.doctools {
+	margin-left:	10%;
+	margin-right:	10%;
+    }
+    DIV.doctools H1,DIV.doctools H2 {
+	margin-left:	-5%;
+    }
+    H1, H2, H3, H4 {
+	margin-top: 	1em;
+	font-family:	sans-serif;
+	font-size:	large;
+	color:		#005A9C;
+	background: 	transparent;
+	text-align:		left;
+    }
+    H1.title {
+	text-align: center;
+    }
+    UL,OL {
+	margin-right: 0em;
+	margin-top: 3pt;
+	margin-bottom: 3pt;
+    }
+    UL LI {
+	list-style: disc;
+    }
+    OL LI {
+	list-style: decimal;
+    }
+    DT {
+	padding-top: 	1ex;
+    }
+    UL.toc,UL.toc UL, UL.toc UL UL {
+	font:		normal 12pt/14pt sans-serif;
+	list-style:	none;
+    }
+    LI.section, LI.subsection {
+	list-style: 	none;
+	margin-left: 	0em;
+	text-indent:	0em;
+	padding: 	0em;
+    }
+    PRE {
+	display: 	block;
+	font-family:	monospace;
+	white-space:	pre;
+	margin:		0%;
+	padding-top:	0.5ex;
+	padding-bottom:	0.5ex;
+	padding-left:	1ex;
+	padding-right:	1ex;
+	width:		100%;
+    }
+    PRE.example {
+	color: 		black;
+	background: 	#f5dcb3;
+	border:		1px solid black;
+    }
+    UL.requirements LI, UL.syntax LI {
+	list-style: 	none;
+	margin-left: 	0em;
+	text-indent:	0em;
+	padding:	0em;
+    }
+    DIV.synopsis {
+	color: 		black;
+	background: 	#80ffff;
+	border:		1px solid black;
+	font-family:	serif;
+	margin-top: 	1em;
+	margin-bottom: 	1em;
+    }
+    UL.syntax {
+	margin-top: 	1em;
+	border-top:	1px solid black;
+    }
+    UL.requirements {
+	margin-bottom: 	1em;
+	border-bottom:	1px solid black;
+    }
+--></style>
+</head>
+<! -- Generated from file 'fx_example_tkt_remote_dev.man' by tcllib/doctools with format 'html'
+   -->
+<! -- CVS: $Id$ fx_example_tkt_remote_dev.n
+   -->
+<body><div class="doctools">
+<hr> [
+   <a href="../../../../../../home">Home</a>
+| <a href="../../toc.html">Main Table Of Contents</a>
+| <a href="../toc.html">Table Of Contents</a>
+| <a href="../../index.html">Keyword Index</a>
+ ] <hr>
+<h1 class="title">fx_example_tkt_remote_dev(n) 1 doc &quot;FX - Extended Fossil Management&quot;</h1>
+<div id="name" class="section"><h2><a name="name">Name</a></h2>
+<p>fx_example_tkt_remote_dev - fx - Example of Ticket Notifications - Limited remote access.</p>
+</div>
+<div id="toc" class="section"><h2><a name="toc">Table Of Contents</a></h2>
+<ul class="toc">
+<li class="section"><a href="#toc">Table Of Contents</a></li>
+<li class="section"><a href="#synopsis">Synopsis</a></li>
+<li class="section"><a href="#section1">Description</a></li>
+<li class="section"><a href="#section2">Background to the Example</a></li>
+<li class="section"><a href="#section3">Solution to the Example</a>
+<ul>
+<li class="subsection"><a href="#subsection1">Basics</a></li>
+<li class="subsection"><a href="#subsection2">Sending Mail</a></li>
+<li class="subsection"><a href="#subsection3">Routing</a></li>
+<li class="subsection"><a href="#subsection4">Testing</a></li>
+<li class="subsection"><a href="#subsection5">Nearly done</a></li>
+<li class="subsection"><a href="#subsection6">Go</a></li>
+</ul>
+</li>
+<li class="section"><a href="#section4">More examples</a></li>
+<li class="section"><a href="#section5">Bugs, Ideas, Feedback</a></li>
+<li class="section"><a href="#keywords">Keywords</a></li>
+<li class="section"><a href="#category">Category</a></li>
+</ul>
+</div>
+<div id="synopsis" class="section"><h2><a name="synopsis">Synopsis</a></h2>
+<div class="synopsis">
+<ul class="requirements">
+<li>package require <b class="pkgname">Tcl 8.5</b></li>
+</ul>
+</div>
+</div>
+<div id="section1" class="section"><h2><a name="section1">Description</a></h2>
+<p>Welcome to fx, an application and set of packages providing
+extended management commands for the <b class="syscmd"><a href="../../index.html#key0">fossil</a></b> SCM.
+This is an introductory document to fx, an application
+with supporting packages providing users of the Fossil SCM with
+extended management facilities going beyond the regular command line.</p>
+<p>It is one in a set of related examples demonstrating the
+abilities of the system. The interested reader can then go on into to
+reference documentation via <i class="term"><a href="fx_intro.html">fx - Introduction to fx</a></i>.</p>
+</div>
+<div id="section2" class="section"><h2><a name="section2">Background to the Example</a></h2>
+<ol class="enumerated">
+<li><p>You have to generate notification emails for some or all
+	changes to a fossil repository R.</p></li>
+<li><p>You have no direct access to the master repository file of the
+	project.</p></li>
+<li><p>You are a a regular user of the project.
+	As such you have no remote access to the configuration, only the content.</p></li>
+</ol>
+</div>
+<div id="section3" class="section"><h2><a name="section3">Solution to the Example</a></h2>
+<div id="subsection1" class="subsection"><h3><a name="subsection1">Basics</a></h3>
+<p>The key to the solution demonstrated here is to transform the case
+from remote access to local access.
+At that point most of <i class="term"><a href="fx_example_tkt_local.html">fx - Example of Ticket Notifications - Full (local) access.</a></i> can be applied,
+with some modifications which ensure that all relevant pieces of the
+local repository are kept up to date.</p>
+<p>First choose a directory D to work in, then create a local
+clone C of the project repository R in D.</p>
+<p>As we are not a superuser we cannot get the configuration areas required
+for dynamic routing (see section <span class="sectref"><a href="#subsection3">Routing</a></span>).</p>
+<p>As the last steps make a backup copy of the clone. It is always
+a good idea to have a backup.</p>
+<p>Here it means that problems in the coming section only require
+copying the backup back into place instead of having to perform
+another (expensive) clone operation over the network.
+All of the above in a generalized example:</p>
+<pre class="example">
+    cd /the/chosen/directory
+    USER=your-account
+    PASS=your-password
+    REMOTE=&quot;http://${USER}:${PASS}@remote-host/path/to/project&quot;
+    fossil clone $REMOTE source.fossil
+    cp source.fossil source.fossil.bak
+</pre>
+</div>
+<div id="subsection2" class="subsection"><h3><a name="subsection2">Sending Mail</a></h3>
+<p>First we deal with the mail configuration. This is all about which
+host to use for injecting mail into the network, on which port,
+encrypted or not, the necessary credentials, etc.</p>
+<p>Here are the relevant commands:</p>
+<pre class="example">
+    fx repository set /path/to/the/fossil/repository/file
+    fx note config set host     your-mail-host
+    fx note config set user     your-mail-username
+    fx note config set password your-mail-password
+    fx note config set sender   your-project-maintainer-email-address
+    fx note config export /path/to/mail-config-backup
+    fx repository reset
+</pre>
+<p>Some notes:</p>
+<ul class="itemized">
+<li><p>The example uses the <b class="cmd">fx repository set|reset</b> commands
+	to avoid typing</p>
+<pre class="example">
+    -R /path/to/the/fossil/repository/file
+</pre>
+<p>in each configuration command of the example. This is just visual
+clutter. In actual script it is recommended to use <b class="option">-R</b>
+however, as this allows the parallel execution of the script for
+different repositories. The set|reset commands involve global state,
+the &quot;default repository&quot;, which forces serialization to avoid the
+script instances from intefering with each other.</p></li>
+<li><p>The attributes <i class="term">host</i>, <i class="term">user</i>, and <i class="term">password</i>
+should be self-explanatory. They are the mail host to talk to, as
+specified by your network administrator and/or ISP, and the
+credentials it expects to allow access.</p>
+<p>There is a <i class="term">port</i> attribte as well, which needs to be set
+if and only if a non-standard port is used for SMTP.</p>
+<p>Similarly the <i class="term">tls</i> attribute (a boolean) has to be set
+only if the mail system requires a TLS/SSL-encrypted connection.</p></li>
+<li><p>The value of <i class="term">sender</i> should be some thought put
+into.
+This email address will appear as the 'From' header in all generated
+mails. If a receiver of some notification has an issue they will
+likely respond to this address.
+Mail delivery errors, i.e. bounces will be sent to this address as
+well.
+Lastly, fx will send the stacktraces of all internal
+errors caught during operation there.
+As such it is strongly recommended to make this a proper and valid
+address, for the person or group which manages this setup.</p></li>
+<li><p>Note that the attribute <i class="term">location</i> is not configured.
+As we are using a local clone of a remote project this information
+can be and is infered from the remote url we cloned from.</p></li>
+<li><p>Of all the settings above the <i class="term">location</i> is the only one
+which is a decidedly per-repository item.
+For all other settings it makes sense to configure them at the global
+level, to be shared across all managed repositories. Assuming that
+there is more than one repository getting managed.
+To do so is as simple as adding the option <b class="option">--global</b> to the
+configuration commands, like</p>
+<pre class="example">
+    fx note config set --global host your-mail-host
+</pre>
+</li>
+<li><p>The last command in the example, the <b class="cmd">note config export</b>
+is technically not required, as it <em>only</em> makes a backup of the
+configuration in a text file.</p>
+<p>It is in the example due to my belief that having a backup,
+always, is good policy, and to drive this belief.</p>
+<p>And together with the complementary <b class="cmd">note config import</b>
+command this is also another way of copying a mail setup around and
+applying it to multiple repositories.</p></li>
+</ul>
+</div>
+<div id="subsection3" class="subsection"><h3><a name="subsection3">Routing</a></h3>
+<p>Next after the low-level mail configuration we have to determine for
+which events of the timeline we wish to get notifications, and where
+to send them. This is called <i class="term">routing</i>.</p>
+<p>For our example we go with the simplest possible setup and
+declare that we are interested in all of them, and to send their
+notifications to the same address. The command for that is</p>
+<pre class="example">
+    fx note route add all the-destination-email-address
+</pre>
+<p>Note that for clarity the option <b class="option">-R</b> was left out of the
+command. Use either it or the &quot;default repository&quot;, as shown in the
+previous section.</p>
+<p>The <i class="term">all</i> argument is a catch-all term for all possible
+events we might be interested in. Use the introspection command</p>
+<pre class="example">
+    fx note route events
+</pre>
+<p>to list the possible events we can use instead of <i class="term">all</i>.</p>
+<p>The destination mail address can be anything, i.e. a single
+person, a mail alias, a mailing list, etc. The latter would allow
+people to subscribe to notifications from the repository without
+having to deal directly with it.</p>
+<p>The above has handled the <i class="term">static</i> routing. Destinations
+for notifications which are fixed for the repository and event.</p>
+<p>For ticket changes we normally can further configure the
+<i class="term">dynamic</i> routing which enables the system to dynamically
+generate mail for the people involved in a ticket in some way, be it
+submitter, developer, commenter, etc.
+However as a regular user we do not have access to the configuration
+required for this, i.e. the areas <i class="term">users</i> and <i class="term">email</i>.
+So, in the situation of this example <i class="term">dynamic</i> routing is simply
+not possible.</p>
+<p>After the routing has been set up it is recommended to make a
+backup, using</p>
+<pre class="example">
+    fx note route export /path/to/the/routes-backup
+</pre>
+<p>Having a backup is always good idea, I believe. And together with the
+complementary <b class="cmd">note route import</b> command this enables us to
+apply the same routing setup to multiple repositories. Especially
+important as we currently do not support global shared routing.</p>
+</div>
+<div id="subsection4" class="subsection"><h3><a name="subsection4">Testing</a></h3>
+<p>While the setup is in principle done with the two previous sections I
+believe that it is a not good idea to immediately jump to the
+monitoring. Better test the setup first.
+To start, a general test that the configured mail settings work:</p>
+<pre class="example">
+    fx test mail-setup 'Andreas Kupries &lt;andreask@activestate.com&gt;'
+</pre>
+<p>The command in the example sends a fixed mail to the specified
+destination address, using all the settings of section
+<span class="sectref"><a href="#subsection2">Sending Mail</a></span>.</p>
+<p>If that is ok, do</p>
+<pre class="example">
+    fx note update-history
+</pre>
+<p>This command explicitly updates the cached history of the ticket
+fields mentioning for the dynamic routing (see last section).</p>
+<p>The initial run can take some time, depending on the size of
+the pre-existing timeline, thus it feels nicer to me to do this
+separately instead of as part of the next group of commands.</p>
+<pre class="example">
+    fx test manifest-parse --all
+    fx test mail-receivers --all
+    fx test mail-for       --all
+</pre>
+<p>These commands go over all the changes i nthe repository and
+checks that the system is able to parse their manifests, can generate
+a list of destination mail addresses for them, and generate mail for
+them.</p>
+<p>Any problems will be shown in the resulting table.</p>
+<p>This is less of a test of the repository and setup but more a
+test that the system can deal with all the data found in the
+repository. This is especially useful when operating on large
+repositories, like Tcl, Tk, etc. as this is essentially a stress-test
+of the tool internals, with a higher probability of testing even
+things which are usually not found or simply rare (like, for example,
+signed manifests, huge manifests, etc).</p>
+</div>
+<div id="subsection5" class="subsection"><h3><a name="subsection5">Nearly done</a></h3>
+<p>Now that we have configured all the big obvious things needed for the
+generation and distribution of the notifications we have one last
+thing to do:</p>
+<pre class="example">
+    fx note mark-notified --all -R /path/to/the/fossil/repository/file
+</pre>
+<p>This tells fx that we do not wish to generate and send
+notification mails for everything which is already in the timeline of
+the project at this moment.
+This is <em>especially important</em> when setting up the
+notifications for a project which has already run for some time.
+The project's developers and ticket submitters will most emphatically
+not wish to receive a deluge of emails for changes which have already
+been done in the past.</p>
+</div>
+<div id="subsection6" class="subsection"><h3><a name="subsection6">Go</a></h3>
+<p>With all the preparatory work finally done we can go and start the
+monitoring. Note however that fx does not fully do
+everything by itself.</p>
+<p>It assumes that it will be called from a cron job, i.e. that
+all the timing-related things are handled by the system, as is the
+prevention of multiple parallel notification runs, and where log files
+will be located.</p>
+<p>As we have no direct access to the master fossil repository
+file of the project we not only have to generate and send mail, but
+also have to make sure that our local clone is kept up to
+date. Remember however that we do not access to the configuration,
+only content.</p>
+<pre class="example">
+    R=/path/to/the/fossil/repository/file
+    fossil pull     -R $R
+    fx note deliver -R $R
+</pre>
+</div>
+</div>
+<div id="section4" class="section"><h2><a name="section4">More examples</a></h2>
+<ol class="enumerated">
+<li><p><i class="term"><a href="fx_example_tkt_local.html">fx - Example of Ticket Notifications - Full (local) access.</a></i></p></li>
+<li><p><i class="term"><a href="fx_example_tkt_remote_root.html">fx - Example of Ticket Notifications - Full remote access.</a></i></p></li>
+</ol>
+</div>
+<div id="section5" class="section"><h2><a name="section5">Bugs, Ideas, Feedback</a></h2>
+<p>This document, and the package it describes, will undoubtedly contain
+bugs and other problems.
+Please report such at the <a href="https://core.tcl.tk/akupries/fx">fx Tracker</a>.
+Please also report any ideas for enhancements you may have for either
+package and/or documentation.</p>
+</div>
+<div id="keywords" class="section"><h2><a name="keywords">Keywords</a></h2>
+<p><a href="../../index.html#key0">fossil</a>, <a href="../../index.html#key1">scm</a></p>
+</div>
+<div id="category" class="section"><h2><a name="category">Category</a></h2>
+<p>Fossil support</p>
+</div>
+</div></body></html>
