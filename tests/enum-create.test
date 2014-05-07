@@ -20,7 +20,7 @@ test enum-create-1.0 {client enum create, wrong args, not enough} -setup {
     run enum create
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "wrong#args, not enough*"
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
 
 test enum-create-1.1 {client enum create, duplicate definition} -setup {
     stage-open

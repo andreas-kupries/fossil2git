@@ -20,7 +20,7 @@ test enum-export-1.0 {client enum export, wrong args, not enough} -setup {
     run enum expor
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "wrong#args, not enough*"
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
 
 test enum-export-1.1 {client enum export, unknown enumeration} -setup {
     stage-open

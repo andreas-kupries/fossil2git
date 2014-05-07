@@ -14,7 +14,7 @@ kt source support/common.tcl
 
 test version-1.0 {client version, wrong args, too many} -body {
     run version X
-} -returnCodes error -match glob -result "wrong#args, too many*"
+} -returnCodes error -match glob -result "* cmdr: wrong#args, too many*"
 
 test version-1.1 {client version} -body {
     run version

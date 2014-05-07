@@ -31,7 +31,7 @@ test note-routes-fixed-2.0 {client note route events, wrong args, too many} -set
     run note route events X
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "wrong#args, too many*"
+} -match glob -returnCodes error -result "* cmdr: wrong#args, too many*"
 
 test note-routes-fixed-2.1 {client note route events, available events} -setup {
     stage-open
@@ -50,7 +50,7 @@ test note-routes-fixed-3.0 {client note route add, wrong args, not enough} -setu
     run note route add
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "wrong#args, not enough*"
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
 
 test note-routes-fixed-3.1 {client note route set, wrong args, not enough} -setup {
     stage-open
@@ -58,7 +58,7 @@ test note-routes-fixed-3.1 {client note route set, wrong args, not enough} -setu
     run note route add E
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "wrong#args, not enough*"
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
 
 test note-routes-fixed-3.2 {client note route set, bogus event} -setup {
     stage-open
@@ -119,7 +119,7 @@ test note-routes-fixed-4.0 {client note route drop, wrong args, not enough} -set
     run note route drop
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "wrong#args, not enough*"
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
 
 test note-routes-fixed-4.1 {client note route drop, bogus event} -setup {
     stage-open
@@ -222,7 +222,7 @@ test note-routes-fixed-5.0 {client note route list, wrong args, too many} -setup
     }
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "wrong#args, too many*"
+} -match glob -returnCodes error -result "* cmdr: wrong#args, too many*"
 
 test note-routes-fixed-5.1 {client note route list, default settings} -setup {
     stage-open

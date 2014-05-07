@@ -20,7 +20,7 @@ test enum-remove-1.0 {client enum remove, wrong args, not enough} -setup {
     run enum remove
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "wrong#args, not enough*"
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
 
 test enum-remove-1.1 {client enum remove, wrong args, not enough} -setup {
     stage-open
@@ -28,7 +28,7 @@ test enum-remove-1.1 {client enum remove, wrong args, not enough} -setup {
     run enum remove E
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "wrong#args, not enough*"
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
 
 test enum-remove-1.2 {client enum remove, unknown item} -setup {
     stage-open

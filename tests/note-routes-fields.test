@@ -31,7 +31,7 @@ test note-routes-field-2.0 {client note route fields, wrong args, too many} -set
     run note route fields X
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "wrong#args, too many*"
+} -match glob -returnCodes error -result "* cmdr: wrong#args, too many*"
 
 test note-routes-field-2.1 {client note route fields, standard fields} -setup {
     stage-open
@@ -50,7 +50,7 @@ test note-routes-field-3.0 {client note route field add, wrong args, not enough}
     run note route field add
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "wrong#args, not enough*"
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
 
 test note-routes-field-3.1 {client note route field set, bogus field} -setup {
     stage-open
@@ -111,7 +111,7 @@ test note-routes-field-4.0 {client note route field drop, wrong args, not enough
     run note route field drop
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "wrong#args, not enough*"
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
 
 test note-routes-field-4.1 {client note route field drop, bogus field} -setup {
     stage-open

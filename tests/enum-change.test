@@ -20,7 +20,7 @@ test enum-change-1.0 {client enum change, wrong args, not enough} -setup {
     run enum change
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "wrong#args, not enough*"
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
 
 test enum-change-1.1 {client enum change, wrong args, not enough} -setup {
     stage-open
@@ -28,7 +28,7 @@ test enum-change-1.1 {client enum change, wrong args, not enough} -setup {
     run enum change E
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "wrong#args, not enough*"
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
 
 test enum-change-1.2 {client enum change, wrong args, not enough} -setup {
     stage-open
@@ -36,7 +36,7 @@ test enum-change-1.2 {client enum change, wrong args, not enough} -setup {
     run enum change E O
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "wrong#args, not enough*"
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
 
 test enum-change-1.3 {client enum change, wrong args, too many} -setup {
     stage-open
@@ -44,7 +44,7 @@ test enum-change-1.3 {client enum change, wrong args, too many} -setup {
     run enum change E O N X
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "wrong#args, too many*"
+} -match glob -returnCodes error -result "* cmdr: wrong#args, too many*"
 
 test enum-change-1.4 {client enum change, unknown enumeration} -setup {
     stage-open

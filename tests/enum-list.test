@@ -52,7 +52,7 @@ test enum-list-2.0 {client enum list, wrong args, too many} -setup {
     run enum list X
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "wrong#args, too many*"
+} -match glob -returnCodes error -result "* cmdr: wrong#args, too many*"
 
 
 test enum-list-2.1 {client enum list} -setup {

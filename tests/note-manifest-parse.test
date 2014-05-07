@@ -20,7 +20,7 @@ test test-manifest-parse-1.0 {client test manifest-parse, wrong args, too many} 
     run test manifest-parse U X
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "wrong#args, too many*"
+} -match glob -returnCodes error -result "* cmdr: wrong#args, too many*"
 
 test test-manifest-parse-1.1 {client test manifest-parse, wrong args, not enough} -setup {
     stage-open
@@ -28,7 +28,7 @@ test test-manifest-parse-1.1 {client test manifest-parse, wrong args, not enough
     run test manifest-parse
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "wrong#args, not enough*"
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
 
 # # ## ### ##### ######## ############# #####################
 

@@ -22,7 +22,7 @@ test note-show-pending-1.0 {client note show-pending, wrong args, too many} -set
     }
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "wrong#args, too many*"
+} -match glob -returnCodes error -result "* cmdr: wrong#args, too many*"
 
 test note-show-pending-1.1 {client note show-pending, standard examples} -setup {
     stage-open
@@ -44,7 +44,7 @@ test note-mark-notified-all-1.0 {client note mark-notified-all, wrong args, too 
     run note mark-notified-all X
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "wrong#args, too many*"
+} -match glob -returnCodes error -result "* cmdr: wrong#args, too many*"
 
 test note-mark-notified-all-1.1 {client note mark-notified-all} -setup {
     stage-open
@@ -67,7 +67,7 @@ test note-mark-pending-all-1.0 {client note mark-pending-all, wrong args, too ma
     run note mark-pending-all X
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "wrong#args, too many*"
+} -match glob -returnCodes error -result "* cmdr: wrong#args, too many*"
 
 test note-mark-pending-all-1.1 {client note mark-pending-all} -setup {
     stage-open
@@ -93,7 +93,7 @@ test note-mark-notified-1.0 {client note mark-notified, wrong args, too many} -s
     run note mark-notified U X
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "wrong#args, too many*"
+} -match glob -returnCodes error -result "* cmdr: wrong#args, too many*"
 
 test note-mark-notified-1.1 {client note mark-notified, wrong args, not enough} -setup {
     stage-open
@@ -101,7 +101,7 @@ test note-mark-notified-1.1 {client note mark-notified, wrong args, not enough} 
     run note mark-notified
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "wrong#args, not enough*"
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
 
 foreach m [the-manifests] {
     test note-mark-notified-2.$m {client note mark-notified} -setup {
@@ -126,7 +126,7 @@ test note-mark-pending-1.0 {client note mark-pending, wrong args, too many} -set
     run note mark-pending U X
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "wrong#args, too many*"
+} -match glob -returnCodes error -result "* cmdr: wrong#args, too many*"
 
 test note-mark-pending-1.1 {client note mark-pending, wrong args, not enough} -setup {
     stage-open
@@ -134,7 +134,7 @@ test note-mark-pending-1.1 {client note mark-pending, wrong args, not enough} -s
     run note mark-pending
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "wrong#args, not enough*"
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
 
 foreach m [the-manifests] {
     test note-mark-pending-2.$m {client note mark-pending} -setup {

@@ -33,7 +33,7 @@ test note-config-2.0 {client note config set, wrong args, not enough} -setup {
     run note config set
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "wrong#args, not enough*"
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
 
 test note-config-2.1 {client note config set, wrong args, not enough} -setup {
     stage-open
@@ -41,7 +41,7 @@ test note-config-2.1 {client note config set, wrong args, not enough} -setup {
     run note config set K
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "wrong#args, not enough*"
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
 
 test note-config-2.2 {client note config set, wrong args, too many} -setup {
     stage-open
@@ -49,7 +49,7 @@ test note-config-2.2 {client note config set, wrong args, too many} -setup {
     run note config set K V X
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "wrong#args, too many*"
+} -match glob -returnCodes error -result "* cmdr: wrong#args, too many*"
 
 test note-config-2.3 {client note config set, bogus key} -setup {
     stage-open
@@ -134,7 +134,7 @@ test note-config-3.0 {client note config unset, wrong args, not enough} -setup {
     run note config unset
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "wrong#args, not enough*"
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
 
 test note-config-3.1 {client note config set, wrong args, too many} -setup {
     stage-open
@@ -142,7 +142,7 @@ test note-config-3.1 {client note config set, wrong args, too many} -setup {
     run note config unset K X
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "wrong#args, too many*"
+} -match glob -returnCodes error -result "* cmdr: wrong#args, too many*"
 
 test note-config-3.2 {client note config unset, bogus key} -setup {
     stage-open
@@ -198,7 +198,7 @@ test note-config-4.0 {client note config show, wrong args, too many} -setup {
     }
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "wrong#args, too many*"
+} -match glob -returnCodes error -result "* cmdr: wrong#args, too many*"
 
 test note-config-4.1 {client note config show, default settings} -setup {
     stage-open
