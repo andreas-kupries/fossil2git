@@ -19,16 +19,23 @@ package require debug
 package require debug::caller
 package require interp
 
+package require fx::fossil
 package require fx::mgr::state
 package require fx::mgr::enum ; # enumerations
 package require fx::seen      ; # notification state
 
 # # ## ### ##### ######## ############# ######################
 
+namespace eval ::fx {
+    namespace export state
+    namespace ensemble create
+}
+
 namespace eval ::fx::state {
     namespace export save restore
     namespace ensemble create
 
+    namespace import ::fx::fossil
     namespace import ::fx::mgr::state
     rename state mgr
 }

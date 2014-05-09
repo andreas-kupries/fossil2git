@@ -32,13 +32,13 @@ namespace eval ::fx {
 namespace eval ::fx::fossil {
     namespace export \
 	c_show_repository c_set_repository c_reset_repository \
-	c_default_repository test-tags test-branch \
-	branch-of changeset date-of reveal user-info users user-config \
-	get-manifest fx-tables fx-enums fx-enum-items \
-	ticket-title ticket-fields global global-location \
-	show-global-location repository repository-location \
-	show-repository-location set-repository-location \
-	repository-find repository-open
+	c_default_repository test-tags test-branch branch-of changeset \
+	date-of reveal user-info users user-config get-manifest \
+	fx-tables fx-enums fx-enum-items ticket-title ticket-fields \
+	global global-location show-global-location repository \
+	repository-location show-repository-location \
+	set-repository-location repository-find repository-open \
+	global-has has empty global-empty
 	
     namespace ensemble create
 
@@ -383,6 +383,36 @@ proc ::fx::fossil::repository-find {p} {
 }
 
 # # ## ### ##### ######## ############# ######################
+
+proc ::fx::fossil::has {table} {
+    return [repository exists {
+        SELECT name
+        FROM  sqlite_master
+        WHERE type = 'table'
+        AND   name = :table
+    }]
+}
+
+proc ::fx::fossil::global-has {table} {
+    return [global exists {
+        SELECT name
+        FROM  sqlite_master
+        WHERE type = 'table'
+        AND   name = :table
+    }]
+}
+
+proc ::fx::fossil::empty {table} {
+    return [expr { [repository eval [subst {
+        SELECT count(*) FROM "$table"
+    }]] <= 0 }]
+}
+
+proc ::fx::fossil::global-empty {table} {
+    return [expr { [global eval [subst {
+        SELECT count(*) FROM "$table"
+    }]] <= 0 }]
+}
 
 proc ::fx::fossil::fx-enum-items {table} {
     debug.fx/fossil {}

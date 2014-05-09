@@ -45,11 +45,13 @@ namespace eval ::fx::mgr::enum {
     namespace import ::fx::mgr::state
     namespace import ::fx::validate::enum
 
-    variable dropsql   {DROP TABLE "$etable"}
+    variable dropsql   {DROP TABLE IF EXISTS "$etable";}
     variable createsql {
-	CREATE TABLE "$etable" (
-	    id   INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-	    item TEXT    UNIQUE
+	CREATE TABLE IF NOT EXISTS
+	"$etable"
+        (
+	 id   INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+	 item TEXT    UNIQUE
 	);
     }
 }
@@ -175,7 +177,7 @@ proc ::fx::mgr::enum::DUMP {} {
 
     state module enum
     foreach enum [fossil fx-enums] {
-	set etable [table-of $enum]
+	set etable [enum table-of $enum]
 	# etable is subst'ed
 	state sql [subst $dropsql]
 	state sql [subst $createsql]

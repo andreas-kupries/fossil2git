@@ -509,11 +509,11 @@ namespace eval ::fx::seen {
     }
 
     variable dropsql {
-	DROP TABLE fx_aku_watch_seen
-	DROP TABLE fx_aku_watch_tktfield
-	DROP TABLE fx_aku_watch_tkt
-	DROP TABLE fx_aku_watch_tktseries
-	DROP TABLE fx_aku_watch_tktseen
+	DROP TABLE IF EXISTS fx_aku_watch_seen;
+	DROP TABLE IF EXISTS fx_aku_watch_tktfield;
+	DROP TABLE IF EXISTS fx_aku_watch_tkt;
+	DROP TABLE IF EXISTS fx_aku_watch_tktseries;
+	DROP TABLE IF EXISTS fx_aku_watch_tktseen;
     }
 
     variable dumpsep    "-- [string repeat - 69]"
@@ -533,11 +533,11 @@ proc ::fx::seen::DUMP {} {
     state sql $dropsql
     state sql $createsql
     state sep
-    state table fx_aku_watch_tktfield  {id 0 name 1}
-    state table fx_aku_watch_tkt       {id 0 uuid 1}
-    state table fx_aku_watch_tktseries {tid 0 fid 0 mtime 0 val 1}
-    state table fx_aku_watch_tktseen   {id 0}
-    state table fx_aku_watch_seen      {id 0}
+    state table? fx_aku_watch_tktfield  {id 0 name 1}
+    state table? fx_aku_watch_tkt       {id 0 uuid 1}
+    state table? fx_aku_watch_tktseries {tid 0 fid 0 mtime 0 val 1}
+    state table? fx_aku_watch_tktseen   {id 0}
+    state table? fx_aku_watch_seen      {id 0}
     state sep
     return
 }
