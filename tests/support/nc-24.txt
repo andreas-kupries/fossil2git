@@ -1,0 +1,2 @@
+* @ */fxhome.*/source.fossil
+Setting sender = 'a@k' ... OK

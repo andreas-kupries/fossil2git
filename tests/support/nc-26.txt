@@ -1,0 +1,2 @@
+Global @ */.fossil
+Setting sender = 'a@k' (global) ... OK

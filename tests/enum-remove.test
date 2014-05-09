@@ -38,7 +38,7 @@ test enum-remove-1.2 {client enum remove, unknown item} -setup {
 } -cleanup {
     run enum delete foo
     stage-close
-} -match glob -returnCodes error -result ""
+} -match glob -returnCodes error -result [fail-expected {an enumeration item} input items a]
 
 test enum-remove-1.3 {client enum remove, unknown enumeration} -setup {
     stage-open
@@ -46,42 +46,60 @@ test enum-remove-1.3 {client enum remove, unknown enumeration} -setup {
     run enum remove foo a
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result ""
+} -match glob -returnCodes error -result [fail-expected {an enumeration} input enum foo]
 
 # # ## ### ##### ######## ############# #####################
 
 test enum-remove-2.0 {client enum remove, one item} -setup {
     stage-open
-    run enum create foo a b
+    on-stage {
+	run enum create foo a b
+    }
 } -body {
-    run enum remove foo a
-    run enum items foo
+    on-stage {
+	run enum remove foo a
+	run enum items foo
+    }
 } -cleanup {
-    run enum delete foo
+    on-stage {
+	run enum delete foo
+    }
     stage-close
-} -result [viewFile support/er-20.txt]
+} -match glob -result [viewFile support/er-20.txt]
 
 test enum-remove-2.1 {client enum remove, multiple items} -setup {
     stage-open
-    run enum create foo a b c d e f
+    on-stage {
+	run enum create foo a b c d e f
+    }
 } -body {
-    run enum remove foo a b c d e
-    run enum items  foo
+    on-stage {
+	run enum remove foo a b c d e
+	run enum items  foo
+    }
 } -cleanup {
-    run enum delete foo
+    on-stage {
+	run enum delete foo
+    }
     stage-close
-} -result [viewFile support/er-21.txt]
+} -match glob -result [viewFile support/er-21.txt]
 
 test enum-remove-2.2 {client enum remove, all items} -setup {
     stage-open
-    run enum create foo a b c d e
+    on-stage {
+	run enum create foo a b c d e
+    }
 } -body {
-    run enum remove foo a b c d e
-    run enum items  foo
+    on-stage {
+	run enum remove foo a b c d e
+	run enum items  foo
+    }
 } -cleanup {
-    run enum delete foo
+    on-stage {
+	run enum delete foo
+    }
     stage-close
-} -result [viewFile support/er-22.txt]
+} -match glob -result [viewFile support/er-22.txt]
 
 # # ## ### ##### ######## ############# #####################
 cleanupTests

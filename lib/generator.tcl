@@ -63,7 +63,7 @@ proc ::fx::mailgen::for-error {stacktrace} {
 	FX \
 	http://core.tcl.tk/akupries/fx \
 	"FX Internal Error" [clock seconds]
-    Body
+    Body {} {}
     + Context
     + ""
     + StackTrace
@@ -72,14 +72,14 @@ proc ::fx::mailgen::for-error {stacktrace} {
     Done {} {}
 }
 
-proc ::fx::mailgen::test {sender footer} {
+proc ::fx::mailgen::test {sender header footer} {
     debug.fx/mailgen {}
     Begin
     Headers \
 	Test Test \
 	"FX mail configuration test mail" \
 	[clock seconds]
-    Body
+    Body $sender $header
     + "Testing ... 1, 2, 3 ..."
     Done $sender $footer
 }
@@ -124,6 +124,7 @@ proc ::fx::mailgen::attachment {m} {
     #   ecomment        EVENT      Timeline text
     #   epoch           (when)     Unix epoch of commit timestamp
     #   etype           EVENT      ASSERT {event, ticket, wiki}
+    #   header          sys config Project-specific mail header
     #   footer          sys config Project-specific mail footer/signature
     #   location        sys config Project repository web location
     #   project         sys config Project name
@@ -151,7 +152,7 @@ proc ::fx::mailgen::attachment {m} {
 
     Begin
     Headers $project $location [Subject] $epoch
-    Body
+    Body $sender $header
     + "$op Attachment \[${attachment,uuid}\]"
     + "  \[${attachment,path}\]"
     + $verb
@@ -179,6 +180,7 @@ proc ::fx::mailgen::checkin {m} {
     #   ecomment  EVENT      Timeline text (= comment, 1st line)
     #   epoch     (when)     Unix epoch of commit timestamp
     #   etype     EVENT      Fixed "commit" ASSERT
+    #   header    sys config Project-specific mail header
     #   footer    sys config Project-specific mail footer/signature
     #   location  sys config Project repository web location
     #   project   sys config Project name
@@ -198,7 +200,7 @@ proc ::fx::mailgen::checkin {m} {
 
     Begin
     Headers $project $location [Subject "Commit by $user - "] $epoch
-    Body
+    Body $sender $header
     + "Commit \[$self\]"
     +T By      $user
     +T For     "$project (branch: $branch)"
@@ -238,6 +240,7 @@ proc ::fx::mailgen::control {m} {
     #   ecomment    EVENT        Timeline text
     #   epoch       (when)       Unix epoch of commit timestamp
     #   etype       EVENT        ASSERT {checkin, event}
+    #   header      sys config   Project-specific mail header
     #   footer      sys config   Project-specific mail footer/signature
     #   location    sys config   Project repository web location
     #   project     sys config   Project name
@@ -254,7 +257,7 @@ proc ::fx::mailgen::control {m} {
 
     Begin
     Headers $project $location [Subject] $epoch
-    Body
+    Body $sender $header
     +T By      $user
     +T For     "$project"
     +T On      $when
@@ -271,8 +274,14 @@ proc ::fx::mailgen::control {m} {
 
     # Show tag information per modified artifact.
     foreach ref [lsort -dict [dict keys $map]] {
+	if {[catch {
+	    set link [InfoLink [dict get [manifest parse [fossil get-manifest $ref]] type] $ref]
+	}]} {
+	    set link "$ref (unknown artifact)"
+	}
+
 	+ ""
-	+ "Changed [InfoLink [dict get [manifest parse [fossil get-manifest $ref]] type] $ref]"
+	+ "Changed $link"
 
 	foreach taginfo [dict get $map $ref] {
 	    lassign $taginfo tag action value
@@ -298,6 +307,7 @@ proc ::fx::mailgen::event {m} {
     #   epoch-event (when-event) Unix epoch of event occurence
     #   etype       EVENT        Fixed "event" ASSERT
     #   eventid     Manifest     Uuid of the event (page)
+    #   header      sys config   Project-specific mail header
     #   footer      sys config   Project-specific mail footer/signature
     #   location    sys config   Project repository web location
     #   project     sys config   Project name
@@ -316,7 +326,7 @@ proc ::fx::mailgen::event {m} {
 
     Begin
     Headers $project $location [Subject] $epoch
-    Body
+    Body $sender $header
     + "Event Change \[$self\]"
     +T By         $user
     +T For        $project
@@ -349,6 +359,7 @@ proc ::fx::mailgen::ticket {m} {
     #   epoch     (when)     Unix epoch of commit timestamp
     #   etype     EVENT      Fixed "ticket" ASSERT
     #   field     Manifest   Dictionary of the changed fields and their new values.
+    #   header    sys config Project-specific mail header
     #   footer    sys config Project-specific mail footer/signature
     #   location  sys config Project repository web location
     #   project   sys config Project name
@@ -365,9 +376,7 @@ proc ::fx::mailgen::ticket {m} {
 
     Begin
     Headers $project $location [Subject] $epoch
-    Body
-    # Body, Intro
-
+    Body $sender $header
     + "Ticket Change \[$self\]"
     + "  \[$ecomment\]"
     +T By      $user
@@ -383,8 +392,8 @@ proc ::fx::mailgen::ticket {m} {
 	set v [dict get $field $f]
 	# Special handling...
 
-	# TODO: make this configurable per ticket fields - SKIP, KEEP
-	# (default), FORMAT
+	# TODO: make this configurable per ticket fields
+	# - SKIP, KEEP (default), FORMAT, DATE
 
 	switch -exact -- $f {
 	    title   -
@@ -397,6 +406,10 @@ proc ::fx::mailgen::ticket {m} {
 	    mimetype {
 		# skip field (suppress in output)
 		continue
+	    }
+	    closedate {
+		# sqlite timestamp (fractional julianday)
+		set v [fossil date-of $v]
 	    }
 	    default  {
 		# keep, do nothing
@@ -415,6 +428,7 @@ proc ::fx::mailgen::wiki {m} {
     #   ecomment  EVENT      "Changes to wiki page [...]"
     #   epoch     (when)     Unix epoch of commit timestamp
     #   etype     EVENT      Fixed "wiki" ASSERT
+    #   header    sys config Project-specific mail header
     #   footer    sys config Project-specific mail footer/signature
     #   location  sys config Project repository web location
     #   project   sys config Project name
@@ -432,7 +446,7 @@ proc ::fx::mailgen::wiki {m} {
 
     Begin
     Headers $project $location [Subject] $epoch
-    Body
+    Body $sender $header
     + "Wiki Change \[$self\]"
     +T Page    $title
     +T By      $user
@@ -491,11 +505,14 @@ proc ::fx::mailgen::Done {sender footer} {
 
     if {$footer ne {}} {
 	# separate footer from mail body
+	lappend map @sender@ $sender
+	lappend map @sender  $sender
+	lappend map @cmd@    [file tail $::argv0]
+
 	+ ""
 	+ [string repeat - 60]
-
-	lappend map @sender $sender
 	+ [string map $map $footer]
+	+ [string repeat - 60]
     }
 
     + ""
@@ -560,9 +577,16 @@ proc ::fx::mailgen::Headers {project location subject epoch} {
     return
 }
 
-proc ::fx::mailgen::Body {} {
+proc ::fx::mailgen::Body {sender header} {
     upvar 1 lines lines
     + ""
+    if {$header ne {}} {
+	lappend map @sender@ $sender
+	lappend map @sender  $sender
+	lappend map @cmd@    [file tail $::argv0]
+	+ [string map $map $header]
+	+ ""
+    }
     return
 }
 

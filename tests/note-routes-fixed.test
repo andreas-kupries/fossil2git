@@ -20,7 +20,7 @@ test note-routes-fixed-1.0 {client note route, default = list, none} -setup {
     }
 } -cleanup {
     stage-close
-} -result [viewFile support/r-empty.txt]
+} -match glob -result [viewFile support/r-empty.txt]
 
 # # ## ### ##### ######## ############# #####################
 ## events
@@ -36,10 +36,12 @@ test note-routes-fixed-2.0 {client note route events, wrong args, too many} -set
 test note-routes-fixed-2.1 {client note route events, available events} -setup {
     stage-open
 } -body {
-    run note route events
+    on-stage {
+	run note route events
+    }
 } -cleanup {
     stage-close
-} -result [viewFile support/e-available.txt]
+} -match glob -result [viewFile support/e-available.txt]
 
 # # ## ### ##### ######## ############# #####################
 ## add
@@ -66,7 +68,7 @@ test note-routes-fixed-3.2 {client note route set, bogus event} -setup {
     run note route add bogus V
 } -cleanup {
     stage-close
-} -returnCodes error -result {Expected a repository event-type for input "event", got "bogus"}
+} -returnCodes error -match glob -result [fail-expected {a repository event-type} input event bogus]
 
 test note-routes-fixed-3.3.0 {client note route add, implicit repo} -setup {
     stage-open
@@ -76,7 +78,7 @@ test note-routes-fixed-3.3.0 {client note route add, implicit repo} -setup {
     }
 } -cleanup {
     stage-close
-} -result {a@k ... Added}
+} -match glob -result [viewFile support/rf-33.txt]
 
 test note-routes-fixed-3.3.1 {client note route add, explicit repo} -setup {
     stage-open
@@ -84,7 +86,7 @@ test note-routes-fixed-3.3.1 {client note route add, explicit repo} -setup {
     run note route add -R [therepo] commit a@k
 } -cleanup {
     stage-close
-} -result {a@k ... Added}
+} -match glob -result [viewFile support/rf-33.txt]
 
 test note-routes-fixed-3.4 {client note route add, persistence} -setup {
     stage-open
@@ -106,7 +108,7 @@ test note-routes-fixed-3.5 {client note route add, multiple of same} -setup {
     }
 } -cleanup {
     stage-close
-} -result {a@k ... Already known}
+} -match glob -result [viewFile support/rf-35.txt]
 
 # TODO: Check the effect of adding routes on the global database.
 
@@ -127,7 +129,7 @@ test note-routes-fixed-4.1 {client note route drop, bogus event} -setup {
     run note route drop bogus
 } -cleanup {
     stage-close
-} -returnCodes error -result {Expected a repository event-type for input "event", got "bogus"}
+} -returnCodes error -match glob -result [fail-expected {a repository event-type} input event bogus]
 
 test note-routes-fixed-4.2.0 {client note route drop, implicit repo} -setup {
     stage-open
@@ -140,7 +142,7 @@ test note-routes-fixed-4.2.0 {client note route drop, implicit repo} -setup {
     }
 } -cleanup {
     stage-close
-} -result {a@k ... Removed 1}
+} -match glob -result [viewFile support/rf-42.txt]
 
 test note-routes-fixed-4.2.1 {client note route drop, explicit repo} -setup {
     stage-open
@@ -151,7 +153,7 @@ test note-routes-fixed-4.2.1 {client note route drop, explicit repo} -setup {
     run note route drop -R [therepo] commit a@k
 } -cleanup {
     stage-close
-} -result {a@k ... Removed 1}
+} -match glob -result [viewFile support/rf-42.txt]
 
 test note-routes-fixed-4.3 {client note route drop, persistence} -setup {
     stage-open
@@ -165,7 +167,7 @@ test note-routes-fixed-4.3 {client note route drop, persistence} -setup {
     }
 } -cleanup {
     stage-close
-} -result [viewFile support/r-empty.txt]
+} -match glob -result [viewFile support/r-empty.txt]
 
 test note-routes-fixed-4.4 {client note route drop, not existing} -setup {
     stage-open
@@ -175,7 +177,7 @@ test note-routes-fixed-4.4 {client note route drop, not existing} -setup {
     }
 } -cleanup {
     stage-close
-} -result {a@k ... Ignored, no match}
+} -match glob -result [viewFile support/rf-44.txt]
 
 test note-routes-fixed-4.5 {client note route drop, pattern} -setup {
     stage-open
@@ -191,7 +193,7 @@ test note-routes-fixed-4.5 {client note route drop, pattern} -setup {
     }
 } -cleanup {
     stage-close
-} -result {a@* ... Removed 2}
+} -match glob -result [viewFile support/rf-45.txt]
 
 test note-routes-fixed-4.6 {client note route drop, default pattern} -setup {
     stage-open
@@ -207,7 +209,7 @@ test note-routes-fixed-4.6 {client note route drop, default pattern} -setup {
     }
 } -cleanup {
     stage-close
-} -result {* ... Removed 4}
+} -match glob -result [viewFile support/rf-46.txt]
 
 # TODO: Check the effect of dropping routes on the global database.
 
@@ -232,7 +234,7 @@ test note-routes-fixed-5.1 {client note route list, default settings} -setup {
     }
 } -cleanup {
     stage-close
-} -result [viewFile support/r-empty.txt]
+} -match glob -result [viewFile support/r-empty.txt]
 
 test note-routes-fixed-5.2 {client note route list, various settings/origins} -setup {
     stage-open

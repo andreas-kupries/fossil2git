@@ -1,12 +1,15 @@
-+----------+-------------------------+---------+--------------+
-| Key      | Value                   | Origin  | Last-Changed |
-+----------+-------------------------+---------+--------------+
-| debug    | 0                       | Default |              |
-| host     | localhost               | Default |              |
-| location | *Undefined* Please set. | Default |              |
-| password |                         | Default |              |
-| port     | 22                      | Default |              |
-| sender   | *Undefined* Please set. | Default |              |
-| tls      | 0                       | Default |              |
-| user     |                         | Default |              |
-+----------+-------------------------+---------+--------------+
+Checkout @ */fxhome.*/source.fossil
++---+----------+------------------------------------------------+--------------+
+|   | Key      | Value                                          | Last-Changed |
++---+----------+------------------------------------------------+--------------+
+| D | debug    | 0                                              |              |
+| D | footer   |                                                |              |
+| D | header   | Automated mail by @cmd@, on behalf of @sender@ |              |
+| D | host     | localhost                                      |              |
+| D | location | \*Undefined\* Please set.                        |              |
+| D | password |                                                |              |
+| D | port     | 25                                             |              |
+| D | sender   | \*Undefined\* Please set.                        |              |
+| D | tls      | 0                                              |              |
+| D | user     |                                                |              |
++---+----------+------------------------------------------------+--------------+

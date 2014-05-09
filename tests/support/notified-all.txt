@@ -1,4 +1,6 @@
+Checkout @ */fxhome.*/source.fossil
 +----+------+------+---------+
 | Id | Type | UUID | Comment |
 +----+------+------+---------+
 +----+------+------+---------+
+Checkout @ */fxhome.*/source.fossil

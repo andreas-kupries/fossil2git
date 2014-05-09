@@ -36,29 +36,41 @@ test enum-items-1.2 {client enum items, unknown enumeration} -setup {
     run enum items foo
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result ""
+} -match glob -returnCodes error -result [fail-expected {an enumeration} input enum foo]
 
 # # ## ### ##### ######## ############# #####################
 
 test enum-items-2.0 {client enum items, empty enum} -setup {
     stage-open
-    run enum create foo
+    on-stage {
+	run enum create foo
+    }
 } -body {
-    run enum items foo
+    on-stage {
+	run enum items foo
+    }
 } -cleanup {
-    run enum delete foo
+    on-stage {
+	run enum delete foo
+    }
     stage-close
-} -result [viewFile support/ei-20.txt]
+} -match glob -result [viewFile support/ei-20.txt]
 
 test enum-items-2.1 {client enum items} -setup {
     stage-open
-    run enum create foo a b c d e f
+    on-stage {
+	run enum create foo a b c d e f
+    }
 } -body {
-    run enum items foo
+    on-stage {
+	run enum items foo
+    }
 } -cleanup {
-    run enum delete foo
+    on-stage {
+	run enum delete foo
+    }
     stage-close
-} -result [viewFile support/ei-21.txt]
+} -match glob -result [viewFile support/ei-21.txt]
 
 # # ## ### ##### ######## ############# #####################
 cleanupTests

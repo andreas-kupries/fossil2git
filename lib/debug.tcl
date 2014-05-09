@@ -1,6 +1,18 @@
 ## -*- tcl -*-
 # # ## ### ##### ######## #############
 
+# @@ Meta Begin
+# Package fx::debug 0
+# Meta author      {Andreas Kupries}
+# Meta category    ?
+# Meta description ?
+# Meta location    http:/core.tcl.tk/akupries/fx
+# Meta platform    tcl
+# Meta require     sqlite3
+# Meta subject     fossil
+# Meta summary     ?
+# @@ Meta End
+
 package require Tcl 8.5
 package require debug
 

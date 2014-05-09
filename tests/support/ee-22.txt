@@ -1,0 +1,11 @@
+# fx enumeration export @ *
+enum foo
+item a
+item b
+item c
+end
+enum bar
+item 0
+item 1
+item 2
+end

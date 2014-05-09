@@ -1,10 +1,18 @@
-m(comment)  = officer - Extended class to accept the unique prefixes of the known command names for dispatch.
-m(ecomment) = officer - Extended class to accept the unique prefixes of the known command names for dispatch.
-m(epoch)    = 1392841216
-m(etype)    = commit
-m(location) = http://bogus.testsuite.somewhere
-m(project)  = source
-m(self)     = 434ada2661e8c6546ed369275eb69ec35fb12cc5
-m(type)     = checkin
-m(user)     = andreask
-m(when)     = 2014-02-19T20:20:16.293
+Checkout @ */fxhome.*/source.fossil: 434ada2661e8c6546ed369275eb69ec35fb12cc5
++----------+-------------------------------------------------------------------------------------------------+
+| Key      | Value                                                                                           |
++----------+-------------------------------------------------------------------------------------------------+
+| comment  | officer - Extended class to accept the unique prefixes of the known command names for dispatch. |
+| ecomment | officer - Extended class to accept the unique prefixes of the known command names for dispatch. |
+| epoch    | 1392841216                                                                                      |
+| etype    | commit                                                                                          |
+| footer   |                                                                                                 |
+| header   | Automated mail by @cmd@, on behalf of @sender@                                                  |
+| location | http://bogus.testsuite.somewhere                                                                |
+| project  | source                                                                                          |
+| self     | 434ada2661e8c6546ed369275eb69ec35fb12cc5                                                        |
+| sender   | \*Undefined\* Please set.                                                                         |
+| type     | checkin                                                                                         |
+| user     | andreask                                                                                        |
+| when     | 2014-02-19T20:20:16.293                                                                         |
++----------+-------------------------------------------------------------------------------------------------+

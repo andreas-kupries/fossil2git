@@ -1,15 +1,18 @@
-From:    tests@testsuite.somewhere
-Subject: [source] Edit [dbd259771bf9a729]: Edit check-in comment.
+Checkout @ */fxhome.*/source.fossil: 6b307dc1f438d7d3f249cb8158f7bbc020d24411
+Subject: \[source\] Edit \[dbd259771bf9a729\]: Edit check-in comment.
 Date:    Wed Nov 27 07:57:19 GMT 2013
 X-Fossil-FX-Note:
 X-Tool-Origin: http://core.tcl.tk/akupries/fx
 X-Fossil-FX-Project-Name: source
 X-Fossil-FX-Project-Location: http://bogus.testsuite.somewhere
 
-  By           aku
-  For          source
-  On           2013-11-27T07:57:19.938
-  Details      XXX
+Automated mail by fx, on behalf of tests@testsuite.somewhere
+
+  By  aku
+  For source
+  On  2013-11-27T07:57:19.938
+
+Changed dbd259771bf9a7298e07938fb551ae244f56d4ad (unknown artifact)
   Tag +comment Tweaked documented titles for better marking of internals. Fixed a few
                issues with validation types, mainly shuffling text blocks around,
                plus fix in API documentation.

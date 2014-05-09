@@ -1,10 +1,11 @@
+Checkout @ */fxhome.*/source.fossil
 +---------+-------+
 | Event   | Route |
 +---------+-------+
 | commit  | a@e   |
-| commit  | a@k   |
+|         | a@k   |
 | control | a@k   |
-| control | x@y   |
+|         | x@y   |
 | event   | c@d   |
 | ticket  | b@c   |
 | wiki    | a@k   |

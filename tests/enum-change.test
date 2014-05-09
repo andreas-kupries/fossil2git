@@ -52,7 +52,7 @@ test enum-change-1.4 {client enum change, unknown enumeration} -setup {
     run enum change foo O N
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result ""
+} -match glob -returnCodes error -result [fail-expected {an enumeration} input enum foo]
 
 test enum-change-1.5 {client enum change, unknown source item} -setup {
     stage-open
@@ -62,7 +62,7 @@ test enum-change-1.5 {client enum change, unknown source item} -setup {
 } -cleanup {
     run enum delete foo
     stage-close
-} -match glob -returnCodes error -result ""
+} -match glob -returnCodes error -result [fail-expected {an enumeration item} input item a]
 
 test enum-change-1.6 {client enum change, duplicate destination item} -setup {
     stage-open
@@ -72,20 +72,26 @@ test enum-change-1.6 {client enum change, duplicate destination item} -setup {
 } -cleanup {
     run enum delete foo
     stage-close
-} -match glob -returnCodes error -result ""
+} -match glob -returnCodes error -result [fail-expected {an unused enumeration item} input newitem b]
 
 # # ## ### ##### ######## ############# #####################
 
 test enum-change-2.0 {client enum change} -setup {
     stage-open
-    run enum create foo a
+    on-stage {
+	run enum create foo a
+    }
 } -body {
-    run enum change foo a b
-    run enum items  foo
+    on-stage {
+	run enum change foo a b
+	run enum items  foo
+    }
 } -cleanup {
-    run enum delete foo
+    on-stage {
+	run enum delete foo
+    }
     stage-close
-} -result [viewFile support/ech-20.txt]
+} -match glob -result [viewFile support/ech-20.txt]
 
 # # ## ### ##### ######## ############# #####################
 cleanupTests

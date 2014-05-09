@@ -1,0 +1,6 @@
+# fx enumeration export @ *
+enum bar
+item 0
+item 1
+item 2
+end

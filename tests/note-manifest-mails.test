@@ -28,7 +28,7 @@ test test-mail-for-1.1 {client test mail-for, wrong args, not enough} -setup {
     run test mail-for
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
+} -match glob -returnCodes error -result "* cmdr: Must use either uuid or --all"
 
 # # ## ### ##### ######## ############# #####################
 
@@ -36,17 +36,17 @@ foreach m [the-manifests] {
     test test-mail-for-2.$m {client test mail-for} -setup {
 	stage-open
 	stage-manifests
-	in-ckout {
+	on-stage {
 	    run note config set location http://bogus.testsuite.somewhere
 	    run note config set sender   tests@testsuite.somewhere
 	}
     } -body {
-	in-ckout {
+	on-stage {
 	    run test mail-for $m
 	}
     } -cleanup {
 	stage-close
-    } -result [viewFile [tmp]/support/mails/$m]
+    } -match glob -result [viewFile [tmp]/support/mails/$m]
 }
 
 # # ## ### ##### ######## ############# #####################

@@ -1,38 +1,66 @@
-m(ecomment)       = Ticket [d0bbe696b0] <i>json::write string doesn't escape all control characters</i> status still Open with 4 other changes
-m(epoch)          = 1392316410
-m(etype)          = ticket
-m(field,icomment) = It isn't a problem with those five control characters which have backslash-letter escape, but with the rest from ranges \\u0000-\\u001F and \\u007F-\\u009F. Currently they are just inserted into string.
-
-Simply building full map for substitutions solves the problem:
-
-    variable quotes \\
-	[list "\\"" "\\\\\\"" \\\\ \\\\\\\\ \\b \\\\b \\f \\\\f \
- \\\
- \
- \\\
- \	 \\\	 \\
-	    \\x00 \\\\u0000 \\x01 \\\\u0001 \\x02 \\\\u0002 \\x03 \\\\u0003 \\
-	    \\x04 \\\\u0004 \\x05 \\\\u0005 \\x06 \\\\u0006 \\x07 \\\\u0007 \\
-	    \\x0b \\\\u000b \\x0e \\\\u000e \\x0f \\\\u000f \\x10 \\\\u0010 \\
-	    \\x11 \\\\u0011 \\x12 \\\\u0012 \\x13 \\\\u0013 \\x14 \\\\u0014 \\
-	    \\x15 \\\\u0015 \\x16 \\\\u0016 \\x17 \\\\u0017 \\x18 \\\\u0018 \\
-	    \\x19 \\\\u0019 \\x1a \\\\u001a \\x1b \\\\u001b \\x1c \\\\u001c \\
-	    \\x1d \\\\u001d \\x1e \\\\u001e \\x1f \\\\u001f \\x7f \\\\u007f \\
-	    \\x80 \\\\u0080 \\x81 \\\\u0081 \\x82 \\\\u0082 \\x83 \\\\u0083 \\
-	    \\x84 \\\\u0084 \\x85 \\\\u0085 \\x86 \\\\u0086 \\x87 \\\\u0087 \\
-	    \\x88 \\\\u0088 \\x89 \\\\u0089 \\x8a \\\\u008a \\x8b \\\\u008b \\
-	    \\x8c \\\\u008c \\x8d \\\\u008d \\x8e \\\\u008e \\x8f \\\\u008f \\
-	    \\x90 \\\\u0090 \\x91 \\\\u0091 \\x92 \\\\u0092 \\x93 \\\\u0093 \\
-	    \\x94 \\\\u0094 \\x95 \\\\u0095 \\x96 \\\\u0096 \\x97 \\\\u0097 \\
-	    \\x98 \\\\u0098 \\x99 \\\\u0099 \\x9a \\\\u009a \\x9b \\\\u009b \\
-	    \\x9c \\\\u009c \\x9d \\\\u009d \\x9e \\\\u009e \\x9f \\\\u009f ]
-m(field,login)    = anonymous
-m(field,mimetype) = text/plain
-m(field,username) = Hermitifier
-m(location)       = http://bogus.testsuite.somewhere
-m(project)        = source
-m(self)           = 73a310d962108ef88439afa4367e9e788752ca24
-m(ticket)         = d0bbe696b04c2c67433ceaccb34d707231a18f0d
-m(type)           = ticket
-m(user)           = anonymous
-m(when)           = 2014-02-13T18:33:30.142
+Checkout @ */fxhome.*/source.fossil: 73a310d962108ef88439afa4367e9e788752ca24
++----------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Key            | Value                                                                                                                                                                                                       |
++----------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| ecomment       | Ticket \[d0bbe696b0\] <i>json::write string doesn't escape all control characters</i> status still Open with 4 other changes                                                                                  |
+| epoch          | 1392316410                                                                                                                                                                                                  |
+| etype          | ticket                                                                                                                                                                                                      |
+| field,icomment | It isn't a problem with those five control characters which have backslash-letter escape, but with the rest from ranges \\\\u0000-\\\\u001F and \\\\u007F-\\\\u009F. Currently they are just inserted into string.
+ |
+|                | 
+                                                                                                                                                                                                           |
+|                | Simply building full map for substitutions solves the problem:
+                                                                                                                                             |
+|                | 
+                                                                                                                                                                                                           |
+|                |     variable quotes \\\\
+                                                                                                                                                                                     |
+|                | 	\[list "\\\\"" "\\\\\\\\\\\\"" \\\\\\\\ \\\\\\\\\\\\\\\\ \\\\b \\\\\\\\b \\\\f \\\\\\\\f \\                                                                                                                                                  |
+|                |  \\\\\\                                                                                                                                                                                                        |
+|                |  \\
+ \\\\\\
+ \\	 \\\\\\	 \\\\
+                                                                                                                                                                                        |
+|                | 	    \\\\x00 \\\\\\\\u0000 \\\\x01 \\\\\\\\u0001 \\\\x02 \\\\\\\\u0002 \\\\x03 \\\\\\\\u0003 \\\\
+                                                                                                                                    |
+|                | 	    \\\\x04 \\\\\\\\u0004 \\\\x05 \\\\\\\\u0005 \\\\x06 \\\\\\\\u0006 \\\\x07 \\\\\\\\u0007 \\\\
+                                                                                                                                    |
+|                | 	    \\\\x0b \\\\\\\\u000b \\\\x0e \\\\\\\\u000e \\\\x0f \\\\\\\\u000f \\\\x10 \\\\\\\\u0010 \\\\
+                                                                                                                                    |
+|                | 	    \\\\x11 \\\\\\\\u0011 \\\\x12 \\\\\\\\u0012 \\\\x13 \\\\\\\\u0013 \\\\x14 \\\\\\\\u0014 \\\\
+                                                                                                                                    |
+|                | 	    \\\\x15 \\\\\\\\u0015 \\\\x16 \\\\\\\\u0016 \\\\x17 \\\\\\\\u0017 \\\\x18 \\\\\\\\u0018 \\\\
+                                                                                                                                    |
+|                | 	    \\\\x19 \\\\\\\\u0019 \\\\x1a \\\\\\\\u001a \\\\x1b \\\\\\\\u001b \\\\x1c \\\\\\\\u001c \\\\
+                                                                                                                                    |
+|                | 	    \\\\x1d \\\\\\\\u001d \\\\x1e \\\\\\\\u001e \\\\x1f \\\\\\\\u001f \\\\x7f \\\\\\\\u007f \\\\
+                                                                                                                                    |
+|                | 	    \\\\x80 \\\\\\\\u0080 \\\\x81 \\\\\\\\u0081 \\\\x82 \\\\\\\\u0082 \\\\x83 \\\\\\\\u0083 \\\\
+                                                                                                                                    |
+|                | 	    \\\\x84 \\\\\\\\u0084 \\\\x85 \\\\\\\\u0085 \\\\x86 \\\\\\\\u0086 \\\\x87 \\\\\\\\u0087 \\\\
+                                                                                                                                    |
+|                | 	    \\\\x88 \\\\\\\\u0088 \\\\x89 \\\\\\\\u0089 \\\\x8a \\\\\\\\u008a \\\\x8b \\\\\\\\u008b \\\\
+                                                                                                                                    |
+|                | 	    \\\\x8c \\\\\\\\u008c \\\\x8d \\\\\\\\u008d \\\\x8e \\\\\\\\u008e \\\\x8f \\\\\\\\u008f \\\\
+                                                                                                                                    |
+|                | 	    \\\\x90 \\\\\\\\u0090 \\\\x91 \\\\\\\\u0091 \\\\x92 \\\\\\\\u0092 \\\\x93 \\\\\\\\u0093 \\\\
+                                                                                                                                    |
+|                | 	    \\\\x94 \\\\\\\\u0094 \\\\x95 \\\\\\\\u0095 \\\\x96 \\\\\\\\u0096 \\\\x97 \\\\\\\\u0097 \\\\
+                                                                                                                                    |
+|                | 	    \\\\x98 \\\\\\\\u0098 \\\\x99 \\\\\\\\u0099 \\\\x9a \\\\\\\\u009a \\\\x9b \\\\\\\\u009b \\\\
+                                                                                                                                    |
+|                | 	    \\\\x9c \\\\\\\\u009c \\\\x9d \\\\\\\\u009d \\\\x9e \\\\\\\\u009e \\\\x9f \\\\\\\\u009f \]                                                                                                                                      |
+| field,login    | anonymous                                                                                                                                                                                                   |
+| field,mimetype | text/plain                                                                                                                                                                                                  |
+| field,username | Hermitifier                                                                                                                                                                                                 |
+| footer         |                                                                                                                                                                                                             |
+| header         | Automated mail by @cmd@, on behalf of @sender@                                                                                                                                                              |
+| location       | http://bogus.testsuite.somewhere                                                                                                                                                                            |
+| project        | source                                                                                                                                                                                                      |
+| self           | 73a310d962108ef88439afa4367e9e788752ca24                                                                                                                                                                    |
+| sender         | \*Undefined\* Please set.                                                                                                                                                                                     |
+| ticket         | d0bbe696b04c2c67433ceaccb34d707231a18f0d                                                                                                                                                                    |
+| type           | ticket                                                                                                                                                                                                      |
+| user           | anonymous                                                                                                                                                                                                   |
+| when           | 2014-02-13T18:33:30.142                                                                                                                                                                                     |
++----------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+

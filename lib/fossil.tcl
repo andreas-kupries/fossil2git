@@ -33,11 +33,12 @@ namespace eval ::fx::fossil {
     namespace export \
 	c_show_repository c_set_repository c_reset_repository \
 	c_default_repository test-tags test-branch \
-	branch-of changeset reveal user-info users user-config \
+	branch-of changeset date-of reveal user-info users user-config \
 	get-manifest fx-tables fx-enums fx-enum-items \
 	ticket-title ticket-fields global global-location \
-	repository repository-location set-repository-location \
-	show-repository-location repository-find repository-open
+	show-global-location repository repository-location \
+	show-repository-location set-repository-location \
+	repository-find repository-open
 	
     namespace ensemble create
 
@@ -261,6 +262,12 @@ proc ::fx::fossil::repository-open {p} {
 }
 
 # # ## ### ##### ######## ############# ######################
+
+proc ::fx::fossil::show-global-location {{suffix {}}} {
+    debug.fx/fossil {}
+    puts "[color warning Global] @ [color note [global-location]]$suffix"
+    return
+}
 
 proc ::fx::fossil::global-location {} {
     debug.fx/fossil {}
@@ -517,6 +524,13 @@ proc ::fx::fossil::get-manifest {uuid} {
 
     debug.fx/fossil {done ==> <content elided>}
     return $archive
+}
+
+proc ::fx::fossil::date-of {v} {
+    # sqlite timestamp (fractional julianday), convert into near-iso form.
+    return [repository onecolumn {
+	SELECT datetime (:v)
+    }]
 }
 
 proc ::fx::fossil::branch-of {uuid} {

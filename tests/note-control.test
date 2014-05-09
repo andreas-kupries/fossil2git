@@ -17,7 +17,7 @@ kt source support/common.tcl
 test note-show-pending-1.0 {client note show-pending, wrong args, too many} -setup {
     stage-open
 } -body {
-    in-ckout {
+    on-stage {
 	run note show-pending X
     }
 } -cleanup {
@@ -28,7 +28,7 @@ test note-show-pending-1.1 {client note show-pending, standard examples} -setup 
     stage-open
     stage-manifests
 } -body {
-    in-ckout {
+    on-stage {
 	run note show-pending
     }
 } -cleanup {
@@ -38,46 +38,46 @@ test note-show-pending-1.1 {client note show-pending, standard examples} -setup 
 # # ## ### ##### ######## ############# #####################
 ## mark-notified-all
 
-test note-mark-notified-all-1.0 {client note mark-notified-all, wrong args, too many} -setup {
+test note-mark-notified-all-1.0 {client note mark-notified-all, mismatch} -setup {
     stage-open
 } -body {
-    run note mark-notified-all X
+    run note mark-notified --all X
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "* cmdr: wrong#args, too many*"
+} -match glob -returnCodes error -result "* cmdr: You cannot use \"uuid\" together with \"--all\"."
 
 test note-mark-notified-all-1.1 {client note mark-notified-all} -setup {
     stage-open
     stage-manifests
 } -body {
-    in-ckout {
-	run note mark-notified-all
+    on-stage {
+	run note mark-notified --all
 	run note show-pending
     }
 } -cleanup {
     stage-close
-} -result [viewFile [tmp]/support/notified-all.txt]
+} -match glob -result [viewFile [tmp]/support/notified-all.txt]
 
 # # ## ### ##### ######## ############# #####################
 ## mark-pending-all
 
-test note-mark-pending-all-1.0 {client note mark-pending-all, wrong args, too many} -setup {
+test note-mark-pending-all-1.0 {client note mark-pending-all, mismatch} -setup {
     stage-open
 } -body {
-    run note mark-pending-all X
+    run note mark-pending --all X
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "* cmdr: wrong#args, too many*"
+} -match glob -returnCodes error -result "* cmdr: You cannot use \"uuid\" together with \"--all\"."
 
 test note-mark-pending-all-1.1 {client note mark-pending-all} -setup {
     stage-open
     stage-manifests
-    in-ckout {
-	run note mark-notified-all
+    on-stage {
+	run note mark-notified --all
     }
 } -body {
-    in-ckout {
-	run note mark-pending-all
+    on-stage {
+	run note mark-pending --all
 	run note show-pending
     }
 } -cleanup {
@@ -101,14 +101,14 @@ test note-mark-notified-1.1 {client note mark-notified, wrong args, not enough} 
     run note mark-notified
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
+} -match glob -returnCodes error -result "* cmdr: Must use either uuid or --all"
 
 foreach m [the-manifests] {
     test note-mark-notified-2.$m {client note mark-notified} -setup {
 	stage-open
 	stage-manifests
     } -body {
-	in-ckout {
+	on-stage {
 	    run note mark-notified $m
 	    run note show-pending
 	}
@@ -134,17 +134,17 @@ test note-mark-pending-1.1 {client note mark-pending, wrong args, not enough} -s
     run note mark-pending
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
+} -match glob -returnCodes error -result "* cmdr: Must use either uuid or --all"
 
 foreach m [the-manifests] {
     test note-mark-pending-2.$m {client note mark-pending} -setup {
 	stage-open
 	stage-manifests
-	in-ckout {
-	    run note mark-notified-all
+	on-stage {
+	    run note mark-notified --all
 	}
     } -body {
-	in-ckout {
+	on-stage {
 	    run note mark-pending $m
 	    run note show-pending
 	}

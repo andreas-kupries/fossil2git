@@ -17,32 +17,32 @@ kt source support/common.tcl
 test enum-list-1.0 {client enum list, default = list, initial empty} -setup {
     stage-open
 } -body {
-    in-ckout {
+    on-stage {
 	run enum
     }
 } -cleanup {
     stage-close
-} -result [viewFile support/e-empty.txt]
+} -match glob -result [viewFile support/e-empty.txt]
 
 test enum-list-1.1 {client enum list alias, initial empty} -setup {
     stage-open
 } -body {
-    in-ckout {
+    on-stage {
 	run enums
     }
 } -cleanup {
     stage-close
-} -result [viewFile support/e-empty.txt]
+} -match glob -result [viewFile support/e-empty.txt]
 
 test enum-list-1.2 {client enum list, initial empty} -setup {
     stage-open
 } -body {
-    in-ckout {
+    on-stage {
 	run enum list
     }
 } -cleanup {
     stage-close
-} -result [viewFile support/e-empty.txt]
+} -match glob -result [viewFile support/e-empty.txt]
 
 # # ## ### ##### ######## ############# #####################
 
@@ -57,13 +57,19 @@ test enum-list-2.0 {client enum list, wrong args, too many} -setup {
 
 test enum-list-2.1 {client enum list} -setup {
     stage-open
-    run enum create foo a b c
+    on-stage {
+	run enum create foo a b c
+    }
 } -body {
-    run enum list
+    on-stage {
+	run enum list
+    }
 } -cleanup {
-    run enum delete foo
+    on-stage {
+	run enum delete foo
+    }
     stage-close
-} -result [viewFile support/e-20.txt]
+} -match glob -result [viewFile support/e-20.txt]
 
 # # ## ### ##### ######## ############# #####################
 cleanupTests

@@ -7,12 +7,19 @@ Configuration
                                        of the repository, and their values
     fx config set <setting> <value>    Change the value of the named
                                        configuration setting to the given text
-    fx config unset <setting>          Remove the specified local configuration
+    fx config unset <setting>...       Remove the specified local configuration
                                        setting
 
 Convenience
-    fx delegate <args>...    Delegate the command to the local fossil
-                             executable
+    fx delegate <args>...         Delegate the command to the local fossil
+                                  executable
+    fx user delegate <args>...    Delegate the command 'user' to the local
+                                  fossil executable
+
+Debugging
+    fx debug levels     List all the debug levels known to the system, which we
+                        can enable to gain a (partial) narrative of the
+                        application-internal actions
 
 Enumerations
     fx enum add <enum> <items>...             Extend the specified enumeration
@@ -21,17 +28,37 @@ Enumerations
                                               enumeration
     fx enum create <newenum> [<items>...]     Create a new named enumeration
     fx enum delete <enum>                     Delete the named enumeration
-    fx enum export [<enums>...]               Save the specified enumeration(s)
-    fx enum import [<import>]                 Import an enumeration from a save
+    fx enum export <output> [<enums>...]      Save the specified enumeration(s)
+    fx enum import [<input>]                  Import an enumeration from a save
                                               file
+    fx enum items <enum>                      Show the items in the specified
+                                              enumeration
     fx enum list                              List all enumerations stored in
                                               the repository
     fx enum remove <enum> <items>...          Remove the named item(s) from the
                                               specified enumeration
+    fx enums                                  List all enumerations stored in
+                                              the repository
 
 Introspection
-    fx repository     Print the name of the repository we are working on
-    fx version        Print version and revision of the application
+    fx note config show          Show the current mail setup for notifications
+    fx note route events         Show all events we can generate notifications
+                                 for
+    fx note route field list     Show all available ticket fields (for dynamic
+                                 routes)
+    fx note route fields         Show all available ticket fields (for dynamic
+                                 routes)
+    fx note route list           Show all configured mail destinations (per
+                                 event type)
+    fx note routes               Show all configured mail destinations (per
+                                 event type)
+    fx repository default        Print the name of the default repository, if
+                                 any
+    fx repository show           Print the name of the repository we are
+                                 working on, if any
+    fx ticket-fields             Show all available ticket fields (for dynamic
+                                 routes)
+    fx version                   Print version and revision of the application
 
 Notifications
     fx note deliver     Send notification emails to all configured
@@ -39,20 +66,19 @@ Notifications
                         delivery)
 
     Control
-        fx note mark-notified <uuid>    Mark the specified artifact as having
-                                        been notified before, thus preventing
-                                        generation of a notification for it on
-                                        the next invokation of "deliver"
-        fx note mark-notified-all       Mark all events in the timeline as not
-                                        requiring a notification
-        fx note mark-pending <uuid>     Mark the specified artifact as having
-                                        not been notified before, thus forcing
-                                        the generation of a notification for it
-                                        on the next invokation of "deliver"
-        fx note mark-pending-all        Mark all events in the timeline as
-                                        requiring a notification
-        fx note show-pending            Show all events in the timeline marked
-                                        as pending
+        fx note mark-notified [<uuid>]    Mark the specified (or all) artifacts
+                                          as having been notified before, thus
+                                          preventing generation of a
+                                          notification for them on the next
+                                          invokation of "note deliver"
+        fx note mark-pending [<uuid>]     Mark the specified (or all) artifacts
+                                          as having not been notified before
+        fx note show-pending              Show all events in the timeline
+                                          marked as pending
+        fx note update-history            Update the cached ticket history used
+                                          to calculate dynamic routes
+        fx note watched                   Show the list of repositories
+                                          currently watched (i
 
     Destinations
         fx note route add <event> <to>...       Add fixed mail destination for
@@ -62,24 +88,38 @@ Notifications
                                                 the event type
         fx note route events                    Show all events we can generate
                                                 notifications for
+        fx note route export <output>           Save the configured mail
+                                                destinations into a file
         fx note route field add <field>...      Add field as source of mail
                                                 destinations for ticket events
         fx note route field drop <field>...     Remove the specified field as
                                                 source of mail destinations for
                                                 ticket events
         fx note route field list                Show all available ticket
-                                                fields
+                                                fields (for dynamic routes)
         fx note route fields                    Show all available ticket
-                                                fields
-        fx note route list                      Show all mail destinations
-        fx note routes                          Show all mail destinations
+                                                fields (for dynamic routes)
+        fx note route import [<input>]          Import mail destinations from a
+                                                save file
+        fx note route list                      Show all configured mail
+                                                destinations (per event type)
+        fx note routes                          Show all configured mail
+                                                destinations (per event type)
+        fx ticket-fields                        Show all available ticket
+                                                fields (for dynamic routes)
 
     Mail setup
+        fx note config export <output>      Save the notification configuration
+                                            into a file
+        fx note config import [<input>]     Import the notification
+                                            configuration from a save file
+        fx note config reset                Reset all parts of the mail setup
+                                            for notifications to their defaults
         fx note config set <key> <value>    Set the specified part of the mail
                                             setup for notifications
         fx note config show                 Show the current mail setup for
                                             notifications
-        fx note config unset <key>          Reset the specified part of the
+        fx note config unset <key>...       Reset the specified part of the
                                             mail setup for notifications to its
                                             default
 
@@ -90,16 +130,50 @@ Reporting
     fx report list                    List all reports defined in the
                                       repository
 
+Repository Management
+    fx repository default         Print the name of the default repository, if
+                                  any
+    fx repository reset           Unset the current default repository
+    fx repository set <target>    Set the path to the current default
+                                  repository
+    fx repository show            Print the name of the repository we are
+                                  working on, if any
+
 Testing
-    fx test mail-for <uuid>             Generate the notification mail for the
+    fx test branch <uuid>               Determine the branch of a checkin
+    fx test mail-address <address>      Parse the specified address into parts,
+                                        and determine if it is lexically ok for
+                                        us, or not, and why not in case of the
+                                        latter
+    fx test mail-for [<uuid>]           Generate the notification mail for the
                                         specified artifact, and print it to
                                         stdout
-    fx test mail-receivers <uuid>       Analyse the specified artifact and
+    fx test mail-receivers [<uuid>]     Analyse the specified artifact and
                                         determine the set of mail addresses to
                                         send a notification to, fixed and
                                         field-based
     fx test mail-setup <destination>    Generate a test mail and send it using
                                         the current mail configuration
-    fx test manifest-parse <uuid>       Parse the specified artifact as
+    fx test manifest-parse [<uuid>]     Parse the specified artifact as
                                         manifest and print the resulting
                                         array/dictionary to stdout
+    fx test tags <uuid>                 Determine the names, types, and values
+                                        of all tags associated with a checkin
+
+User Management
+    fx user broadcast [<text>]            Send a mail to all accounts of the
+                                          repository
+    fx user contact <user> [<contact>]    Change the contact information for
+                                          the named user
+    fx user list                          Show all known users, their
+                                          information and capabilities
+    fx user pull                          Push user information from the
+                                          configured remote to here
+    fx user push                          Push local changes to the users to
+                                          the configured remote
+    fx user sync                          Sync the user information at the
+                                          configured remote and here
+
+Miscellaneous
+    fx restore [<input>]    Load all fx-managed state of a repository
+    fx save <output>        Save all fx-managed state of the repository

@@ -516,7 +516,7 @@ namespace eval ::fx::seen {
 	DROP TABLE fx_aku_watch_tktseen
     }
 
-    variable dumpsep    "-- [string repeat 69 -]"
+    variable dumpsep    "-- [string repeat - 69]"
     variable dumpheader "-- FX State Dump - Module <seen>"
 }
 

@@ -1,9 +1,9 @@
 ci|*|1|||||*||initial empty check-in||*
-e|*|2||||||<b>Cmdr 1.1 Release</b> on February 11, 2014|||*
-w|*|3||||||A framework for command line parsing and dispatch (Speak: Commander).|||*
-g|*|4||||||Tweaked documented titles for...|||*
+e|*|2||||||Cmdr 1.1 Release|||*
+w|*|3||||||Changes to wiki page \[cmdr\]|||*
+g|*|4||||||Edit \[dbd259771bf9a729\]: Edit check-in comment.|||*
 g|*|5|||||||||*
 ci|*|6||||||officer - Extended class to accept the unique prefixes of the known command names for dispatch.|||*
-t|*|7||||||It isn't a problem with those five...|||*
-t|*|8||||||Fixes variable name from lower to upper case in WaitDataConn|||*
-e|*|9||||||Tklib 0.6 Release, March 25, bzip2 compressed tarball.|||*
+t|*|7||||||Ticket \[d0bbe696b0\] <i>json::write string doesn't escape all control characters</i> status still Open with 4 other changes|||*
+t|*|8||||||Add attachment \[/artifact/968bb825771764b5|ftp.patch\] to ticket \[eb0b15d5981300c3\]|||*
+w|*|9||||||Add attachment "tklib-0.6.tar.bz2" to wiki page \[Downloads\]|||*

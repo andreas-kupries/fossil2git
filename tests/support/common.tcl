@@ -136,6 +136,7 @@ proc run-core {args} {
 	file delete $out $err
 	set env(HOME) [thehome]
 	set env(FX_COLUMNS) -1
+	set env(FX_MAIL_STACKTRACE) 0
 	set fail [catch {
 	    exec > $out 2> $err {*}$args
 	}]
@@ -284,6 +285,16 @@ proc antiglob {pattern string} {
     expr {![string match $pattern $string]}
 }
 tcltest::customMatch anti-glob antiglob
+
+
+proc fail-expected {what ptype pname got {nc {}}} {
+    return "* cmdr: Expected $what for $ptype \"$pname\"$nc, got \"$got\""
+}
+
+proc fail-known-thing {ptype pname what have} {
+    return "* cmdr: Found a problem with $ptype \"$pname\": $what named \"$have\" already exists. Please use a different name."
+}
+
 
 # # ## ### ##### ######## ############# #####################
 

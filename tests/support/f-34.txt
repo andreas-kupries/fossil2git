@@ -1,0 +1,2 @@
+Checkout @ */fxhome.*/source.fossil
+  Ticket Fields: Adding username ... Ignored, already known

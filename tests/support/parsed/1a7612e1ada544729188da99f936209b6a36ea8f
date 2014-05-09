@@ -1,14 +1,22 @@
-m(attachment,op)   = added
-m(attachment,path) = ftp.patch
-m(attachment,uuid) = 968bb825771764b576b649eea103fe5982c6e4a6
-m(comment)         = Fixes variable name from lower to upper case in WaitDataConn
-m(ecomment)        = Add attachment [/artifact/968bb825771764b5|ftp.patch] to ticket [eb0b15d5981300c3]
-m(epoch)           = 1392657223
-m(etype)           = ticket
-m(location)        = http://bogus.testsuite.somewhere
-m(project)         = source
-m(self)            = 1a7612e1ada544729188da99f936209b6a36ea8f
-m(target)          = eb0b15d5981300c3c13b90ab4d3e7cd18c36095a
-m(type)            = attachment
-m(user)            = anonymous
-m(when)            = 2014-02-17T17:13:43.579
+Checkout @ */fxhome.*/source.fossil: 1a7612e1ada544729188da99f936209b6a36ea8f
++-----------------+------------------------------------------------------------------------------------+
+| Key             | Value                                                                              |
++-----------------+------------------------------------------------------------------------------------+
+| attachment,op   | added                                                                              |
+| attachment,path | ftp.patch                                                                          |
+| attachment,uuid | 968bb825771764b576b649eea103fe5982c6e4a6                                           |
+| comment         | Fixes variable name from lower to upper case in WaitDataConn                       |
+| ecomment        | Add attachment \[/artifact/968bb825771764b5|ftp.patch\] to ticket \[eb0b15d5981300c3\] |
+| epoch           | 1392657223                                                                         |
+| etype           | ticket                                                                             |
+| footer          |                                                                                    |
+| header          | Automated mail by @cmd@, on behalf of @sender@                                     |
+| location        | http://bogus.testsuite.somewhere                                                   |
+| project         | source                                                                             |
+| self            | 1a7612e1ada544729188da99f936209b6a36ea8f                                           |
+| sender          | \*Undefined\* Please set.                                                            |
+| target          | eb0b15d5981300c3c13b90ab4d3e7cd18c36095a                                           |
+| type            | attachment                                                                         |
+| user            | anonymous                                                                          |
+| when            | 2014-02-17T17:13:43.579                                                            |
++-----------------+------------------------------------------------------------------------------------+

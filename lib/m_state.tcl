@@ -20,6 +20,16 @@ package require debug::caller
 
 # # ## ### ##### ######## ############# ######################
 
+namespace eval ::fx {
+    namespace export mgr
+    namespace ensemble create
+}
+
+namespace eval ::fx::mgr {
+    namespace export state
+    namespace ensemble create
+}
+
 namespace eval ::fx::mgr::state {
     namespace export register list \
 	begin done table_start table_end row sql sep module

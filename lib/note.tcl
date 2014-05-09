@@ -204,6 +204,7 @@ proc ::fx::note::test-mail-config {config} {
 	[list [$config @destination]] \
 	[mailgen test \
 	     [mailer get sender] \
+	     [mailer get header] \
 	     [mailer get footer]] on
     return
 }
@@ -605,7 +606,6 @@ proc ::fx::note::mail-config-show {config} {
 
 proc ::fx::note::mail-config-set {config} {
     debug.fx/note {}
-    fossil show-repository-location
 
     # See also "fx::config::set"
     # equivalent with shorter user-visible keys
@@ -616,15 +616,26 @@ proc ::fx::note::mail-config-set {config} {
 
     # TODO: type validation per chosen setting.
 
+    if {$global} {
+	fossil show-global-location
+    } {
+	fossil show-repository-location
+    }
+
     ConfigSet $global $name $value
     return
 }
 
 proc ::fx::note::mail-config-unset {config} {
     debug.fx/note {}
-    fossil show-repository-location
 
     set global [$config @global]
+
+    if {$global} {
+	fossil show-global-location
+    } {
+	fossil show-repository-location
+    }
     foreach name [$config @key] {
 	puts -nonewline "Unsetting [color note [mail-config external $name]]"
 	if {$global} {
@@ -641,6 +652,7 @@ proc ::fx::note::mail-config-reset {config} {
     debug.fx/note {}
 
     if {[$config @global]} {
+	fossil show-global-location
 	foreach name [mail-config all] {
 	    puts -nonewline "Unsetting [color note [mail-config external $name]]"
 	    config unset-global $name
@@ -1017,6 +1029,7 @@ proc ::fx::note::deliver {config} {
 proc ::fx::note::ProjectInfo {} {
     debug.fx/note {}
     return [dict create \
+		header   [mailer get header]	  \
 		footer   [mailer get footer]	  \
 		location [mailer get location]	  \
 		project  [mailer get project-name] \

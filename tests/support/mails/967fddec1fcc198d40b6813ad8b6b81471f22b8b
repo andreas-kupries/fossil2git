@@ -1,12 +1,14 @@
-From:    tests@testsuite.somewhere
-Subject: [source] Cmdr 1.1 Release
+Checkout @ */fxhome.*/source.fossil: 967fddec1fcc198d40b6813ad8b6b81471f22b8b
+Subject: \[source\] Cmdr 1.1 Release
 Date:    Wed Feb 12 06:05:32 GMT 2014
 X-Fossil-FX-Note:
 X-Tool-Origin: http://core.tcl.tk/akupries/fx
 X-Fossil-FX-Project-Name: source
 X-Fossil-FX-Project-Location: http://bogus.testsuite.somewhere
 
-Event Change [967fddec1fcc198d40b6813ad8b6b81471f22b8b]
+Automated mail by fx, on behalf of tests@testsuite.somewhere
+
+Event Change \[967fddec1fcc198d40b6813ad8b6b81471f22b8b\]
   By                aku
   For               source
   On                2014-02-12T06:05:32.820

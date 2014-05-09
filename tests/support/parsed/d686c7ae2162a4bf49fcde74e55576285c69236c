@@ -1,10 +1,18 @@
-m(ecomment)              = 
-m(epoch)                 = 1386006640
-m(etype)                 = control
-m(location)              = http://bogus.testsuite.somewhere
-m(project)               = source
-m(self)                  = d686c7ae2162a4bf49fcde74e55576285c69236c
-m(tags,+sym-release-1-0) = 2e15301ff511496523bfb39dab5b6c0b84c05bec !
-m(type)                  = control
-m(user)                  = aku
-m(when)                  = 2013-12-02T17:50:40.417
+Checkout @ */fxhome.*/source.fossil: d686c7ae2162a4bf49fcde74e55576285c69236c
++-----------------------+------------------------------------------------+
+| Key                   | Value                                          |
++-----------------------+------------------------------------------------+
+| ecomment              |                                                |
+| epoch                 | 1386006640                                     |
+| etype                 | control                                        |
+| footer                |                                                |
+| header                | Automated mail by @cmd@, on behalf of @sender@ |
+| location              | http://bogus.testsuite.somewhere               |
+| project               | source                                         |
+| self                  | d686c7ae2162a4bf49fcde74e55576285c69236c       |
+| sender                | \*Undefined\* Please set.                        |
+| tags,+sym-release-1-0 | 2e15301ff511496523bfb39dab5b6c0b84c05bec !     |
+| type                  | control                                        |
+| user                  | aku                                            |
+| when                  | 2013-12-02T17:50:40.417                        |
++-----------------------+------------------------------------------------+

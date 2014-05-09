@@ -19,6 +19,11 @@ package require cmdr::validate::common
 
 # # ## ### ##### ######## ############# ######################
 
+namespace eval ::fx {
+    namespace export mgr
+    namespace ensemble create
+}
+
 namespace eval ::fx::mgr {
     namespace export config
     namespace ensemble create

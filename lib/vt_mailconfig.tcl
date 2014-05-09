@@ -104,6 +104,7 @@ namespace eval ::fx::validate::mail-config {
 	sender   fx-aku-note-mail-sender
 	location fx-aku-note-project-location
 	footer   fx-aku-note-project-footer
+	header   fx-aku-note-project-header
     }
 
     variable default {
@@ -115,7 +116,8 @@ namespace eval ::fx::validate::mail-config {
 	port 	 25
 	sender   {*Undefined* Please set.}
 	location {*Undefined* Please set.}
-	footer   {Provided by @sender}
+	footer   {}
+	header   {Automated mail by @cmd@, on behalf of @sender@}
     }
 
     # Last map: Type validation per setting.

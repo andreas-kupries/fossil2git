@@ -42,13 +42,16 @@ namespace eval ::fx::enum {
     namespace import ::fx::color
     namespace import ::fx::fossil
     namespace import ::fx::util
-    namespace import ::fx::validate::enum
 
     namespace import ::fx::table::do
     rename do table
 
     namespace import ::fx::mgr::enum
     rename enum mgr
+
+    # After the manager has been handled,
+    # avoid conflict.
+    namespace import ::fx::validate::enum
 }
 
 # # ## ### ##### ######## ############# ######################
@@ -180,7 +183,7 @@ proc ::fx::enum::items {config} {
     puts "Enumeration \"$enum\":"
     [table t {\# Item} {
 	set id 0
-	foreach item [mgr items enum] {
+	foreach item [mgr items $enum] {
 	    $t add $id $item
 	    incr id
 	}
@@ -195,7 +198,12 @@ proc ::fx::enum::export {config} {
     fossil show-repository-location
 
     $config @enums
-    set enums [$config @enums string]
+
+    if {[$config @enums set?]} {
+	set enums [$config @enums string]
+    } else {
+	set enums [fossil fx-enums]
+    }
     set chan  [$config @output]
 
     lappend data "\# fx enumeration export @ [clock format [clock seconds]]"

@@ -1,0 +1,2 @@
+Checkout @ */fxhome.*/source.fossil
+  Event commit : Adding a@k ... Ignored, already known

@@ -1,3 +1,4 @@
+Checkout @ */fxhome.*/source.fossil
 +-------+-------+
 | Event | Route |
 +-------+-------+

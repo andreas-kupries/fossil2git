@@ -84,6 +84,14 @@ proc ::fx::main {argv} {
 }
 
 proc ::fx::mail-error {e} {
+    global env
+
+    # Mailing the stacktrace can be disabled form the environment.
+    # Current user of this behaviour: Testsuite.
+    if {[info exists env(FX_MAIL_STACKTRACE)] && !$env(FX_MAIL_STACKTRACE)} {
+	return
+    }
+
     package require fx::mailer
     package require fx::mailgen
     set config [::fx mailer get-config]
@@ -737,7 +745,7 @@ cmdr create fx::fx [file tail $::argv0] {
 		optional
 		list
 		validate [fx::vt enum]
-		generate [fx::vt enum default]
+		#generate [fx::vt enum default]
 	    }
 	} [fx::call enum export]
 

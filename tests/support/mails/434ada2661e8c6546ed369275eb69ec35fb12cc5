@@ -1,12 +1,14 @@
-From:    tests@testsuite.somewhere
-Subject: [source] Commit by andreask - officer - Extended class to accept the unique prefixes of the known command names for dispatch.
+Checkout @ */fxhome.*/source.fossil: 434ada2661e8c6546ed369275eb69ec35fb12cc5
+Subject: \[source\] Commit by andreask - officer - Extended class to accept the unique prefixes of the known command names for dispatch.
 Date:    Wed Feb 19 20:20:16 GMT 2014
 X-Fossil-FX-Note:
 X-Tool-Origin: http://core.tcl.tk/akupries/fx
 X-Fossil-FX-Project-Name: source
 X-Fossil-FX-Project-Location: http://bogus.testsuite.somewhere
 
-Commit [434ada2661e8c6546ed369275eb69ec35fb12cc5]
+Automated mail by fx, on behalf of tests@testsuite.somewhere
+
+Commit \[434ada2661e8c6546ed369275eb69ec35fb12cc5\]
   By      andreask
   For     source (branch: <unknown>)
   On      2014-02-19T20:20:16.293

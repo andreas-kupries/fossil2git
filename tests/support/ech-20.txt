@@ -1,0 +1,7 @@
+Checkout @ */fxhome.*/source.fossil
+Enumeration "foo":
++---+------+
+| # | Item |
++---+------+
+| 0 | b    |
++---+------+

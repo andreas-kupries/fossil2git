@@ -25,6 +25,16 @@ package require fx::validate::enum
 
 # # ## ### ##### ######## ############# ######################
 
+namespace eval ::fx {
+    namespace export mgr
+    namespace ensemble create
+}
+
+namespace eval ::fx::mgr {
+    namespace export enum
+    namespace ensemble create
+}
+
 namespace eval ::fx::mgr::enum {
     namespace export \
 	items create delete \

@@ -1,19 +1,22 @@
-From:    tests@testsuite.somewhere
-Subject: [source] Add attachment "tklib-0.6.tar.bz2" to wiki page [Downloads]
+Checkout @ */fxhome.*/source.fossil: 35db5321bb5fbf5336cf494590c46b040bee39d4
+Subject: \[source\] Add attachment "tklib-0.6.tar.bz2" to wiki page \[Downloads\]
 Date:    Tue Mar 26 03:02:29 GMT 2013
 X-Fossil-FX-Note:
 X-Tool-Origin: http://core.tcl.tk/akupries/fx
 X-Fossil-FX-Project-Name: source
 X-Fossil-FX-Project-Location: http://bogus.testsuite.somewhere
 
-Added Attachment [6a397dec6188148cf6a6fe290cf2bd92a9190c42]
-  [tklib-0.6.tar.bz2]
+Automated mail by fx, on behalf of tests@testsuite.somewhere
+
+Added Attachment \[6a397dec6188148cf6a6fe290cf2bd92a9190c42\]
+  \[tklib-0.6.tar.bz2\]
 To
-  Wiki    http://bogus.testsuite.somewhere/wiki?name=Downloads
-  By      aku
-  For     source
-  On      2013-03-26T03:02:29.233
-  Details http://bogus.testsuite.somewhere/ainfo/35db5321bb5fbf5336cf494590c46b040bee39d4
+  Wiki     http://bogus.testsuite.somewhere/wiki?name=Downloads
+  By       aku
+  For      source
+  On       2013-03-26T03:02:29.233
+  Details  http://bogus.testsuite.somewhere/ainfo/35db5321bb5fbf5336cf494590c46b040bee39d4
+  Contents http://bogus.testsuite.somewhere/artifact/6a397dec6188148cf6a6fe290cf2bd92a9190c42
 
 Description
    Tklib 0.6 Release, March 25, bzip2 compressed tarball.

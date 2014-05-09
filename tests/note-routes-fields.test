@@ -20,7 +20,7 @@ test note-routes-field-1.0 {client note route field, default = list, none} -setu
     }
 } -cleanup {
     stage-close
-} -result [viewFile support/f-standard.txt]
+} -match glob -result [viewFile support/f-standard.txt]
 
 # # ## ### ##### ######## ############# #####################
 ## events
@@ -36,10 +36,12 @@ test note-routes-field-2.0 {client note route fields, wrong args, too many} -set
 test note-routes-field-2.1 {client note route fields, standard fields} -setup {
     stage-open
 } -body {
-    run note route fields
+    on-stage {
+	run note route fields
+    }
 } -cleanup {
     stage-close
-} -result [viewFile support/f-standard.txt]
+} -match glob -result [viewFile support/f-standard.txt]
 
 # # ## ### ##### ######## ############# #####################
 ## add
@@ -58,7 +60,7 @@ test note-routes-field-3.1 {client note route field set, bogus field} -setup {
     run note route field add bogus
 } -cleanup {
     stage-close
-} -returnCodes error -result {Expected a repository ticket-field for input "field", got "bogus"}
+} -returnCodes error -match glob -result [fail-expected {a repository ticket-field} input field bogus]
 
 test note-routes-field-3.2.0 {client note route field add, implicit repo} -setup {
     stage-open
@@ -68,7 +70,7 @@ test note-routes-field-3.2.0 {client note route field add, implicit repo} -setup
     }
 } -cleanup {
     stage-close
-} -result {username ... Added}
+} -match glob -result [viewFile support/f-32.txt]
 
 test note-routes-field-3.2.1 {client note route field add, explicit repo} -setup {
     stage-open
@@ -76,7 +78,7 @@ test note-routes-field-3.2.1 {client note route field add, explicit repo} -setup
     run note route field add -R [therepo] username
 } -cleanup {
     stage-close
-} -result {username ... Added}
+} -match glob -result [viewFile support/f-32.txt]
 
 test note-routes-field-3.3 {client note route field add, persistence} -setup {
     stage-open
@@ -98,7 +100,7 @@ test note-routes-field-3.4 {client note route field add, multiple of same} -setu
     }
 } -cleanup {
     stage-close
-} -result {username ... Already known}
+} -match glob -result [viewFile support/f-34.txt]
 
 # TODO: Check the effect of adding routes on the global database.
 
@@ -119,7 +121,7 @@ test note-routes-field-4.1 {client note route field drop, bogus field} -setup {
     run note route field drop bogus
 } -cleanup {
     stage-close
-} -returnCodes error -result {Expected a repository ticket-field for input "field", got "bogus"}
+} -returnCodes error -match glob -result [fail-expected {a repository ticket-field} input field bogus]
 
 test note-routes-field-4.2.0 {client note route field drop, implicit repo} -setup {
     stage-open
@@ -132,7 +134,7 @@ test note-routes-field-4.2.0 {client note route field drop, implicit repo} -setu
     }
 } -cleanup {
     stage-close
-} -result {username ... Removed 1}
+} -match glob -result [viewFile support/f-42.txt]
 
 test note-routes-field-4.2.1 {client note route field drop, explicit repo} -setup {
     stage-open
@@ -143,7 +145,7 @@ test note-routes-field-4.2.1 {client note route field drop, explicit repo} -setu
     run note route field drop -R [therepo] username
 } -cleanup {
     stage-close
-} -result {username ... Removed 1}
+} -match glob -result [viewFile support/f-42.txt]
 
 test note-routes-field-4.3 {client note route field drop, persistence} -setup {
     stage-open
@@ -157,7 +159,7 @@ test note-routes-field-4.3 {client note route field drop, persistence} -setup {
     }
 } -cleanup {
     stage-close
-} -result [viewFile support/r-empty.txt]
+} -match glob -result [viewFile support/r-empty.txt]
 
 test note-routes-field-4.4 {client note route field drop, not existing} -setup {
     stage-open
@@ -167,7 +169,7 @@ test note-routes-field-4.4 {client note route field drop, not existing} -setup {
     }
 } -cleanup {
     stage-close
-} -result {username ... Ignored, no match}
+} -match glob -result [viewFile support/f-44.txt]
 
 # TODO: Check the effect of dropping routes on the global database.
 
