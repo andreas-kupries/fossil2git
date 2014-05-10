@@ -10,14 +10,12 @@ kt check tcltest 2
 
 kt source support/common.tcl
 
-# TODO: Prevent --global for unshareable per-repo settings! --> location
-
 # # ## ### ##### ######## ############# #####################
 
 test enum-export-1.0 {client enum export, wrong args, not enough} -setup {
     stage-open
 } -body {
-    run enum expor
+    run enum export
 } -cleanup {
     stage-close
 } -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"

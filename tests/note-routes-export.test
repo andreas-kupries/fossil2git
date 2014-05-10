@@ -1,0 +1,61 @@
+# -*- tcl -*- tcl.tk//DSL tcltest//EN//2.0 tcl.tk//DSL tcltest//EN//2.0
+## (c) 2014 Andreas Kupries
+# # ## ### ##### ######## ############# #####################
+## client note route export - Export delivery routing
+
+kt check Tcl     8.5
+kt check tcltest 2
+
+# # ## ### ##### ######## ############# #####################
+
+kt source support/common.tcl
+
+# # ## ### ##### ######## ############# #####################
+
+test note route-export-1.0 {client note route export, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run note route export
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
+
+test note route-export-1.1 {client note route export, wrong args, too many} -setup {
+    stage-open
+} -body {
+    run note route export E X
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "* cmdr: wrong#args, too many*"
+
+# # ## ### ##### ######## ############# #####################
+
+test note route-export-2.0 {client note route export, default none} -setup {
+    stage-open
+} -body {
+    on-stage {
+	run note route export E
+	viewFile [pwd]/E
+    }
+} -cleanup {
+    removeFile [pwd]/E
+    stage-close
+} -match glob -result [viewFile support/nre-empty.txt]
+
+test note route-export-2.1 {client note route export} -setup {
+    stage-open
+    on-stage {
+	# TODO setup routes
+    }
+} -body {
+    on-stage {
+	run note route export E
+	viewFile [pwd]/E
+    }
+} -cleanup {
+    removeFile [pwd]/E
+    stage-close
+} -match glob -result [viewFile support/nre-21.txt]
+
+# # ## ### ##### ######## ############# #####################
+cleanupTests
