@@ -1,0 +1,76 @@
+# -*- tcl -*- tcl.tk//DSL tcltest//EN//2.0 tcl.tk//DSL tcltest//EN//2.0
+## (c) 2014 Andreas Kupries
+# # ## ### ##### ######## ############# #####################
+## client enum import - Import (named) enumerations.
+
+kt check Tcl     8.5
+kt check tcltest 2
+
+# # ## ### ##### ######## ############# #####################
+
+kt source support/common.tcl
+
+# # ## ### ##### ######## ############# #####################
+
+test enum-import-1.0 {client enum import, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run enum import
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
+
+test enum-import-1.1 {client enum import, wrong args, too many} -setup {
+    stage-open
+} -body {
+    run enum import I X
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "* cmdr: wrong#args, too many*"
+
+# # ## ### ##### ######## ############# #####################
+
+test enum-import-2.0 {client enum import, replace, default} -setup {
+    stage-open
+    on-stage {
+	run enum create foo nu tau beta
+    }
+} -body {
+    on-stage {
+	run enum import [viewFile support/ee-21.txt]
+	run enums
+    }
+} -cleanup {
+    stage-close
+} -match glob -result [viewFile support/eim-20.txt]
+
+test enum-import-2.1 {client enum import, keep} -setup {
+    stage-open
+    on-stage {
+	run enum create foo nu tau beta
+    }
+} -body {
+    on-stage {
+	run enum import --extend [viewFile support/ee-21.txt]
+	run enums
+    }
+} -cleanup {
+    stage-close
+} -match glob -result [viewFile support/eim-21.txt]
+
+test enum-import-2.2 {client enum import, keep} -setup {
+    stage-open
+    on-stage {
+	run enum create foo nu tau beta
+    }
+} -body {
+    on-stage {
+	run enum import --extend [viewFile support/ee-22.txt]
+	run enums
+    }
+} -cleanup {
+    stage-close
+} -match glob -result [viewFile support/eim-22.txt]
+
+# # ## ### ##### ######## ############# #####################
+cleanupTests
