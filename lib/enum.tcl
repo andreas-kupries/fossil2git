@@ -87,7 +87,7 @@ proc ::fx::enum::create {config} {
     $config @newenum
     set enum [$config @newenum string]
 
-    puts -nonewline "Creating enumeration \"$enum\" ... "
+    puts -nonewline "Creating enumeration \"[color note $enum]\" ... "
     fossil repository transaction {
 	mgr create $enum
 	set items [$config @items]
@@ -107,7 +107,7 @@ proc ::fx::enum::delete {config} {
     $config @enum
     set enum [$config @enum string]
 
-    puts -nonewline "Deleting enumeration \"$enum\" ..."
+    puts -nonewline "Deleting enumeration \"[color note $enum]\" ..."
     mgr delete $enum
     puts [color good OK]
     return
@@ -223,6 +223,8 @@ proc ::fx::enum::import {config} {
     debug.fx/enum {}
     fossil show-repository-location
 
+    set extend [$config @extend]
+
     set input [$config @input]
     set data [read $input]
     $config @input forget
@@ -240,27 +242,44 @@ proc ::fx::enum::import {config} {
     $i eval $data
     interp delete $i
 
-    # TODO: Import: --keep/replace difference.
-    # TODO: Validate internally, avoid cli recursion.
+    if {!$extend} {
+	puts [color warning "Import replaces all existing enumerations ..."]
+	# Inlined delete of all enumerations.
+	foreach enum [fossil fx-enums] {
+	    puts -nonewline "Deleting enumeration \"[color note $enum]\" ..."
+	    mgr delete $enum
+	    puts [color good OK]
+	}
+    } else {
+	puts [color note "Import keeps the existing enumerations ..."]
+    }
 
     variable imported
+    if {![llength $imported]} {
+	puts [color note {No enumerations}]
+	return
+    }
+
+    puts "New enumerations ..."
     foreach {enum items} $imported {
-	puts -nonewline "Importing $enum ([llength $items]) "
+	puts -nonewline "  Importing $enum ([llength $items]) ... "
 	flush stdout
 
+	if {[mgr has $enum]} {
+	    puts [color warning "Ignored, already known"]
+	    continue
+	}
 	try {
-	    # Note: Recursion through the cmdr hierarchy. Validation
-	    # of data happens now.
-	    # TODO: Shortcut through internal command (no repeated
-	    # display of repo location).
-
-	    fx::fx do enum create $enum {*}$items
+	    mgr create $enum
+	    if {[llength $items]} {
+		puts ""
+		AddBulk $enum $items
+	    }
 	} on error {e o} {
 	    puts [color error $e]
 	} on ok {e o} {
 	    puts [color good OK]
 	}
-	flush stdout
     }
     return
 }

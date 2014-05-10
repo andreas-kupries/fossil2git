@@ -37,7 +37,7 @@ namespace eval ::fx::mgr {
 
 namespace eval ::fx::mgr::enum {
     namespace export \
-	items create delete \
+	has items create delete \
 	add add1 remove remove1 change
     namespace ensemble create
 
@@ -62,6 +62,10 @@ debug level  fx/mgr/enum
 debug prefix fx/mgr/enum {[debug caller] | }
 
 # # ## ### ##### ######## ############# ######################
+
+proc ::fx::mgr::enum::has {name} {
+    fossil has [enum table-of $name]
+}
 
 proc ::fx::mgr::enum::items {name} {
     debug.fx/mgr/enum {}

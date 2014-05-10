@@ -240,7 +240,7 @@ cmdr create fx::fx [file tail $::argv0] {
     }
 
     common .extend {
-	# Used by officer'note config'.
+	# Used by officer 'note config'.
 	option extend {
 	    Extend the current tables.
 	} { presence }
@@ -752,8 +752,9 @@ cmdr create fx::fx [file tail $::argv0] {
 	private import {
 	    section Enumerations
 	    description {
-		Import an enumeration from a save file.
+		Import one or more enumerations from a save file.
 	    }
+	    use .extend
 	    use .import
 	} [fx::call enum import]
 
