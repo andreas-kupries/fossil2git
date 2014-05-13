@@ -33,7 +33,8 @@ namespace eval ::fx {
 }
 namespace eval ::fx::mailer {
     namespace export get-config get get-global has has-global \
-	has-local send good-address dedup-addresses test-address
+	has-local send good-address dedup-addresses test-address \
+	drop-address
     namespace ensemble create
 
     namespace import ::fx::fossil
@@ -116,6 +117,29 @@ proc ::fx::mailer::dedup-addresses {addrlist} {
     }
 
     return $r
+}
+
+proc ::fx::mailer::drop-address {addr addrlist} {
+    debug.fx/mailer {}
+    # We assume that all addresses are good.
+    # We do not care about duplicates.
+    # - If the input has them, the output will too.
+
+    set addr [dict get [lindex [mime::parseaddress $addr] 0] address]
+
+    debug.fx/mailer {subtract = $addr}
+
+    set result {}
+    foreach a $addrlist {
+	set route [dict get [lindex [mime::parseaddress $a] 0] address]
+	debug.fx/mailer {route = $route}
+	if {$route eq $addr} continue
+	debug.fx/mailer {  kept}
+	lappend result $a
+    }
+
+    debug.fx/mailer {==> ($result)}
+    return $result
 }
 
 proc ::fx::mailer::good-address {addr} {

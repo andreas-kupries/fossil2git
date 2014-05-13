@@ -1086,19 +1086,35 @@ proc ::fx::note::Receivers {routes manifest} {
 	}
 
 	+RX [seen get-field $tuuid $dest $mtime]
+
+	if {$dest eq "login"} {
+	    #puts special
+	    # Special case: Entire history!
+	    # This is the set of people who have touched the ticket
+	    # over the whole lifetime (before mtime, i.e current
+	    # change).  (i.e commented on it, changed something,
+	    # etc. We assume here that these are all interested in
+	    # further changes.
+
+	    foreach m [seen get-field-all $tuuid $dest $mtime] {
+		#puts ++$m
+		+RX $m
+	    }
+	}
     }
 
     # One thing which is always dynamic, for any change. Destination
-    # based on the user who made the change.
+    # based on the user who made the change. This destination is
+    # excluded, given that the changer knows what s/he did.
 
     debug.fx/note {user=[dict exists $manifest user]}
     if {[dict exists $manifest user]} {
-	+RX [dict get $manifest user]
+	-RX [dict get $manifest user]
     }
 
     # Dynamic fields may have introduced duplicate destinations.
-    # Also, same destinations may different friendly names in them,
-    # and still must be collated into one route.
+    # Also, same destinations may have different friendly names in
+    # them, and still must be collated into one route.
 
     set recv [mailer dedup-addresses $recv]
 
@@ -1122,6 +1138,19 @@ proc ::fx::note::+R {addr} {
     return
 }
 
+proc ::fx::note::-R {addr} {
+    debug.fx/note {}
+    upvar 1 recv recv
+    if {$addr eq {}} return
+    if {![mailer good-address $addr]} {
+	debug.fx/note {rejected}
+	return
+    }
+    debug.fx/note {remove}
+    set recv [mailer drop-address $addr $recv]
+    return
+}
+
 proc ::fx::note::+RX {addr} {
     debug.fx/note {}
     upvar 1 recv recv
@@ -1136,6 +1165,23 @@ proc ::fx::note::+RX {addr} {
     set addr [fossil user-info $addr]
     debug.fx/note {contact   = $addr}
     +R $addr
+    return
+}
+
+proc ::fx::note::-RX {addr} {
+    debug.fx/note {}
+    upvar 1 recv recv
+    # Each level of transformation may introduce an address.
+    debug.fx/note {concealed = $addr}
+    -R $addr
+
+    set addr [fossil reveal $addr]
+    debug.fx/note {revealed  = $addr}
+    -R $addr
+
+    set addr [fossil user-info $addr]
+    debug.fx/note {contact   = $addr}
+    -R $addr
     return
 }
 

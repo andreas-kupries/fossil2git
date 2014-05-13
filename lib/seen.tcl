@@ -30,7 +30,8 @@ namespace eval ::fx::seen {
 	mark-notified mark-notified-all \
 	mark-pending mark-pending-all \
 	set-watched-fields get-watched-fields \
-	set-progress get-field regenerate-series
+	set-progress get-field get-field-all \
+	regenerate-series
     namespace ensemble create
 
     namespace import ::fx::color
@@ -254,6 +255,23 @@ proc ::fx::seen::get-field {uuid field before} {
 	AND   S.mtime < :before
 	ORDER BY S.mtime
 	LIMIT 1
+    }]
+}
+
+proc ::fx::seen::get-field-all {uuid field before} {
+    debug.fx/seen {}
+    FillSeries
+    return [fossil repository eval {
+	SELECT S.val
+	FROM fx_aku_watch_tktseries S,
+	     fx_aku_watch_tkt       T,
+	     fx_aku_watch_tktfield  F
+	WHERE T.uuid = :uuid
+	AND   F.name = :field
+	AND   S.tid   = T.id
+	AND   S.fid   = F.id
+	AND   S.mtime < :before
+	ORDER BY S.mtime
     }]
 }
 
