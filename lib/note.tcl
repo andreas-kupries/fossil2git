@@ -448,7 +448,7 @@ proc ::fx::note::mail-config-export {config} {
     foreach item $data {
 	puts $chan [linsert $item 0 mail-config]
     }
-    $config @output forget]
+    $config @output forget
     return
 }
 
