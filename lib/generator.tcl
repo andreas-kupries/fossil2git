@@ -560,8 +560,8 @@ proc ::fx::mailgen::Subject {{prefix {}}} {
     # Strip html tags out of the ecomment, bad for the mail.
     regsub -all {<([^>]+)>} $ecomment {} ecomment
     # Reduce to first line.
-    set ecomment [lindex [split $ecomment \n] 0]
-    return "\[$project\] $prefix$ecomment"
+    set subj [lindex [split $ecomment \n] 0]
+    return "\[$project\] $prefix$subj"
 }
 
 proc ::fx::mailgen::Headers {project location subject epoch} {
