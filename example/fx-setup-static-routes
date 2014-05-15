@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Tcllib group of repositories -- tcllib-bugs ML
+for r in \
+    tcllib tklib tclapps bwidget mclistbox widget tclbench
+do
+    fx note route add -R fossil/${r}.fossil \
+	all tcllib-bugs@lists.sourceforge.net
+done
+
+# Main (Tcl) group of repositories -- tcl-bugs ML
+for r in \
+    tcl tk \
+    tclconfig sampleextension thread TclOO tclws \
+    tdbc tdbcmysql tdbcodbc tdbcpostgres tdbcsqlite3 \
+    itcl itk iwidgets
+do
+    fx note route add -R fossil/${r}.fossil \
+	all tcl-bugs@lists.sourceforge.net
+done
+
+# Misc repositories -- tcl-bugs ML
+for r in \
+    wtk tclhttpd tcludp
+do
+    fx note route add -R fossil/${r}.fossil \
+	all tcl-bugs@lists.sourceforge.net
+done

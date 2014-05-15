@@ -1,0 +1,17 @@
+#!/bin/bash
+
+cd $HOME
+
+if test -e fx-cron-disabled
+then
+  echo fx-cron disabled by user request
+  exit
+fi
+
+for r in fossil/*.fossil
+do
+  echo "$(date) fx-cron $r"
+  rstem="$(basename $r .fossil)"
+  #cron_lock "fx-cron-$rstem" bin/fx-deliver "$r" >> "logs/fx-deliver-${rstem}.log" 2>&1
+  flock -n "$HOME/.lock.fx-cron-$rstem" bin/fx-deliver "$r" >> "logs/fx-deliver-${rstem}.log" 2>&1
+done
