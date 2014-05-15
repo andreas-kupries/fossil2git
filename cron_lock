@@ -3,6 +3,19 @@
 # # ## ### ##### ######## ############# ######################
 ## Syntax = $0 lock-name cmd...
 
+# @@ Meta Begin
+# Application cron_lock   ?
+# Meta author      {Andreas Kupries}
+# Meta category    ?
+# Meta description ?
+# Meta location    http:/core.tcl.tk/akupries/fx
+# Meta platform    tcl
+# Meta require     fx
+# Meta require     {Tcl 8.4-}
+# Meta subject     ?
+# Meta summary     ?
+# @@ Meta End
+
 package require Tcl 8.4
 
 #!/usr/bin/env tclsh
