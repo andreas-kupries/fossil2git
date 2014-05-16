@@ -299,7 +299,10 @@ cmdr create fx::fx [file tail $::argv0] {
 	input output {
 	    The path of the file to save the exported data into.
 	} {
-	    validate wchan
+	    # Avoid wchan. Externally visible side-effect is bad, can
+	    # happen when cmdr simply wants to test the ok-ness of the
+	    # input without any conversion.
+	    validate wfile
 	}
     }
 

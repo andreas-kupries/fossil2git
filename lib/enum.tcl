@@ -204,7 +204,7 @@ proc ::fx::enum::export {config} {
     } else {
 	set enums [fossil fx-enums]
     }
-    set chan  [$config @output]
+    set chan [$config @output]
 
     lappend data "\# fx enumeration export @ [clock format [clock seconds]]"
     foreach enum $enums {
@@ -216,6 +216,7 @@ proc ::fx::enum::export {config} {
     }
 
     puts $chan [join $data \n]
+    close $chan
     return
 }
 
