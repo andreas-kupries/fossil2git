@@ -1198,7 +1198,7 @@ cmdr create fx::fx [file tail $::argv0] {
 	    description {
 		Reaccept artifacts which have been shunned.
 	    }
-	    use .uud-list
+	    use .uuid-list
 	} [fx::call shun remove]
     }
     alias shunned = shun list
