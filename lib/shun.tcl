@@ -19,6 +19,7 @@ package require debug::caller
 
 package require fx::color
 package require fx::fossil
+package require fx::validate::uuid
 
 # # ## ### ##### ######## ############# ######################
 
@@ -29,6 +30,7 @@ namespace eval ::fx::shun {
 
     namespace import ::fx::color
     namespace import ::fx::fossil
+    namespace import ::fx::validate::uuid
 
     namespace import ::fx::table::do
     rename do table
@@ -44,13 +46,14 @@ debug prefix fx/shun {[debug caller] | }
 proc ::fx::shun::list {config} {
     debug.fx/shun {}
     fossil show-repository-location
-    [table t {UUID Added SCOM} {
+    [table t {Content UUID Added SCOM} {
 	fossil repository eval {
 	    SELECT uuid, mtime, scom
 	    FROM shun
 	} {
 	    # mtime unit is [epoch].
-	    $t add $uuid [clock format $mtime] $scom
+	    set flag [expr { [uuid ok $uuid] ? "yes" : "" }]
+	    $t add $flag $uuid [clock format $mtime] $scom
 	}
     }] show
     return
@@ -60,6 +63,12 @@ proc ::fx::shun::add {config} {
     debug.fx/shun {}
     fossil show-repository-location
     error "not-yet-implemented"
+
+    # TODO: filter out already shunned
+    # TODO: abort if nothing left
+    # TODO: show remaining uuids, and
+    # TODO: interactively confirm to shun them.
+    # TODO: add to shun, if confirmed.
     return
 }
 
@@ -67,6 +76,12 @@ proc ::fx::shun::remove {config} {
     debug.fx/shun {}
     fossil show-repository-location
     error "not-yet-implemented"
+
+    # TODO: filter out those not shunned
+    # TODO: abort if nothing left
+    # TODO: show remaining uuids, and
+    # TODO: interactively confirm to accept them.
+    # TODO: remove from shun, if confirmed.
     return
 }
 

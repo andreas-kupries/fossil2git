@@ -30,7 +30,7 @@ namespace eval ::fx::validate {
 ## Custom validation types: uuid (blobs)
 
 namespace eval ::fx::validate::uuid {
-    namespace export release validate default complete
+    namespace export release validate default complete ok
     namespace ensemble create
 
     namespace import ::fx::fossil
@@ -53,6 +53,16 @@ proc ::fx::validate::uuid::validate {p x} {
 	return $cx
     }
     fail-unknown-thing $p UUID "A uuid" $x
+}
+
+proc ::fx::validate::uuid::ok {p x} {
+    set cx [string tolower $x]
+    set matches [fossil repository onecolumn {
+	SELECT count(*)
+	FROM blob
+	WHERE uuid = :cx
+    }]
+    return [expr {$matches == 1}]
 }
 
 proc ::fx::validate::uuid::complete {p} {
