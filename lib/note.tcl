@@ -1004,6 +1004,20 @@ proc ::fx::note::deliver {config} {
     set verbose [$config @verbose]
     set changes 0
 
+    set changes [seen num-pending]
+    set limit [mailer get limit]
+    if {$changes > $limit} {
+	puts [color error "Too many changes found: $changes"]
+	puts [color error "We may not send more mails than $limit."]
+
+	set admin [lindex [dict get $mc -header] end]
+	::fx mailer send $config $admin \
+	    [::fx mailgen for-limit $pinfo $changes $limit] on
+
+	puts [color error "Mail storm blocked, notified admin $admin"]
+	exit 1
+    }
+
     seen forall-pending type id uuid comment {
 	# TODO: no mail and such when suspended.
 	# TODO: Dry run for testing.
