@@ -123,7 +123,7 @@ proc ::fx::note::show-pending {config} {
 
     fossil show-repository-location
 
-    if {[$config @extended]} {
+    if {![$config @extended]} {
 	[table t {Id Type UUID Comment} {
 	    seen forall-pending type id uuid comment {
 		set type [event-type external $type]
@@ -175,7 +175,7 @@ proc ::fx::note::show-notified {config} {
 
     fossil show-repository-location
 
-    if {[$config @extended]} {
+    if {![$config @extended]} {
 	[table t {Id Type UUID Comment} {
 	    seen forall-notified type id uuid comment {
 		set type [event-type external $type]
