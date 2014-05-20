@@ -55,7 +55,7 @@ proc ::fx::validate::uuid::validate {p x} {
     fail-unknown-thing $p UUID "A uuid" $x
 }
 
-proc ::fx::validate::uuid::ok {p x} {
+proc ::fx::validate::uuid::ok {x} {
     set cx [string tolower $x]
     set matches [fossil repository onecolumn {
 	SELECT count(*)
