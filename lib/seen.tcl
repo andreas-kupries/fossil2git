@@ -26,9 +26,8 @@ debug prefix fx/seen {[debug caller] | }
 
 namespace eval ::fx::seen {
     namespace export \
-	get-event num-pending forall-pending \
-	mark-notified mark-notified-all \
-	mark-pending mark-pending-all \
+	get-event num-pending forall-pending forall-notified \
+	mark-notified mark-notified-all mark-pending mark-pending-all \
 	set-watched-fields get-watched-fields \
 	set-progress get-field get-field-all \
 	regenerate-series
@@ -99,6 +98,37 @@ proc ::fx::seen::forall-pending {tv iv uv cv script} {
 	    FROM  event, blob
 	    WHERE event.objid NOT IN (SELECT id
 				      FROM fx_aku_watch_seen)
+	    AND   event.objid = blob.rid
+	    ORDER BY event.objid
+	} {
+	    uplevel 1 $script
+	    # TODO? handle break, continue
+	}
+    }
+    # NOTE: We will be shelling out to fossil to get the artifact
+    # contents. This way we avoid having to implement the entire
+    # decompression (delta, inflate) ourselves. A 'libfossil' with a
+    # proper C API would make this easier.
+    return
+}
+
+proc ::fx::seen::forall-notified {tv iv uv cv script} {
+    debug.fx/seen {}
+    Init
+    FillSeries
+
+    upvar 1 $tv type $iv id $uv uuid $cv comment
+
+    fossil repository transaction {
+	fossil repository eval {
+	    SELECT
+	    event.type  AS type,
+	    event.objid AS id,
+	    blob.uuid   AS uuid,
+	    coalesce (event.ecomment, event.comment) AS comment
+	    FROM  event, blob
+	    WHERE event.objid IN (SELECT id
+				  FROM fx_aku_watch_seen)
 	    AND   event.objid = blob.rid
 	    ORDER BY event.objid
 	} {

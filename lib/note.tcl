@@ -39,8 +39,8 @@ namespace eval ::fx::note {
 	route-export route-import route-add route-drop route-list \
 	route-field-add route-field-drop watched deliver \
 	event-list field-list mark-pending mark-notified \
-	show-pending test-parse test-mail-gen test-mail-config \
-	test-mail-receivers
+	show-pending show-notified \
+	test-parse test-mail-gen test-mail-config test-mail-receivers
 
     namespace ensemble create
 
@@ -122,14 +122,83 @@ proc ::fx::note::show-pending {config} {
     }
 
     fossil show-repository-location
-    [table t {Id Type UUID Comment} {
-	seen forall-pending type id uuid comment {
-	    set type [event-type external $type]
-	    $t add $id $type \
-		[mailgen limit $u $uuid] \
-		[mailgen limit $c [lindex [split $comment \n] 0]]
+
+    if {[$config @extended]} {
+	[table t {Id Type UUID Comment} {
+	    seen forall-pending type id uuid comment {
+		set type [event-type external $type]
+		$t add $id $type \
+		    [mailgen limit $u $uuid] \
+		    [mailgen limit $c [lindex [split $comment \n] 0]]
+	    }
+	}] show
+    } else {
+	[table t {Id Type Mtype UUID Comment} {
+	    seen forall-pending type id uuid comment {
+		set type [event-type external $type]
+		set mtype [dict get \
+			       [manifest parse \
+				    [fossil get-manifest $uuid]] \
+			       type]
+		$t add $id $type $mtype \
+		    [mailgen limit $u $uuid] \
+		    [mailgen limit $c [lindex [split $comment \n] 0]]
+	    }
+	}] show
+    }
+
+    fossil show-repository-location
+    return
+}
+
+proc ::fx::note::show-notified {config} {
+    debug.fx/note {}
+
+    global env
+    if {[info exists env(FX_COLUMNS)]} {
+	set w $env(FX_COLUMNS)
+	if {$w < 0} {
+	    set u -1
+	    set c -1
+	} else {
+	    set u [expr {$w*4/10}]
+	    set c [expr {$w*6/10}]
 	}
-    }] show
+    } else {
+	set w [linenoise columns]
+	incr w -6
+	incr w -7
+
+	set u [expr {$w*4/10}]
+	set c [expr {$w*6/10}]
+    }
+
+    fossil show-repository-location
+
+    if {[$config @extended]} {
+	[table t {Id Type UUID Comment} {
+	    seen forall-notified type id uuid comment {
+		set type [event-type external $type]
+		$t add $id $type \
+		    [mailgen limit $u $uuid] \
+		    [mailgen limit $c [lindex [split $comment \n] 0]]
+	    }
+	}] show
+    } else {
+	[table t {Id Type Mtype UUID Comment} {
+	    seen forall-notified type id uuid comment {
+		set type [event-type external $type]
+		set mtype [dict get \
+			       [manifest parse \
+				    [fossil get-manifest $uuid]] \
+			       type]
+		$t add $id $type $mtype \
+		    [mailgen limit $u $uuid] \
+		    [mailgen limit $c [lindex [split $comment \n] 0]]
+	    }
+	}] show
+    }
+
     fossil show-repository-location
     return
 }

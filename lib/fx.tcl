@@ -1133,13 +1133,32 @@ cmdr create fx::fx [file tail $::argv0] {
 	    use .uuid-or-all
 	} [fx::call note mark-notified]
 
+	common .ex {
+	    option extended {
+		Show extended type information. Note that using this
+		option will substantially slow the command down, as
+		it has to parse all involved manifests. The larger
+		the repository history, the larger the slow-down.
+	    } { presence }
+	}
+
 	private show-pending {
 	    section Notifications Control
 	    description {
 		Show all events in the timeline marked as pending.
 	    }
+	    use .ex
 	    use .repository
 	} [fx::call note show-pending]
+
+	private show-notified {
+	    section Notifications Control
+	    description {
+		Show all events in the timeline marked as notified.
+	    }
+	    use .ex
+	    use .repository
+	} [fx::call note show-notified]
     }
 
     officer test {
