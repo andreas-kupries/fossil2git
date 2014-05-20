@@ -252,6 +252,15 @@ cmdr create fx::fx [file tail $::argv0] {
 	} { validate [fx::vt uuid] }
     }
 
+    common .uuid-list {
+	input uuid {
+	    Full fossil uuids of the artifacts to work with.
+	} {
+	    list
+	    validate [fx::vt uuid]
+	}
+    }
+
     common .all {
 	option all {
 	    Do this for all repositories watched by fx.
@@ -1160,6 +1169,39 @@ cmdr create fx::fx [file tail $::argv0] {
 	    use .repository
 	} [fx::call note show-notified]
     }
+
+    officer shun {
+	description {
+	    Dangerous and advanced commands to manipulate the list
+	    of shunned artifacts in bulk.
+	}
+
+	common *all* {
+	    section Advanced {Armed & Dangerous} Shunning
+	    use .repository
+	}
+
+	private list {
+	    description {
+		Show the list of all shunned artifacts.
+	    }
+	} [fx::call shun list]
+
+	private add {
+	    description {
+		Shun artifacts.
+	    }
+	    use .uuid-list
+	} [fx::call shun add]
+
+	private remove {
+	    description {
+		Reaccept artifacts which have been shunned.
+	    }
+	    use .uud-list
+	} [fx::call shun remove]
+    }
+    alias shunned = shun list
 
     officer test {
 	description {
