@@ -31,7 +31,7 @@ namespace eval ::fx {
     namespace ensemble create
 }
 namespace eval ::fx::mailgen {
-    namespace export test artifact limit for-error
+    namespace export test artifact limit for-error for-limit
     # manifest types
     # - attachment OK
     # - checkin    OK (to test: branch/changeset extraction)
@@ -69,6 +69,24 @@ proc ::fx::mailgen::for-error {stacktrace} {
     + StackTrace
     +T "" $stacktrace
     =T
+    Done {} {}
+}
+
+proc ::fx::mailgen::for-limit {pinfo changes limit} {
+    set location [dict get $pinfo location]
+    set project  [dict get $pinfo project]
+
+    Begin
+    Headers \
+	$project $location
+	"FX Mail Storm Prevention Triggered" [clock seconds]
+    Body {} {}
+    + ""
+    + "Possible mail storm prevented"
+    + "  Mail burst limit is $limit"
+    + "  Actual changes found: $changes "
+    + "Please check the repository for issues"
+    + ""
     Done {} {}
 }
 
