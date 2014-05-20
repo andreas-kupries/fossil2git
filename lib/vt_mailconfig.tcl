@@ -94,30 +94,47 @@ proc ::fx::validate::mail-config::all {} {
 # # ## ### ##### ######## ############# ######################
 
 namespace eval ::fx::validate::mail-config {
+    # # ##
+    # footer   text. inserted into the generated mails
+    # header   text. inserted into the generated mails
+    # location url. repository location, for links in the generated mail.
+    # sender   string. mail address of the nominal sender, inserted into the generated mails.
+
+    # debug    boolean, low-level smtp-debugging yes/no
+    # tls      boolean. (can|must) use TLS to secure smtp yes/no.
+    # host     string. name of mail-relay host
+    # password string. password for smtp transaction
+    # user     string. user for smtp  transaction.
+    # port     integer. port on mail-relay host accepting smtp.
+
+    # limit    number of mails the system is allowed to send in a block.
+
     variable map {
 	debug    fx-aku-note-mail-debug
-	tls      fx-aku-note-mail-tls
-	user     fx-aku-note-mail-user
-	password fx-aku-note-mail-password
-	host 	 fx-aku-note-mail-host
-	port 	 fx-aku-note-mail-port
-	sender   fx-aku-note-mail-sender
-	location fx-aku-note-project-location
 	footer   fx-aku-note-project-footer
 	header   fx-aku-note-project-header
+	host 	 fx-aku-note-mail-host
+	limit    fx-aku-note-mail-limit
+	location fx-aku-note-project-location
+	password fx-aku-note-mail-password
+	port 	 fx-aku-note-mail-port
+	sender   fx-aku-note-mail-sender
+	tls      fx-aku-note-mail-tls
+	user     fx-aku-note-mail-user
     }
 
     variable default {
 	debug    0
-	tls      0
-	user     {}
-	password {}
-	host 	 localhost
-	port 	 25
-	sender   {*Undefined* Please set.}
-	location {*Undefined* Please set.}
 	footer   {}
 	header   {Automated mail by @cmd@, on behalf of @sender@}
+	host 	 localhost
+	limit    10
+	location {*Undefined* Please set.}
+	password {}
+	port 	 25
+	sender   {*Undefined* Please set.}
+	tls      0
+	user     {}
     }
 
     # Last map: Type validation per setting.
