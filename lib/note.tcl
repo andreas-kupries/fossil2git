@@ -1080,7 +1080,7 @@ proc ::fx::note::deliver {config} {
 	puts [color error "We may not send more mails than $limit."]
 
 	set admin [lindex [dict get $mc -header] end]
-	::fx mailer send $config $admin \
+	::fx mailer send $mc [list $admin] \
 	    [::fx mailgen for-limit $pinfo $changes $limit] on
 
 	puts [color error "Mail storm blocked, notified admin $admin"]

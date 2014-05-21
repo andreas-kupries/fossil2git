@@ -78,13 +78,13 @@ proc ::fx::mailgen::for-limit {pinfo changes limit} {
 
     Begin
     Headers \
-	$project $location
+	$project $location \
 	"FX Mail Storm Prevention Triggered" [clock seconds]
     Body {} {}
     + ""
-    + "Possible mail storm prevented"
-    + "  Mail burst limit is $limit"
-    + "  Actual changes found: $changes "
+    + "Possible mail storm prevented for $location"
+    + "  Mail burst limit is:  $limit"
+    + "  Actual changes found: $changes"
     + "Please check the repository for issues"
     + ""
     Done {} {}
