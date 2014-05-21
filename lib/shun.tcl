@@ -71,7 +71,7 @@ proc ::fx::shun::add {config} {
 	return
     }
 
-    [table t {UUID to shun} {
+    [table t {{UUID to shun}} {
 	foreach u $ulist { $t add $u }
     }] show
 
@@ -79,7 +79,7 @@ proc ::fx::shun::add {config} {
     set confirmed [term ask/yn {Confirm} no]
 
     if {!$confirmed} {
-	puts [color note [term wrap "You have canceled the operation. Thank you and good byte."]]
+	puts [color note [term wrap "You have canceled the operation. Thank you and good bye."]]
 	return
     }
 
@@ -111,7 +111,7 @@ proc ::fx::shun::remove {config} {
 	return
     }
 
-    [table t {UUID to accept} {
+    [table t {{UUID to accept}} {
 	foreach u $ulist { $t add $u }
     }] show
 
@@ -119,7 +119,7 @@ proc ::fx::shun::remove {config} {
     set confirmed [term ask/yn {Confirm} no]
 
     if {!$confirmed} {
-	puts [color note [term wrap "You have canceled the operation. Thank you and good byte."]]
+	puts [color note [term wrap "You have canceled the operation. Thank you and good bye."]]
 	return
     }
 
@@ -147,7 +147,7 @@ proc ::fx::shun::DropShunned {ulist} {
     set r {}
     foreach u $ulist {
 	if {$u in $shunned} {
-	    puts "${u}: [color warn {Already shunned}"
+	    puts "${u}: [color warn {Already shunned}]"
 	}
 	lappend r $u
     }
@@ -159,7 +159,7 @@ proc ::fx::shun::DropNotShunned {ulist} {
     set r {}
     foreach u $ulist {
 	if {$u ni $shunned} {
-	    puts "${u}: [color warn {Not shunned}"
+	    puts "${u}: [color warn {Not shunned}]"
 	}
 	lappend r $u
     }
