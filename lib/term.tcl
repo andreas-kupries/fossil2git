@@ -7,6 +7,25 @@
 
 # # ## ### ##### ######## ############# #####################
 
+# @@ Meta Begin
+# Package fx::term ?
+# Meta author      {Andreas Kupries}
+# Meta category    ?
+# Meta description ?
+# Meta location    http:/core.tcl.tk/akupries/fx
+# Meta platform    tcl
+# Meta require     sqlite3
+# Meta require     cmdr
+# Meta require     {Tcl 8.5-}
+# Meta require     lambda
+# Meta require     fx::fossil
+# Meta require     fx::config
+# Meta require     fx::enum
+## Meta require     fx::report
+# Meta subject     ?
+# Meta summary     ?
+# @@ Meta End
+
 package require Tcl 8.5
 package require fx::color
 package require linenoise
