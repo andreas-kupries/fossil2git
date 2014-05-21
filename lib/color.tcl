@@ -75,6 +75,7 @@ foreach {cmd color} {
     bg-cyan   sda_bgcyan
     bg-black  sda_bgblack
     bold      sda_bold
+    confirm   confirm
     error     error
     warning   warning
     note      note
