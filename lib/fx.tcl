@@ -126,7 +126,7 @@ proc ::fx::vt {p args} {
 }
 
 proc ::fx::sequence {args} {
-    lambda {p x cmds} {
+    lambda {cmds p x} {
 	foreach c $cmds {
 	    {*}$c $p $x
 	}
