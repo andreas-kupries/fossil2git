@@ -148,6 +148,7 @@ proc ::fx::shun::DropShunned {ulist} {
     foreach u $ulist {
 	if {$u in $shunned} {
 	    puts "${u}: [color warn {Already shunned}]"
+	    continue
 	}
 	lappend r $u
     }
@@ -160,6 +161,7 @@ proc ::fx::shun::DropNotShunned {ulist} {
     foreach u $ulist {
 	if {$u ni $shunned} {
 	    puts "${u}: [color warn {Not shunned}]"
+	    continue
 	}
 	lappend r $u
     }
