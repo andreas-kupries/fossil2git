@@ -64,7 +64,6 @@ proc ::fx::shun::list {config} {
 proc ::fx::shun::add {config} {
     debug.fx/shun {}
     fossil show-repository-location
-    error "not-yet-implemented"
 
     set ulist [DropShunned [$config @uuid]]
     if {![llength $ulist]} {
@@ -105,7 +104,6 @@ proc ::fx::shun::add {config} {
 proc ::fx::shun::remove {config} {
     debug.fx/shun {}
     fossil show-repository-location
-    error "not-yet-implemented"
 
     set ulist [DropNotShunned [$config @uuid]]
     if {![llength $ulist]} {
