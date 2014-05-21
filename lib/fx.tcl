@@ -191,6 +191,16 @@ fx seen set-progress [lambda {text} {
 # # ## ### ##### ######## ############# ######################
 
 cmdr create fx::fx [file tail $::argv0] {
+
+    # # ## ### ##### ######## ############# #####################
+    ## Bespoke category ordering for help
+    ## Values are priorities. Final order is by decreasing priority.
+    ## I.e. Highest priority is printed first, at the top, beginning.
+
+    common *category-order* {
+	Advanced -9000
+    }
+
     # # ## ### ##### ######## ############# ######################
     ## Common pieces across the various commands.
 
