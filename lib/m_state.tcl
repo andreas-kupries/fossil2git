@@ -65,9 +65,9 @@ proc ::fx::mgr::state::list {} {
 
 # # ## ### ##### ######## ############# ######################
 
-proc ::fx::mgr::state::begin {chan} {
+proc ::fx::mgr::state::begin {path} {
     debug.fx/mgr/state {}
-    variable thechan $chan
+    variable thechan [open $path w]
     return
 }
 
