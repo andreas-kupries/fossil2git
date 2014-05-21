@@ -252,12 +252,12 @@ cmdr create fx::fx [file tail $::argv0] {
 	} { validate [fx::vt uuid] }
     }
 
-    common .uuid-list {
+    common .uuid-lex-list {
 	input uuid {
 	    Full fossil uuids of the artifacts to work with.
 	} {
 	    list
-	    validate [fx::vt uuid]
+	    validate [fx::vt uuid-lexical]
 	}
     }
 
@@ -1191,14 +1191,14 @@ cmdr create fx::fx [file tail $::argv0] {
 	    description {
 		Shun artifacts.
 	    }
-	    use .uuid-list
+	    use .uuid-lex-list
 	} [fx::call shun add]
 
 	private remove {
 	    description {
 		Reaccept artifacts which have been shunned.
 	    }
-	    use .uuid-list
+	    use .uuid-lex-list
 	} [fx::call shun remove]
     }
     alias shunned = shun list
