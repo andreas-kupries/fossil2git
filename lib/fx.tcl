@@ -22,6 +22,7 @@
 # @@ Meta End
 
 package require Tcl 8.5
+package require cmdr::help::tcl
 package require cmdr
 package require debug
 package require debug::caller
