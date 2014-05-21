@@ -22,6 +22,7 @@
 # @@ Meta End
 
 package require Tcl 8.5
+package require cmdr::history
 package require cmdr::help::tcl
 package require cmdr::actor 1.3 ;# Need -extend support for common/use blocks.
 package require cmdr
@@ -190,7 +191,18 @@ fx seen set-progress [lambda {text} {
 
 # # ## ### ##### ######## ############# ######################
 
+cmdr history initial-limit 20
+cmdr history save-to       ~/.fx_history
+
 cmdr create fx::fx [file tail $::argv0] {
+    ##
+    # # ## ### ##### ######## ############# #####################
+
+    description {
+	The fx command line client
+    }
+
+    shandler ::cmdr::history::attach
 
     # # ## ### ##### ######## ############# #####################
     ## Bespoke category ordering for help
