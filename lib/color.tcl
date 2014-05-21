@@ -43,6 +43,7 @@ namespace eval ::fx::color {
     # Mapping of symbolic codes to color commands
     # TODO: Make this configurable.
     variable symbol {
+	confirm red
 	error   red
 	warning yellow
 	note    blue

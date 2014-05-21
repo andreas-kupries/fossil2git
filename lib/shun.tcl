@@ -19,6 +19,7 @@ package require debug::caller
 
 package require fx::color
 package require fx::fossil
+package require fx::term
 package require fx::validate::uuid
 
 # # ## ### ##### ######## ############# ######################
@@ -30,6 +31,7 @@ namespace eval ::fx::shun {
 
     namespace import ::fx::color
     namespace import ::fx::fossil
+    namespace import ::fx::term
     namespace import ::fx::validate::uuid
 
     namespace import ::fx::table::do
@@ -52,7 +54,7 @@ proc ::fx::shun::list {config} {
 	    FROM shun
 	} {
 	    # mtime unit is [epoch].
-	    set flag [expr { [uuid ok $uuid] ? "yes" : "" }]
+	    set flag [expr { [uuid ok $uuid] ? "yes" : "   no" }]
 	    $t add $flag $uuid [clock format $mtime] $scom
 	}
     }] show
@@ -64,11 +66,39 @@ proc ::fx::shun::add {config} {
     fossil show-repository-location
     error "not-yet-implemented"
 
-    # TODO: filter out already shunned
-    # TODO: abort if nothing left
-    # TODO: show remaining uuids, and
-    # TODO: interactively confirm to shun them.
-    # TODO: add to shun, if confirmed.
+    set ulist [DropShunned [$config @uuid]]
+    if {![llength $ulist]} {
+	puts [color note "Nothing to shun"]
+	return
+    }
+
+    [table t {UUID to shun} {
+	foreach u $ulist { $t add $u }
+    }] show
+
+    puts [color confirm [term wrap "Please confirm that you wish to shun the [llength $ulist] uuids above."]]
+    set confirmed [term ask/yn {Confirm} no]
+
+    if {!$confirmed} {
+	puts [color note [term wrap "You have canceled the operation. Thank you and good byte."]]
+	return
+    }
+
+    puts -nonewline "Shunning ... "
+    flush stdout
+
+    set now [clock seconds]
+    fossil repository transaction {
+	foreach u $ulist {
+	    fossil repository eval {
+		INSERT
+		INTO shun 
+		VALUES (:u, :now, NULL)
+	    }
+	}
+    }
+
+    puts [color good OK]
     return
 }
 
@@ -77,17 +107,73 @@ proc ::fx::shun::remove {config} {
     fossil show-repository-location
     error "not-yet-implemented"
 
-    # TODO: filter out those not shunned
-    # TODO: abort if nothing left
-    # TODO: show remaining uuids, and
-    # TODO: interactively confirm to accept them.
-    # TODO: remove from shun, if confirmed.
+    set ulist [DropNotShunned [$config @uuid]]
+    if {![llength $ulist]} {
+	puts [color note "Nothing to accept"]
+	return
+    }
+
+    [table t {UUID to accept} {
+	foreach u $ulist { $t add $u }
+    }] show
+
+    puts [color confirm [term wrap "Please confirm that you wish to (re)accept the [llength $ulist] uuids above."]]
+    set confirmed [term ask/yn {Confirm} no]
+
+    if {!$confirmed} {
+	puts [color note [term wrap "You have canceled the operation. Thank you and good byte."]]
+	return
+    }
+
+    puts -nonewline "Accepting ... "
+    flush stdout
+
+    set now [clock seconds]
+    fossil repository transaction {
+	foreach u $ulist {
+	    fossil repository eval {
+		DELETE FROM shun
+		WHERE uuid = :u
+	    }
+	}
+    }
+
+    puts [color good OK]
     return
 }
 
 # # ## ### ##### ######## ############# ######################
 
+proc ::fx::shun::DropShunned {ulist} {
+    set shunned [List]
+    set r {}
+    foreach u $ulist {
+	if {$u in $shunned} {
+	    puts "${u}: [color warn {Already shunned}"
+	}
+	lappend r $u
+    }
+    return $r
+}
 
+proc ::fx::shun::DropNotShunned {ulist} {
+    set shunned [List]
+    set r {}
+    foreach u $ulist {
+	if {$u ni $shunned} {
+	    puts "${u}: [color warn {Not shunned}"
+	}
+	lappend r $u
+    }
+    return $r
+}
+
+proc ::fx::shun::List {} {
+    return [fossil repository eval {
+	SELECT uuid
+	FROM   shun
+    }]
+}
 
 # # ## ### ##### ######## ############# ######################
 package provide fx::shun 0
