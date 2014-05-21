@@ -23,6 +23,7 @@
 
 package require Tcl 8.5
 package require cmdr::help::tcl
+package require cmdr::actor 1.3 ;# Need -extend support for common/use blocks.
 package require cmdr
 package require debug
 package require debug::caller
@@ -617,7 +618,7 @@ cmdr create fx::fx [file tail $::argv0] {
 	    Management of a fossil repositories' set of ticket reports.
 	}
 
-	common *all* {
+	common *all* -extend {
 	    use .repository
 	}
 
@@ -696,7 +697,7 @@ cmdr create fx::fx [file tail $::argv0] {
 	    Management of enumerations for the ticketing system.
 	}
 
-	common *all* {
+	common *all* -extend {
 	    use .repository
 	}
 
@@ -986,7 +987,7 @@ cmdr create fx::fx [file tail $::argv0] {
 
 	# TODO: Global routes?
 	officer route {
-	    common *all* {
+	    common *all* -extend {
 		use .repository
 	    }
 
@@ -1177,7 +1178,7 @@ cmdr create fx::fx [file tail $::argv0] {
 	    of shunned artifacts in bulk.
 	}
 
-	common *all* {
+	common *all* -extend {
 	    section Advanced {Armed & Dangerous} Shunning
 	    use .repository
 	}
