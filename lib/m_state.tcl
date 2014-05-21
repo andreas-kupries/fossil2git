@@ -33,7 +33,7 @@ namespace eval ::fx::mgr {
 
 namespace eval ::fx::mgr::state {
     namespace export register list \
-	begin done table? table table_start table_end row sql sep module
+	begin done table-rids? table? table table_start table_end row sql sep module
     namespace ensemble create
 
     namespace import ::fx::fossil
@@ -75,6 +75,45 @@ proc ::fx::mgr::state::done {} {
     debug.fx/mgr/state {}
     variable thechan
     close $thechan
+    return
+}
+
+proc ::fx::mgr::state::table-rids? {table } {
+    debug.fx/mgr/state {}
+
+    # Tables which are just rid references into event (blob) need
+    # special handling because rids are not constant from repository
+    # to repository, only uuid's are. So, on saving we convert the
+    # local rids to uuids and put them into a temp table. On import we
+    # convert the uuids of the temp table back to local rids.
+
+    if {![fossil has   $table]} return
+    if { [fossil empty $table]} return
+
+    sep
+    sql {
+	CREATE TEMP TABLE fx_aku_temp_uuid ( uuid TEXT UNIQUE );
+    }
+
+    #state table? $table {id 0} -- Convert rid to uuid and save
+    table_start fx_aku_temp_uuid
+    fossil repository eval [subst {
+	    SELECT B.uuid AS uuid
+	    FROM "$table" S, blob B
+	    WHERE B.rid = S.id
+    }] {
+	row "\"$uuid\""
+    }
+    table_end
+    # Convert uuid to rid and restore.
+    sql [subst {
+	INSERT INTO "$table"
+	SELECT rid
+	FROM   blob
+	WHERE blob.uuid IN fx_aku_temp_uuid;
+
+	DROP TABLE fx_aku_temp_uuid;
+    }]
     return
 }
 
