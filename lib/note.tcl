@@ -1054,6 +1054,11 @@ proc ::fx::note::deliver {config} {
     # Delivery for single repository.
     fossil show-repository-location
 
+    if {[mailer get suspended]} {
+	puts [color note {Delivery of notifications is suspended here.}]
+	return
+    }
+
     # Determine the routes. This gives us (implicitly)
     #   a list of the events we can ignore, too.
     # Determine not-yet-seen events.
