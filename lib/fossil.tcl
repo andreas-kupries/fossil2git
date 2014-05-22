@@ -34,9 +34,9 @@ namespace eval ::fx::fossil {
 	c_show_repository c_set_repository c_reset_repository \
 	c_default_repository test-tags test-branch branch-of changeset \
 	date-of reveal user-info users user-config get-manifest \
-	fx-tables fx-enums fx-enum-items ticket-title ticket-fields \
-	global global-location show-global-location repository \
-	repository-location show-repository-location \
+	fx-tables fx-maps fx-map-keys fx-map-dict fx-enums fx-enum-items \
+	ticket-title ticket-fields global global-location show-global-location \
+	repository repository-location show-repository-location \
 	set-repository-location repository-find repository-open \
 	global-has has empty global-empty
 	
@@ -419,7 +419,7 @@ proc ::fx::fossil::fx-enum-items {table} {
     return [repository eval [subst {
 	SELECT item
 	FROM   $table
-	ORDER BY item
+	ORDER BY id
     }]]
 }
 
@@ -427,11 +427,42 @@ proc ::fx::fossil::fx-enums {} {
     debug.fx/fossil {}
     set enums {}
     foreach table [fx-tables] {
+	# Must match "table-of" in vt_enum.tcl.
 	if {![string match fx_aku_enum_* $table]} continue
 	regsub {^fx_aku_enum_} $table {} enum
 	lappend enums $enum
     }
     return $enums
+}
+
+proc ::fx::fossil::fx-maps {} {
+    debug.fx/fossil {}
+    set maps {}
+    foreach table [fx-tables] {
+	# Must match "table-of" in vt_map.tcl.
+	if {![string match fx_aku_map_* $table]} continue
+	regsub {^fx_aku_map_} $table {} map
+	lappend maps $map
+    }
+    return $maps
+}
+
+proc ::fx::fossil::fx-map-keys {table} {
+    debug.fx/fossil {}
+    return [repository eval [subst {
+	SELECT key
+	FROM   $table
+	ORDER BY key
+    }]]
+}
+
+proc ::fx::fossil::fx-map-dict {table} {
+    debug.fx/fossil {}
+    return [repository eval [subst {
+	SELECT key, value
+	FROM   $table
+	ORDER BY key
+    }]]
 }
 
 proc ::fx::fossil::fx-tables {} {
