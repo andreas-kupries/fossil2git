@@ -34,7 +34,7 @@ namespace eval ::fx::fossil {
 	c_show_repository c_set_repository c_reset_repository \
 	c_default_repository test-tags test-branch branch-of changeset \
 	date-of reveal user-info users user-config get-manifest \
-	fx-tables fx-maps fx-map-keys fx-map-dict fx-enums fx-enum-items \
+	fx-tables fx-maps fx-map-keys fx-map-get fx-enums fx-enum-items \
 	ticket-title ticket-fields global global-location show-global-location \
 	repository repository-location show-repository-location \
 	set-repository-location repository-find repository-open \
@@ -456,7 +456,7 @@ proc ::fx::fossil::fx-map-keys {table} {
     }]]
 }
 
-proc ::fx::fossil::fx-map-dict {table} {
+proc ::fx::fossil::fx-map-get {table} {
     debug.fx/fossil {}
     return [repository eval [subst {
 	SELECT key, value

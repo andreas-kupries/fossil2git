@@ -22,6 +22,7 @@ package require interp
 package require fx::fossil
 package require fx::mgr::state
 package require fx::mgr::enum ; # enumerations
+package require fx::mgr::map  ; # mappings
 package require fx::seen      ; # notification state
 
 # # ## ### ##### ######## ############# ######################
