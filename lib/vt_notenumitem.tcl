@@ -22,7 +22,7 @@ package require cmdr::validate::common
 # # ## ### ##### ######## ############# ######################
 
 namespace eval ::fx::validate {
-    namespace export enum
+    namespace export not-enum-item
     namespace ensemble create
 }
 
