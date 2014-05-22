@@ -1194,6 +1194,23 @@ cmdr create fx::fx [file tail $::argv0] {
 	} [fx::call note show-notified]
     }
 
+    # # ## ### ##### ######## ############# ######################
+    ## Peering
+
+    officer peer {
+	# list
+	# exchange
+	# add|remove push url
+	#            pull url
+	#            sync url
+	# add-config|remove-config ...
+	# add-git|remove-git
+    }
+    alias peers = peer list
+
+    # # ## ### ##### ######## ############# ######################
+    ## Shun management
+
     officer shun {
 	description {
 	    Dangerous and advanced commands to manipulate the list
@@ -1226,6 +1243,9 @@ cmdr create fx::fx [file tail $::argv0] {
 	} [fx::call shun remove]
     }
     alias shunned = shun list
+
+    # # ## ### ##### ######## ############# ######################
+    ## Developer support, feature test and repository inspection.
 
     officer test {
 	description {
@@ -1307,6 +1327,9 @@ cmdr create fx::fx [file tail $::argv0] {
 	    use .uuid
 	} [fx::call fossil test-branch]
     }
+
+    # # ## ### ##### ######## ############# ######################
+    ## Developer support, debugging.
 
     officer debug {
 	description {
