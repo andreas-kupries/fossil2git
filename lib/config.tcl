@@ -14,9 +14,10 @@
 # @@ Meta End
 
 package require Tcl 8.5
-package require fx::table
-package require fx::mgr::config
 package require fx::fossil
+package require fx::mgr::config
+package require fx::table
+package require fx::validate::setting
 
 # # ## ### ##### ######## ############# ######################
 
@@ -24,8 +25,10 @@ namespace eval ::fx::config {
     namespace export available list get set unset
     namespace ensemble create
 
-    namespace import ::fx::mgr::config
     namespace import ::fx::fossil
+    namespace import ::fx::mgr::config
+    namespace import ::fx::validate::setting
+
     namespace import ::fx::table::do
     rename do table
 }
@@ -34,9 +37,7 @@ namespace eval ::fx::config {
 
 proc ::fx::config::available {config} {
     variable legal
-    fossil show-repository-location
-    # TODO: FIXME - fx::validate::setting ?
-    puts [join [lsort -dict [dict keys $legal]] \n]
+    puts [join [lsort -dict [dict keys [setting legal]]] \n]
 }
 
 proc ::fx::config::list {config} {

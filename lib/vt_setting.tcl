@@ -27,7 +27,7 @@ namespace eval ::fx::validate {
 ## Custom validation type, legal validateuration settings
 
 namespace eval ::fx::validate::setting {
-    namespace export release validate default complete
+    namespace export release validate default complete legal
     namespace ensemble create
 
     namespace import ::cmdr::validate::common::fail
@@ -37,18 +37,18 @@ namespace eval ::fx::validate::setting {
 proc ::fx::validate::setting::release  {p x} { return }
 proc ::fx::validate::setting::validate {p x} {
     set cx [string tolower $x]
-    if {$cx in [dict keys [Legal]]} { return $cx }
+    if {$cx in [dict keys [legal]]} { return $cx }
     fail $p SETTING "a configuration setting" $x
 }
 
 proc ::fx::validate::setting::default  {p} { return {} }
 proc ::fx::validate::setting::complete {p} {
-    complete-enum [dict keys [Legal]] 1 $x
+    complete-enum [dict keys [legal]] 1 $x
 }
 
 # # ## ### ##### ######## ############# ######################
 
-proc ::fx::validate::setting::Legal {} {
+proc ::fx::validate::setting::legal {} {
     # Dictionary of configuration settings, mapping name to
     # specification consisting of its name in the database and a
     # boolean flag indicating if the user can change this setting.
