@@ -100,41 +100,44 @@ namespace eval ::fx::validate::mail-config {
     # location url. repository location, for links in the generated mail.
     # sender   string. mail address of the nominal sender, inserted into the generated mails.
 
-    # debug    boolean, low-level smtp-debugging yes/no
-    # tls      boolean. (can|must) use TLS to secure smtp yes/no.
-    # host     string. name of mail-relay host
-    # password string. password for smtp transaction
-    # user     string. user for smtp  transaction.
-    # port     integer. port on mail-relay host accepting smtp.
+    # debug     boolean, low-level smtp-debugging yes/no
+    # tls       boolean. (can|must) use TLS to secure smtp yes/no.
+    # host      string. name of mail-relay host
+    # password  string. password for smtp transaction
+    # user      string. user for smtp  transaction.
+    # port      integer. port on mail-relay host accepting smtp.
 
-    # limit    number of mails the system is allowed to send in a block.
+    # limit     number of mails the system is allowed to send in a block.
+    # suspended boolean, delivery disabled no/yes.
 
     variable map {
-	debug    fx-aku-note-mail-debug
-	footer   fx-aku-note-project-footer
-	header   fx-aku-note-project-header
-	host 	 fx-aku-note-mail-host
-	limit    fx-aku-note-mail-limit
-	location fx-aku-note-project-location
-	password fx-aku-note-mail-password
-	port 	 fx-aku-note-mail-port
-	sender   fx-aku-note-mail-sender
-	tls      fx-aku-note-mail-tls
-	user     fx-aku-note-mail-user
+	debug     fx-aku-note-mail-debug
+	footer    fx-aku-note-project-footer
+	header    fx-aku-note-project-header
+	host 	  fx-aku-note-mail-host
+	limit     fx-aku-note-mail-limit
+	location  fx-aku-note-project-location
+	password  fx-aku-note-mail-password
+	port 	  fx-aku-note-mail-port
+	sender    fx-aku-note-mail-sender
+	suspended fx-aku-note-mail-suspended
+	tls       fx-aku-note-mail-tls
+	user      fx-aku-note-mail-user
     }
 
     variable default {
-	debug    0
-	footer   {}
-	header   {Automated mail by @cmd@, on behalf of @sender@}
-	host 	 localhost
-	limit    10
-	location {*Undefined* Please set.}
-	password {}
-	port 	 25
-	sender   {*Undefined* Please set.}
-	tls      0
-	user     {}
+	debug     0
+	footer    {}
+	header    {Automated mail by @cmd@, on behalf of @sender@}
+	host 	  localhost
+	limit     10
+	location  {*Undefined* Please set.}
+	password  {}
+	port 	  25
+	sender    {*Undefined* Please set.}
+	suspended 0
+	tls       0
+	user      {}
     }
 
     # Last map: Type validation per setting.
