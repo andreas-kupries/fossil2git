@@ -1104,6 +1104,8 @@ proc ::fx::note::deliver {config} {
 	if {[llength $recv]} {
 	    puts [color note "Change $uuid :: $comment"]
 	    mailer send $mc $recv [mailgen artifact $m] $verbose
+	} else {
+	    puts [color note "Change $uuid ** ignored, no receivers"]
 	}
     }
 
