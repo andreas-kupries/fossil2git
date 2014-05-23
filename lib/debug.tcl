@@ -49,7 +49,6 @@ proc ::fx::debug::levels {config} {
     package require fx::report
     package require fx::seen
     package require fx::table
-    package require fx::tty
     package require fx::user
     package require fx::user
     package require fx::validate::enum
@@ -63,6 +62,10 @@ proc ::fx::debug::levels {config} {
     package require fx::validate::ticket-field
     package require fx::validate::user
     package require fx::validate::uuid
+
+    package require cmdr::tty
+    package require cmdr::color
+    package require cmdr::ask
 
     [table t {Level} {
 	foreach level [lsort -dict [debug names]]  {

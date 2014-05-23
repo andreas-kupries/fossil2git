@@ -16,6 +16,7 @@
 # # ## ### ##### ######## ############# ######################
 
 package require Tcl 8.5
+package require cmdr::color
 package require debug
 package require debug::caller
 package require interp
@@ -23,7 +24,6 @@ package require linenoise
 package require textutil::adjust
 package require try
 
-package require fx::color
 package require fx::fossil
 package require fx::mgr::enum
 package require fx::table
@@ -39,7 +39,7 @@ namespace eval ::fx::enum {
 	add remove change items
     namespace ensemble create
 
-    namespace import ::fx::color
+    namespace import ::cmdr::color
     namespace import ::fx::fossil
     namespace import ::fx::util
 

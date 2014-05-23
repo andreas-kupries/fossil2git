@@ -14,9 +14,10 @@
 # @@ Meta End
 
 package require Tcl 8.5
+package require cmdr::color
+
 package require fx::fossil
 package require fx::manifest
-package require fx::color
 package require fx::mgr::state
 
 debug level  fx/seen
@@ -33,7 +34,7 @@ namespace eval ::fx::seen {
 	regenerate-series
     namespace ensemble create
 
-    namespace import ::fx::color
+    namespace import ::cmdr::color
     namespace import ::fx::fossil
     namespace import ::fx::manifest
     namespace import ::fx::mgr::state

@@ -15,7 +15,7 @@
 
 package require Tcl 8.5
 package require clock::iso8601
-package require fx::color
+package require cmdr::color
 
 debug level  fx/manifest
 debug prefix fx/manifest {}
@@ -30,7 +30,7 @@ namespace eval ::fx::manifest {
     namespace export parse
     namespace ensemble create
 
-    namespace import ::fx::color
+    namespace import ::cmdr::color
 }
 
 # # ## ### ##### ######## ############# ######################

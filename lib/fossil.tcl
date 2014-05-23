@@ -15,9 +15,10 @@
 
 package require Tcl 8.5
 package require sqlite3
+package require cmdr::color
 package require debug
 package require debug::caller
-package require fx::color
+
 package require fx::table
 
 debug level  fx/fossil
@@ -42,7 +43,7 @@ namespace eval ::fx::fossil {
 	
     namespace ensemble create
 
-    namespace import ::fx::color
+    namespace import ::cmdr::color
     namespace import ::fx::table::do
     rename do table
 

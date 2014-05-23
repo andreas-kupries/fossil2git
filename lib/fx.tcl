@@ -22,6 +22,7 @@
 # @@ Meta End
 
 package require Tcl 8.5
+package require cmdr::color ; # color activation
 package require cmdr::history
 package require cmdr::help::tcl
 package require cmdr::actor 1.3 ;# Need -extend support for common/use blocks.
@@ -29,15 +30,10 @@ package require cmdr
 package require debug
 package require debug::caller
 package require lambda
-package require fx::color ; # color activation
+
 package require fx::seen  ; # set-progress
-package require fx::tty   ; # stdout check
 
 # # ## ### ##### ######## ############# ######################
-
-if {[fx tty stdout]} {
-    fx color activate
-}
 
 debug level  fx
 debug prefix fx {[debug caller] | }
@@ -65,19 +61,19 @@ proc ::fx::main {argv} {
       trap {CMDR PARAMETER LOCKED} {e o} - \
       trap {CMDR DO UNKNOWN} {e o} {
 	debug.fx {trap - cmdline user error}
-	puts stderr "$::argv0 cmdr: [color error $e]"
+	puts stderr "$::argv0 cmdr: [cmdr color error $e]"
 	return 1
 
     } trap {FX} {e o} {
 	debug.fx {trap - other user error}
-	puts stderr "$::argv0 general: [color error $e]"
+	puts stderr "$::argv0 general: [cmdr color error $e]"
 	return 1
 	
     } on error {e o} {
 	debug.fx {trap - general, internal error}
 	debug.fx {[debug pdict $o]}
 	# TODO: nicer formatting of internal errors.
-	puts stderr [color error $::errorInfo]
+	puts stderr [cmdr color error $::errorInfo]
 	mail-error $::errorInfo
 	return 1
     }
@@ -258,7 +254,7 @@ cmdr create fx::fx [file tail $::argv0] {
 	    and otherwise not.
 	} {
 	    when-set [lambda {p x} {
-		fx color activate $x
+		cmdr color activate $x
 	    }]
 	}
     }

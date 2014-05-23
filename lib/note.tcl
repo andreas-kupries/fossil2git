@@ -14,6 +14,7 @@
 # @@ Meta End
 
 package require Tcl 8.5
+package require cmdr::color
 package require debug
 package require debug::caller
 package require interp
@@ -24,7 +25,6 @@ package require fx::mailgen
 package require fx::manifest
 package require fx::mgr::config
 package require fx::seen
-package require fx::color
 package require fx::table
 package require fx::util
 package require fx::validate::event-type
@@ -44,7 +44,7 @@ namespace eval ::fx::note {
 
     namespace ensemble create
 
-    namespace import ::fx::color
+    namespace import ::cmdr::color
     namespace import ::fx::fossil
     namespace import ::fx::mailer
     namespace import ::fx::mailgen
