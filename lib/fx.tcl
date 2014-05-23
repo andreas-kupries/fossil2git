@@ -706,6 +706,125 @@ cmdr create fx::fx [file tail $::argv0] {
     }
 
     # # ## ### ##### ######## ############# ######################
+    ## Management of mappings (used both internally and by the
+    ## ticket system, for example. Type, severity, priority, category,
+    ## ...)
+
+    officer map {
+	description {
+	    Management of mappings for the ticketing system and other
+	    things.
+	}
+
+	common *all* -extend {
+	    use .repository
+	}
+
+	common .map {
+	    input map {
+		Name of the mapping to operate on.
+	    } {
+		validate [fx::vt map]
+	    }
+	}
+
+	private list {
+	    section Mappings
+	    description {
+		List all mappings stored in the repository.
+	    }
+	} [fx::call map list]
+	default
+
+	private create {
+	    section Mappings
+	    description {
+		Create a new named mapping.
+	    }
+	    input newmap {
+		Name of the mapping to create.
+	    } {
+		validate [fx::vt not-map]
+	    }
+	} [fx::call map create]
+
+	private delete {
+	    section Mappings
+	    description {
+		Delete the named mapping.
+	    }
+	    use .map
+	} [fx::call map delete]
+
+	private export {
+	    section Mappings
+	    description {
+		Save the specified mapping(s).
+		Defaults to all.
+	    }
+	    use .export
+	    input maps {
+		Names of the mappings to export.
+	    } {
+		optional
+		list
+		validate [fx::vt map]
+	    }
+	} [fx::call map export]
+
+	private import {
+	    section Mappings
+	    description {
+		Import one or more mappings from a save file.
+	    }
+	    use .extend
+	    use .import
+	} [fx::call map import]
+
+	private add {
+	    section Mappings
+	    description {
+		Extend the specified mapping with the given key and value.
+	    }
+	    use .map
+	    input key {
+		Additional key of the mapping.
+	    } {
+		validate [fx::vt not-map-key]
+	    }
+	    input value {
+		Value associated with the key
+	    } {
+		input str
+	    }
+	} [fx::call map add]
+
+	private remove {
+	    section Mappings
+	    description {
+		Remove the named keys(s) from the specified mapping.
+	    }
+	    use .map
+	    input items {
+		Keys of the mapping to remove.
+	    } {
+		list
+		validate [fx::vt map-key]
+	    }
+	} [fx::call map remove]
+
+	private show {
+	    section Mappings
+	    description {
+		Show the key/value pairs of the specified mapping.
+	    }
+	    use .map
+	} [fx::call map show]
+    }
+
+    alias maps = map list
+
+    # # ## ### ##### ######## ############# ######################
     ## Management of enumerations (used both internally and by the
     ## ticket system, for example. Type, severity, priority, category,
     ## ...)
