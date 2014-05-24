@@ -1,0 +1,88 @@
+# -*- tcl -*- tcl.tk//DSL tcltest//EN//2.0 tcl.tk//DSL tcltest//EN//2.0
+## (c) 2014 Andreas Kupries
+# # ## ### ##### ######## ############# #####################
+## client map add - Extend existing mappings.
+
+kt check Tcl     8.5
+kt check tcltest 2
+
+# # ## ### ##### ######## ############# #####################
+
+kt source support/common.tcl
+
+# # ## ### ##### ######## ############# #####################
+
+test map-add-1.0 {client map add, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run map add
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
+
+test map-add-1.1 {client map add, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run map add M
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
+
+test map-add-1.2 {client map add, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run map add M K
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
+
+test map-add-1.3 {client map add, wrong args, too many} -setup {
+    stage-open
+} -body {
+    run map add M K V X
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "* cmdr: wrong#args, too many*"
+
+test map-add-1.4 {client map add, duplicate key} -setup {
+    stage-open
+    run map create foo
+    run map add    foo k v
+} -body {
+    run map add foo k
+} -cleanup {
+    run map delete foo
+    stage-close
+} -match glob -returnCodes error \
+    -result [fail-expected {an unused mapping key} input key a]
+
+test map-add-1.5 {client map add, unknown mapping} -setup {
+    stage-open
+} -body {
+    run map add foo k v
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error \
+    -result [fail-expected {a mapping} input map foo]
+
+# # ## ### ##### ######## ############# #####################
+
+test map-add-2.0 {client map add} -setup {
+    stage-open
+    on-stage {
+	run map create foo
+    }
+} -body {
+    on-stage {
+	run map add  foo k v
+	run map show foo
+    }
+} -cleanup {
+    on-stage {
+	run map delete foo
+    }
+    stage-close
+} -match glob -result [viewFile support/ma-20.txt]
+
+# # ## ### ##### ######## ############# #####################
+cleanupTests

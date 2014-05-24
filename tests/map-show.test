@@ -1,0 +1,81 @@
+# -*- tcl -*- tcl.tk//DSL tcltest//EN//2.0 tcl.tk//DSL tcltest//EN//2.0
+## (c) 2014 Andreas Kupries
+# # ## ### ##### ######## ############# #####################
+## client map items - Show mapping content.
+
+kt check Tcl     8.5
+kt check tcltest 2
+
+# # ## ### ##### ######## ############# #####################
+
+kt source support/common.tcl
+
+# # ## ### ##### ######## ############# #####################
+
+test map-show-1.0 {client map show, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run map show
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
+
+test map-show-1.1 {client map show, wrong args, too many} -setup {
+    stage-open
+} -body {
+    run map show M X
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "* cmdr: wrong#args, too many*"
+
+test map-show-1.2 {client map show, unknown mapping} -setup {
+    stage-open
+} -body {
+    run map show foo
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error \
+    -result [fail-expected {a mapping} input map foo]
+
+# # ## ### ##### ######## ############# #####################
+
+test map-show-2.0 {client map show, empty map} -setup {
+    stage-open
+    on-stage {
+	run map create foo
+    }
+} -body {
+    on-stage {
+	run map show foo
+    }
+} -cleanup {
+    on-stage {
+	run map delete foo
+    }
+    stage-close
+} -match glob -result [viewFile support/ms-20.txt]
+
+test map-show-2.1 {client map show} -setup {
+    stage-open
+    on-stage {
+	run map create foo
+	run map add    foo a 5
+	run map add    foo b 4
+	run map add    foo c 3
+	run map add    foo d 2
+	run map add    foo e 1
+	run map add    foo f 0
+    }
+} -body {
+    on-stage {
+	run map show foo
+    }
+} -cleanup {
+    on-stage {
+	run map delete foo
+    }
+    stage-close
+} -match glob -result [viewFile support/ms-21.txt]
+
+# # ## ### ##### ######## ############# #####################
+cleanupTests

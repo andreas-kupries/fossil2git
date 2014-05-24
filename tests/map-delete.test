@@ -1,0 +1,66 @@
+# -*- tcl -*- tcl.tk//DSL tcltest//EN//2.0 tcl.tk//DSL tcltest//EN//2.0
+## (c) 2014 Andreas Kupries
+# # ## ### ##### ######## ############# #####################
+## client map delete - Remove existing mappings.
+
+kt check Tcl     8.5
+kt check tcltest 2
+
+# # ## ### ##### ######## ############# #####################
+
+kt source support/common.tcl
+
+# # ## ### ##### ######## ############# #####################
+
+test map-delete-1.0 {client map delete, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run map delete
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
+
+test map-delete-1.1 {client map delete, wrong args, too many} -setup {
+    stage-open
+} -body {
+    run map delete M X
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "* cmdr: wrong#args, too many*"
+
+test map-delete-1.2 {client map delete, unknown definition} -setup {
+    stage-open
+} -body {
+    run map delete foo
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error \
+    -result [fail-expected {an mapping} input map foo]
+
+test map-delete-1.3 {client map delete, bad name (illegal character)} -setup {
+    stage-open
+} -body {
+    run map delete foo!
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error \
+    -result [fail-expected {an mapping} input map foo!]
+
+# # ## ### ##### ######## ############# #####################
+
+test map-delete-2.1 {client map delete} -setup {
+    stage-open
+    on-stage {
+	run map create foo
+    }
+} -body {
+    on-stage {
+	run map delete foo
+	run maps
+    }
+} -cleanup {
+    stage-close
+} -match glob -result [viewFile support/m-empty.txt]
+
+# # ## ### ##### ######## ############# #####################
+cleanupTests
