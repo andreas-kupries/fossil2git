@@ -795,7 +795,7 @@ cmdr create fx::fx [file tail $::argv0] {
 	    input value {
 		Value associated with the key
 	    } {
-		input str
+		validate str
 	    }
 	} [fx::call map add]
 
