@@ -16,6 +16,7 @@
 # # ## ### ##### ######## ############# ######################
 
 package require Tcl 8.5
+package require cmdr::color
 package require debug
 package require debug::caller
 package require interp
@@ -23,7 +24,6 @@ package require linenoise
 package require textutil::adjust
 package require try
 
-package require fx::color
 package require fx::fossil
 package require fx::mgr::enum
 package require fx::table
@@ -39,7 +39,7 @@ namespace eval ::fx::enum {
 	add remove change items
     namespace ensemble create
 
-    namespace import ::fx::color
+    namespace import ::cmdr::color
     namespace import ::fx::fossil
     namespace import ::fx::util
 
@@ -49,8 +49,7 @@ namespace eval ::fx::enum {
     namespace import ::fx::mgr::enum
     rename enum mgr
 
-    # After the manager has been handled,
-    # avoid conflict.
+    # After the manager has been handled, avoid conflict.
     namespace import ::fx::validate::enum
 }
 
@@ -204,7 +203,6 @@ proc ::fx::enum::export {config} {
     } else {
 	set enums [fossil fx-enums]
     }
-    set chan [$config @output]
 
     lappend data "\# fx enumeration export @ [clock format [clock seconds]]"
     foreach enum $enums {
@@ -215,7 +213,8 @@ proc ::fx::enum::export {config} {
 	lappend data end
     }
 
-    puts $chan [join $data \n]
+    set    chan [open [$config @output] w]
+    puts  $chan [join $data \n]
     close $chan
     return
 }

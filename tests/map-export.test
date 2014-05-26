@@ -1,0 +1,91 @@
+# -*- tcl -*- tcl.tk//DSL tcltest//EN//2.0 tcl.tk//DSL tcltest//EN//2.0
+## (c) 2014 Andreas Kupries
+# # ## ### ##### ######## ############# #####################
+## client map export - Export (named) mappings.
+
+kt check Tcl     8.5
+kt check tcltest 2
+
+# # ## ### ##### ######## ############# #####################
+
+kt source support/common.tcl
+
+# # ## ### ##### ######## ############# #####################
+
+test map-export-1.0 {client map export, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run map export
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
+
+test map-export-1.1 {client map export, unknown mapping} -setup {
+    stage-open
+} -body {
+    run map export E foo
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error \
+    -result [fail-expected {a mapping} input maps foo]
+
+# # ## ### ##### ######## ############# #####################
+
+test map-export-2.0 {client map export, default none} -setup {
+    stage-open
+} -body {
+    on-stage {
+	run map export E
+	viewFile [pwd]/E
+    }
+} -cleanup {
+    removeFile [pwd]/E
+    stage-close
+} -match glob -result [viewFile support/me-empty.txt]
+
+test map-export-2.1 {client map export, export named} -setup {
+    stage-open
+    on-stage {
+	run map create foo
+	run map add    foo a f
+	run map add    foo b e
+	run map add    foo c d
+	run map create bar
+	run map add    bar 0 tau
+	run map add    bar 1 gamma
+	run map add    bar 2 phi
+    }
+} -body {
+    on-stage {
+	run map export E bar
+	viewFile [pwd]/E
+    }
+} -cleanup {
+    removeFile [pwd]/E
+    stage-close
+} -match glob -result [viewFile support/me-21.txt]
+
+test map-export-2.2 {client map export, export all} -setup {
+    stage-open
+    on-stage {
+	run map create foo
+	run map add    foo a f
+	run map add    foo b e
+	run map add    foo c d
+	run map create bar
+	run map add    bar 0 tau
+	run map add    bar 1 gamma
+	run map add    bar 2 phi
+    }
+} -body {
+    on-stage {
+	run map export E
+	viewFile [pwd]/E
+    }
+} -cleanup {
+    removeFile [pwd]/E
+    stage-close
+} -match glob -result [viewFile support/me-22.txt]
+
+# # ## ### ##### ######## ############# #####################
+cleanupTests

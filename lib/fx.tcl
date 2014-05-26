@@ -22,6 +22,7 @@
 # @@ Meta End
 
 package require Tcl 8.5
+package require cmdr::color ; # color activation
 package require cmdr::history
 package require cmdr::help::tcl
 package require cmdr::actor 1.3 ;# Need -extend support for common/use blocks.
@@ -29,15 +30,10 @@ package require cmdr
 package require debug
 package require debug::caller
 package require lambda
-package require fx::color ; # color activation
+
 package require fx::seen  ; # set-progress
-package require fx::tty   ; # stdout check
 
 # # ## ### ##### ######## ############# ######################
-
-if {[fx tty stdout]} {
-    fx color activate
-}
 
 debug level  fx
 debug prefix fx {[debug caller] | }
@@ -65,19 +61,19 @@ proc ::fx::main {argv} {
       trap {CMDR PARAMETER LOCKED} {e o} - \
       trap {CMDR DO UNKNOWN} {e o} {
 	debug.fx {trap - cmdline user error}
-	puts stderr "$::argv0 cmdr: [color error $e]"
+	puts stderr "$::argv0 cmdr: [cmdr color error $e]"
 	return 1
 
     } trap {FX} {e o} {
 	debug.fx {trap - other user error}
-	puts stderr "$::argv0 general: [color error $e]"
+	puts stderr "$::argv0 general: [cmdr color error $e]"
 	return 1
 	
     } on error {e o} {
 	debug.fx {trap - general, internal error}
 	debug.fx {[debug pdict $o]}
 	# TODO: nicer formatting of internal errors.
-	puts stderr [color error $::errorInfo]
+	puts stderr [cmdr color error $::errorInfo]
 	mail-error $::errorInfo
 	return 1
     }
@@ -258,7 +254,7 @@ cmdr create fx::fx [file tail $::argv0] {
 	    and otherwise not.
 	} {
 	    when-set [lambda {p x} {
-		fx color activate $x
+		cmdr color activate $x
 	    }]
 	}
     }
@@ -708,6 +704,125 @@ cmdr create fx::fx [file tail $::argv0] {
 	    }
 	} [fx::call report delete]
     }
+
+    # # ## ### ##### ######## ############# ######################
+    ## Management of mappings (used both internally and by the
+    ## ticket system, for example. Type, severity, priority, category,
+    ## ...)
+
+    officer map {
+	description {
+	    Management of mappings for the ticketing system and other
+	    things.
+	}
+
+	common *all* -extend {
+	    use .repository
+	}
+
+	common .map {
+	    input map {
+		Name of the mapping to operate on.
+	    } {
+		validate [fx::vt map]
+	    }
+	}
+
+	private list {
+	    section Mappings
+	    description {
+		List all mappings stored in the repository.
+	    }
+	} [fx::call map list]
+	default
+
+	private create {
+	    section Mappings
+	    description {
+		Create a new named mapping.
+	    }
+	    input newmap {
+		Name of the mapping to create.
+	    } {
+		validate [fx::vt not-map]
+	    }
+	} [fx::call map create]
+
+	private delete {
+	    section Mappings
+	    description {
+		Delete the named mapping.
+	    }
+	    use .map
+	} [fx::call map delete]
+
+	private export {
+	    section Mappings
+	    description {
+		Save the specified mapping(s).
+		Defaults to all.
+	    }
+	    use .export
+	    input maps {
+		Names of the mappings to export.
+	    } {
+		optional
+		list
+		validate [fx::vt map]
+	    }
+	} [fx::call map export]
+
+	private import {
+	    section Mappings
+	    description {
+		Import one or more mappings from a save file.
+	    }
+	    use .extend
+	    use .import
+	} [fx::call map import]
+
+	private add {
+	    section Mappings
+	    description {
+		Extend the specified mapping with the given key and value.
+	    }
+	    use .map
+	    input key {
+		Additional key of the mapping.
+	    } {
+		validate [fx::vt not-map-key]
+	    }
+	    input value {
+		Value associated with the key
+	    } {
+		validate str
+	    }
+	} [fx::call map add]
+
+	private remove {
+	    section Mappings
+	    description {
+		Remove the named keys(s) from the specified mapping.
+	    }
+	    use .map
+	    input items {
+		Keys of the mapping to remove.
+	    } {
+		list
+		validate [fx::vt map-key]
+	    }
+	} [fx::call map remove]
+
+	private show {
+	    section Mappings
+	    description {
+		Show the key/value pairs of the specified mapping.
+	    }
+	    use .map
+	} [fx::call map show]
+    }
+
+    alias maps = map list
 
     # # ## ### ##### ######## ############# ######################
     ## Management of enumerations (used both internally and by the

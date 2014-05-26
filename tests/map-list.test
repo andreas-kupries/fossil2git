@@ -1,0 +1,76 @@
+# -*- tcl -*- tcl.tk//DSL tcltest//EN//2.0 tcl.tk//DSL tcltest//EN//2.0
+## (c) 2014 Andreas Kupries
+# # ## ### ##### ######## ############# #####################
+## client map list - Show the known mappings.
+
+kt check Tcl     8.5
+kt check tcltest 2
+
+# # ## ### ##### ######## ############# #####################
+
+kt source support/common.tcl
+
+# # ## ### ##### ######## ############# #####################
+
+test map-list-1.0 {client map list, default = list, initial empty} -setup {
+    stage-open
+} -body {
+    on-stage {
+	run map
+    }
+} -cleanup {
+    stage-close
+} -match glob -result [viewFile support/m-empty.txt]
+
+test map-list-1.1 {client map list alias, initial empty} -setup {
+    stage-open
+} -body {
+    on-stage {
+	run maps
+    }
+} -cleanup {
+    stage-close
+} -match glob -result [viewFile support/m-empty.txt]
+
+test map-list-1.2 {client map list, initial empty} -setup {
+    stage-open
+} -body {
+    on-stage {
+	run map list
+    }
+} -cleanup {
+    stage-close
+} -match glob -result [viewFile support/m-empty.txt]
+
+# # ## ### ##### ######## ############# #####################
+
+test map-list-2.0 {client map list, wrong args, too many} -setup {
+    stage-open
+} -body {
+    run map list X
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "* cmdr: wrong#args, too many*"
+
+
+test map-list-2.1 {client map list} -setup {
+    stage-open
+    on-stage {
+	run map create foo
+	run map add foo a D
+	run map add foo b E
+	run map add foo c F
+    }
+} -body {
+    on-stage {
+	run map list
+    }
+} -cleanup {
+    on-stage {
+	run map delete foo
+    }
+    stage-close
+} -match glob -result [viewFile support/m-21.txt]
+
+# # ## ### ##### ######## ############# #####################
+cleanupTests

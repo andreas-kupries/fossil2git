@@ -12,15 +12,9 @@ kt source support/common.tcl
 
 # # ## ### ##### ######## ############# #####################
 
-test enum-import-1.0 {client enum import, wrong args, not enough} -setup {
-    stage-open
-} -body {
-    run enum import
-} -cleanup {
-    stage-close
-} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
+## Note: Import file optional, defaults to stdin.
 
-test enum-import-1.1 {client enum import, wrong args, too many} -setup {
+test enum-import-1.0 {client enum import, wrong args, too many} -setup {
     stage-open
 } -body {
     run enum import I X
@@ -37,7 +31,7 @@ test enum-import-2.0 {client enum import, replace, default} -setup {
     }
 } -body {
     on-stage {
-	run enum import [viewFile support/ee-21.txt]
+	run enum import [tcltest::tempPath support/ee-21.txt]
 	run enums
     }
 } -cleanup {
@@ -51,26 +45,26 @@ test enum-import-2.1 {client enum import, keep} -setup {
     }
 } -body {
     on-stage {
-	run enum import --extend [viewFile support/ee-21.txt]
+	run enum import --extend [tcltest::tempPath support/ee-21.txt]
 	run enums
     }
 } -cleanup {
     stage-close
 } -match glob -result [viewFile support/eim-21.txt]
 
-test enum-import-2.2 {client enum import, keep} -setup {
+test enum-import-2.2 {client enum import, keep, no overwrite} -setup {
     stage-open
     on-stage {
 	run enum create foo nu tau beta
     }
 } -body {
     on-stage {
-	run enum import --extend [viewFile support/ee-22.txt]
+	run enum import --extend [tcltest::tempPath support/ee-22.txt]
 	run enums
     }
 } -cleanup {
     stage-close
-} -match glob -result [viewFile support/eim-22.txt]
+} -match glob -result [viewFile support/eim-21.txt]
 
 # # ## ### ##### ######## ############# #####################
 cleanupTests

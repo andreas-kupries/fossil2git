@@ -2,7 +2,7 @@
 # # ## ### ##### ######## ############# ######################
 
 # @@ Meta Begin
-# Package fx::validate::not-enum 0
+# Package fx::validate::not-map 0
 # Meta author      {Andreas Kupries}
 # Meta category    ?
 # Meta description ?
@@ -22,18 +22,18 @@ package require cmdr::validate::common
 # # ## ### ##### ######## ############# ######################
 
 namespace eval ::fx::validate {
-    namespace export not-enum
+    namespace export not-map
     namespace ensemble create
 }
 
 # # ## ### ##### ######## ############# ######################
-## Custom validation types: enumerations and items.
+## Custom validation types: mappings.
 
-namespace eval ::fx::validate::not-enum {
+namespace eval ::fx::validate::not-map {
     namespace export release validate default complete
     namespace ensemble create
 
-    namespace import ::fx::fossil::fx-enums
+    namespace import ::fx::fossil::fx-maps
     namespace import ::cmdr::validate::common::fail
     namespace import ::cmdr::validate::common::fail-known-thing
 
@@ -41,11 +41,11 @@ namespace eval ::fx::validate::not-enum {
     variable pattern "\[$illegal\]"
 }
 
-proc ::fx::validate::not-enum::release  {p x} { return }
-proc ::fx::validate::not-enum::validate {p x} {
+proc ::fx::validate::not-map::release  {p x} { return }
+proc ::fx::validate::not-map::validate {p x} {
     variable pattern
-    # Note 1: enum names are case-insensitive.
-    # Note 2: enum names cannot be multi-line,
+    # Note 1: map names are case-insensitive.
+    # Note 2: map names cannot be multi-line,
     #         nor contain many special characters.
 
     set cx [string tolower $x]
@@ -53,27 +53,28 @@ proc ::fx::validate::not-enum::validate {p x} {
     if {[regexp $pattern $cx]} {
 	# Lexical failure.
 	variable illegal
-	fail $p NOT-ENUM "an enumeration name" $x " (Not allowed: [string map [list \n \\n] $illegal])"
+	fail $p NOT-MAP "a mapping name" $x " (Not allowed: [string map [list \n \\n] $illegal])"
     }
 
     if {$cx in [Values $p]} {
-	fail-known-thing $p NOT-ENUM "enumeration" $x
+	fail-known-thing $p NOT-MAP "mapping" $x
     }
 
-    # Internal representation is the enum table.
-    return fx_aku_enum_$cx
+    # Internal representation is the map table.
+    # Must match "fx-maps" in fossil.tcl
+    return fx_aku_map_$cx
 }
 
-proc ::fx::validate::not-enum::default  {p} { return {} }
-proc ::fx::validate::not-enum::complete {p} { return {} }
+proc ::fx::validate::not-map::default  {p} { return {} }
+proc ::fx::validate::not-map::complete {p} { return {} }
 
-proc ::fx::validate::not-enum::Values {p} {
+proc ::fx::validate::not-map::Values {p} {
     # Force parameter, validation can happen
     # before the cmdr completion phase.
     $p config @repository-db
-    return [fx-enums]
+    return [fx-maps]
 }
 
 # # ## ### ##### ######## ############# ######################
-package provide fx::validate::not-enum 0
+package provide fx::validate::not-map 0
 return

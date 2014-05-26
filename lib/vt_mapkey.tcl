@@ -2,7 +2,7 @@
 # # ## ### ##### ######## ############# ######################
 
 # @@ Meta Begin
-# Package fx::validate::not-enum-item 0
+# Package fx::validate::map-key 0
 # Meta author      {Andreas Kupries}
 # Meta category    ?
 # Meta description ?
@@ -22,37 +22,40 @@ package require cmdr::validate::common
 # # ## ### ##### ######## ############# ######################
 
 namespace eval ::fx::validate {
-    namespace export not-enum-item
+    namespace export enum
     namespace ensemble create
 }
 
 # # ## ### ##### ######## ############# ######################
 ## Custom validation types: enumerations and items.
 
-namespace eval ::fx::validate::not-enum-item {
+namespace eval ::fx::validate::map-key {
     namespace export release validate default complete
     namespace ensemble create
 
-    namespace import ::fx::fossil::fx-enum-items
+    namespace import ::fx::fossil::fx-map-keys
     namespace import ::cmdr::validate::common::fail
+    namespace import ::cmdr::validate::common::complete-enum
 }
 
-proc ::fx::validate::not-enum-item::release  {p x} { return }
-proc ::fx::validate::not-enum-item::validate {p x} {
-    if {$x ni [Values $p]} { return $x }
-    fail $p NOT-ENUM-ITEM "an unused enumeration item" $x
+proc ::fx::validate::map-key::release  {p x} { return }
+proc ::fx::validate::map-key::validate {p x} {
+    if {$x in [Values $p]} { return $x }
+    fail $p MAP-KEY "a mapping key" $x
 }
 
-proc ::fx::validate::not-enum-item::default  {p} { return {} }
-proc ::fx::validate::not-enum-item::complete {p} { return {} }
+proc ::fx::validate::map-key::default  {p} { return {} }
+proc ::fx::validate::map-key::complete {p} {
+    complete-enum [Values $p] 0 $x
+}
 
-proc ::fx::validate::not-enum-item::Values {p} {
+proc ::fx::validate::map-key::Values {p} {
     # Force parameter, validation can happen
     # before the cmdr completion phase.
     $p config @repository-db
-    return [fx-enum-items [$p config @enum]]
+    return [fx-map-keys [$p config @map]]
 }
 
 # # ## ### ##### ######## ############# ######################
-package provide fx::validate::not-enum-item 0
+package provide fx::validate::map-key 0
 return

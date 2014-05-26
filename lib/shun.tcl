@@ -16,10 +16,10 @@
 package require Tcl 8.5
 package require debug
 package require debug::caller
+package require cmdr::color
+package require cmdr::ask
 
-package require fx::color
 package require fx::fossil
-package require fx::term
 package require fx::validate::uuid
 
 # # ## ### ##### ######## ############# ######################
@@ -29,9 +29,9 @@ namespace eval ::fx::shun {
 
     namespace ensemble create
 
-    namespace import ::fx::color
+    namespace import ::cmdr::color
+    namespace import ::cmdr::ask
     namespace import ::fx::fossil
-    namespace import ::fx::term
     namespace import ::fx::validate::uuid
 
     namespace import ::fx::table::do
@@ -75,11 +75,9 @@ proc ::fx::shun::add {config} {
 	foreach u $ulist { $t add $u }
     }] show
 
-    puts [color confirm [term wrap "Please confirm that you wish to shun the [llength $ulist] uuids above."]]
-    set confirmed [term ask/yn {Confirm} no]
-
+    set confirmed [ask yn "Please confirm that you wish to shun the [llength $ulist] uuids above" no]
     if {!$confirmed} {
-	puts [color note [term wrap "You have canceled the operation. Thank you and good bye."]]
+	puts [color note "You have canceled the operation.\nThank you and good bye."]
 	return
     }
 
@@ -115,11 +113,9 @@ proc ::fx::shun::remove {config} {
 	foreach u $ulist { $t add $u }
     }] show
 
-    puts [color confirm [term wrap "Please confirm that you wish to (re)accept the [llength $ulist] uuids above."]]
-    set confirmed [term ask/yn {Confirm} no]
-
+    set confirmed [ask yn "Please confirm that you wish to (re)accept the [llength $ulist] uuids above." no]
     if {!$confirmed} {
-	puts [color note [term wrap "You have canceled the operation. Thank you and good bye."]]
+	puts [color note "You have canceled the operation.\nThank you and good bye."]
 	return
     }
 
@@ -147,7 +143,7 @@ proc ::fx::shun::DropShunned {ulist} {
     set r {}
     foreach u $ulist {
 	if {$u in $shunned} {
-	    puts "${u}: [color warn {Already shunned}]"
+	    puts "${u}: [color warning {Already shunned}]"
 	    continue
 	}
 	lappend r $u
@@ -160,7 +156,7 @@ proc ::fx::shun::DropNotShunned {ulist} {
     set r {}
     foreach u $ulist {
 	if {$u ni $shunned} {
-	    puts "${u}: [color warn {Not shunned}]"
+	    puts "${u}: [color warning {Not shunned}]"
 	    continue
 	}
 	lappend r $u
