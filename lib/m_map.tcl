@@ -38,7 +38,7 @@ namespace eval ::fx::mgr {
 namespace eval ::fx::mgr::map {
     namespace export \
 	has keys get create delete \
-	add add1 remove remove1
+	add add1 remove remove1 exists
     namespace ensemble create
 
     namespace import ::fx::fossil
@@ -76,6 +76,11 @@ proc ::fx::mgr::map::keys {name} {
 proc ::fx::mgr::map::get {name} {
     debug.fx/mgr/map {}
     return [fossil fx-map-get [map table-of $name]]
+}
+
+proc ::fx::mgr::map::exists {name key} {
+    debug.fx/mgr/map {}
+    return [dict exists [fossil fx-map-get [map table-of $name]] $key]
 }
 
 proc ::fx::mgr::map::create {name} {

@@ -383,11 +383,34 @@ cmdr create fx::fx [file tail $::argv0] {
 	    validate [fx::vt mail-address]
 	}
     }
+    common .configarea-hidden-validation {
+	state configarea {
+	    Hidden parameter to be used by the internal validation of
+	    config area names.
+	} {
+	    label imported-configarea
+	    validate [fx::vt config-area]
+	}
+    }
+    common .syncdir-hidden-validation {
+	state syncdir {
+	    Hidden parameter to be used by the internal validation of
+	    sync directions.
+	} {
+	    label imported-syncdir
+	    validate [fx::vt sync-dir]
+	}
+    }
     common .routemap {
 	# All validation fields used by the RouteMap code.
 	use .field-hidden-validation
 	use .event-hidden-validation
 	use .mailaddr-hidden-validation
+    }
+    common .peermap {
+	# All validation fields used by the peering code.
+	use .configarea-hidden-validation
+	use .syncdir-hidden-validation
     }
 
     # # ## ### ##### ######## ############# ######################
@@ -718,6 +741,7 @@ cmdr create fx::fx [file tail $::argv0] {
 
 	common *all* -extend {
 	    use .repository
+	    section Mappings
 	}
 
 	common .map {
@@ -737,7 +761,6 @@ cmdr create fx::fx [file tail $::argv0] {
 	default
 
 	private create {
-	    section Mappings
 	    description {
 		Create a new named mapping.
 	    }
@@ -749,7 +772,6 @@ cmdr create fx::fx [file tail $::argv0] {
 	} [fx::call map create]
 
 	private delete {
-	    section Mappings
 	    description {
 		Delete the named mapping.
 	    }
@@ -757,7 +779,6 @@ cmdr create fx::fx [file tail $::argv0] {
 	} [fx::call map delete]
 
 	private export {
-	    section Mappings
 	    description {
 		Save the specified mapping(s).
 		Defaults to all.
@@ -773,7 +794,6 @@ cmdr create fx::fx [file tail $::argv0] {
 	} [fx::call map export]
 
 	private import {
-	    section Mappings
 	    description {
 		Import one or more mappings from a save file.
 	    }
@@ -782,7 +802,6 @@ cmdr create fx::fx [file tail $::argv0] {
 	} [fx::call map import]
 
 	private add {
-	    section Mappings
 	    description {
 		Extend the specified mapping with the given key and value.
 	    }
@@ -800,7 +819,6 @@ cmdr create fx::fx [file tail $::argv0] {
 	} [fx::call map add]
 
 	private remove {
-	    section Mappings
 	    description {
 		Remove the named keys(s) from the specified mapping.
 	    }
@@ -814,7 +832,6 @@ cmdr create fx::fx [file tail $::argv0] {
 	} [fx::call map remove]
 
 	private show {
-	    section Mappings
 	    description {
 		Show the key/value pairs of the specified mapping.
 	    }
@@ -1313,13 +1330,92 @@ cmdr create fx::fx [file tail $::argv0] {
     ## Peering
 
     officer peer {
-	# list
-	# exchange
-	# add|remove push url
-	#            pull url
-	#            sync url
-	# add-config|remove-config ...
-	# add-git|remove-git
+	description {
+	    Management of multiple peers for repository synchronization.
+	}
+
+	common *all* -extend {
+	    use .repository
+	    section Peering
+	}
+
+	private list {
+	    description {
+		List all peers stored in the repository, and associated
+		definitions (what to synchronize, direction, type of peer).
+	    }
+	    use .peermap
+	} [fx::call peer list]
+	default
+
+	common .direction {
+	    input direction {
+		The direction of synchronization
+	    } { validate [fx::vt sync-dir] }
+	}
+	common .area {
+	    input area {
+		The configuration area to synchronize
+	    } { validate [fx::vt config-area] }
+	}
+	common .peer-fossil {
+	    input peer {
+		The fossil peer to talk to.
+	    } { validate [fx::vt peer-fossil] }
+	}
+	common .peer-git {
+	    input peer {
+		The git peer to talk to.
+	    } { validate [fx::vt peer-git] }
+	}
+	common .not-peer-fossil {
+	    input peer {
+		The fossil peer to talk to.
+	    } { validate [fx::vt not-peer-fossil] }
+	}
+	common .not-peer-git {
+	    input peer {
+		The git peer to talk to.
+	    } { validate [fx::vt not-peer-git] }
+	}
+
+	private add {
+	    description {
+		Add direction and area of exchange for a fossil peer.
+	    }
+	    use .direction
+	    use .area
+	    use .not-peer-fossil
+	} [fx::call peer add]
+
+	private remove {
+	    description {
+		Add direction and area of exchange for a fossil peer.
+	    }
+	    use .direction
+	    use .area
+	    use .peer-fossil
+	} [fx::call peer remove]
+
+	private add-git {
+	    description {
+		Add export to a git peer.
+	    }
+	    use .not-peer-git
+	} [fx::call peer add]
+
+	private remove-git {
+	    description {
+		Remove export to a git peer.
+	    }
+	    use .peer-git
+	} [fx::call peer add]
+
+	private exchange {
+	    description {
+		Run a data exchange with all configured peers
+	    }
+	} [fx::call peer exchange]
     }
     alias peers = peer list
 
@@ -1331,6 +1427,7 @@ cmdr create fx::fx [file tail $::argv0] {
 	    Dangerous and advanced commands to manipulate the list
 	    of shunned artifacts in bulk.
 	}
+	# TODO: testsuite.
 
 	common *all* -extend {
 	    section Advanced {Armed & Dangerous} Shunning
