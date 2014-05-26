@@ -51,7 +51,7 @@ namespace eval ::fx::mgr::map {
 	"$etable"
         (
 	 id    INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-	 key   TEXT    UNIQUE
+	 key   TEXT    UNIQUE,
 	 value TEXT
 	);
     }

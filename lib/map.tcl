@@ -63,8 +63,8 @@ proc ::fx::map::list {config} {
     fossil show-repository-location
 
     set maps [fossil fx-maps]
-    [table t {Name Elements} {
-	foreach m $maps {
+    [table t {Name} {
+	foreach m [lsort -dict $maps] {
 	    $t add $m
 	}
     }] show
@@ -110,15 +110,15 @@ proc ::fx::map::add {config} {
     set value [$config @value]
 
     puts "Mapping \"$map\":"
-    AddBulk $map [list $key $value]
+    AddBulk $map [::list $key $value]
     puts [color good OK]
     return
 }
 
-proc ::fx::enum::AddBulk {enum dict} {
-    debug.fx/enum {}
+proc ::fx::map::AddBulk {map dict} {
+    debug.fx/map {}
     fossil repository transaction {
-	foreach {key value} $dict $items {
+	foreach {key value} $dict {
 	puts "  Map \"$key\" -> \"$value\" ... "
 	    mgr add1 $map $key $value
 	}
@@ -235,7 +235,7 @@ proc ::fx::map::import {config} {
 	puts -nonewline "  Importing $map ([expr {[llength $items] /2}]) ... "
 	flush stdout
 
-	if {[mgr exists $map]} {
+	if {[mgr has $map]} {
 	    puts [color warning "Ignored, already known"]
 	    continue
 	}

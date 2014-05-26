@@ -27,7 +27,7 @@ test map-export-1.1 {client map export, unknown mapping} -setup {
 } -cleanup {
     stage-close
 } -match glob -returnCodes error \
-    -result [fail-expected {an mapping} input maps foo]
+    -result [fail-expected {a mapping} input maps foo]
 
 # # ## ### ##### ######## ############# #####################
 

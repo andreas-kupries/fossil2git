@@ -1,0 +1,11 @@
+# fx mapping export @ *
+map foo
+item a f
+item b e
+item c d
+end
+map bar
+item 0 tau
+item 1 gamma
+item 2 phi
+end

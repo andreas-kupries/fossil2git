@@ -49,12 +49,12 @@ test map-add-1.4 {client map add, duplicate key} -setup {
     run map create foo
     run map add    foo k v
 } -body {
-    run map add foo k
+    run map add foo k v'
 } -cleanup {
     run map delete foo
     stage-close
 } -match glob -returnCodes error \
-    -result [fail-expected {an unused mapping key} input key a]
+    -result [fail-expected {an unused mapping key} input key k]
 
 test map-add-1.5 {client map add, unknown mapping} -setup {
     stage-open

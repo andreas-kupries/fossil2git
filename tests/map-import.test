@@ -32,7 +32,7 @@ test map-import-2.0 {client map import, replace, default} -setup {
     }
 } -body {
     on-stage {
-	run map import [viewFile support/me-21.txt]
+	run map import [tcltest::tempPath support/me-21.txt]
 	run maps
     }
 } -cleanup {
@@ -49,7 +49,7 @@ test map-import-2.1 {client map import, keep} -setup {
     }
 } -body {
     on-stage {
-	run map import --extend [viewFile support/me-21.txt]
+	run map import --extend [tcltest::tempPath support/me-21.txt]
 	run maps
     }
 } -cleanup {
@@ -66,7 +66,7 @@ test map-import-2.2 {client map import, keep} -setup {
     }
 } -body {
     on-stage {
-	run map import --extend [viewFile support/me-22.txt]
+	run map import --extend [tcltest::tempPath support/me-22.txt]
 	run maps
     }
 } -cleanup {
