@@ -23,6 +23,22 @@ fx config available [OPTIONS]
     fx enums [OPTIONS]
     fx exit [OPTIONS]
     fx help [OPTIONS] [<cmdname>...]
+    fx history clear [OPTIONS]
+    fx history exit [OPTIONS]
+    fx history help [OPTIONS] [<cmdname>...]
+    fx history limit [OPTIONS] [<n>]
+    fx history list [OPTIONS] [<n>]
+    fx map add [OPTIONS] <map> <key> <value>
+    fx map create [OPTIONS] <newmap>
+    fx map delete [OPTIONS] <map>
+    fx map exit [OPTIONS]
+    fx map export [OPTIONS] <output> [<maps>...]
+    fx map help [OPTIONS] [<cmdname>...]
+    fx map import [OPTIONS] [<input>]
+    fx map list [OPTIONS]
+    fx map remove [OPTIONS] <map> <items>...
+    fx map show [OPTIONS] <map>
+    fx maps [OPTIONS]
     fx note config exit [OPTIONS]
     fx note config export [OPTIONS] <output>
     fx note config help [OPTIONS] [<cmdname>...]
@@ -51,6 +67,7 @@ fx config available [OPTIONS]
     fx note route import [OPTIONS] [<input>]
     fx note route list [OPTIONS]
     fx note routes [OPTIONS]
+    fx note show-notified [OPTIONS]
     fx note show-pending [OPTIONS]
     fx note update-history [OPTIONS]
     fx note watched [OPTIONS]
@@ -68,6 +85,12 @@ fx config available [OPTIONS]
     fx repository show [OPTIONS]
     fx restore [OPTIONS] [<input>]
     fx save [OPTIONS] <output>
+    fx shun add [OPTIONS] <uuid>...
+    fx shun exit [OPTIONS]
+    fx shun help [OPTIONS] [<cmdname>...]
+    fx shun list [OPTIONS]
+    fx shun remove [OPTIONS] <uuid>...
+    fx shunned [OPTIONS]
     fx test branch [OPTIONS] <uuid>
     fx test exit [OPTIONS]
     fx test help [OPTIONS] [<cmdname>...]

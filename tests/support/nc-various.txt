@@ -1,15 +1,17 @@
 Checkout @ */fxhome.*/source.fossil
-+---+----------+------------------------------------------------+-*-+
-|   | Key      | Value                                          | Last-Changed *|
-+---+----------+------------------------------------------------+-*-+
-| R | debug    | 1                                              | * |
-| D | footer   |                                                |                              |
-| D | header   | Automated mail by @cmd@, on behalf of @sender@ |                              |
-| G | host     | foo.mailer.somewhere                           | * |
-| R | location | http://foo.fossil-hoster.anywhere              | * |
-| R | password | gargamel                                       | * |
-| R | port     | 445                                            | * |
-| R | sender   | notifier@fossil-hoster.anywhere                | * |
-| R | tls      | 1                                              | * |
-| R | user     | griffin                                        | * |
-+---+----------+------------------------------------------------+-*-+
++---+-----------+------------------------------------------------+-*-+
+|   | Key       | Value                                          | Last-Changed *|
++---+-----------+------------------------------------------------+-*-+
+| R | debug     | 1                                              | * |
+| D | footer    |                                                |                              |
+| D | header    | Automated mail by @cmd@, on behalf of @sender@ |                              |
+| G | host      | foo.mailer.somewhere                           | * |
+| D | limit     | 10                                             |                              |
+| R | location  | http://foo.fossil-hoster.anywhere              | * |
+| R | password  | gargamel                                       | * |
+| R | port      | 445                                            | * |
+| R | sender    | notifier@fossil-hoster.anywhere                | * |
+| D | suspended | 0                                              |                              |
+| R | tls       | 1                                              | * |
+| R | user      | griffin                                        | * |
++---+-----------+------------------------------------------------+-*-+
