@@ -29,8 +29,8 @@ Enumerations
     fx enum create <newenum> [<items>...]     Create a new named enumeration
     fx enum delete <enum>                     Delete the named enumeration
     fx enum export <output> [<enums>...]      Save the specified enumeration(s)
-    fx enum import [<input>]                  Import an enumeration from a save
-                                              file
+    fx enum import [<input>]                  Import one or more enumerations
+                                              from a save file
     fx enum items <enum>                      Show the items in the specified
                                               enumeration
     fx enum list                              List all enumerations stored in
@@ -60,6 +60,28 @@ Introspection
                                  routes)
     fx version                   Print version and revision of the application
 
+    Command history
+        fx history clear          Clear the saved history
+        fx history limit [<n>]    Limit the size of the history
+        fx history list [<n>]     Show the saved history of commands
+
+Mappings
+    fx map add <map> <key> <value>        Extend the specified mapping with the
+                                          given key and value
+    fx map create <newmap>                Create a new named mapping
+    fx map delete <map>                   Delete the named mapping
+    fx map export <output> [<maps>...]    Save the specified mapping(s)
+    fx map import [<input>]               Import one or more mappings from a
+                                          save file
+    fx map list                           List all mappings stored in the
+                                          repository
+    fx map remove <map> <items>...        Remove the named keys(s) from the
+                                          specified mapping
+    fx map show <map>                     Show the key/value pairs of the
+                                          specified mapping
+    fx maps                               List all mappings stored in the
+                                          repository
+
 Notifications
     fx note deliver     Send notification emails to all configured
                         destinations, for all new events (since the last
@@ -73,6 +95,8 @@ Notifications
                                           invokation of "note deliver"
         fx note mark-pending [<uuid>]     Mark the specified (or all) artifacts
                                           as having not been notified before
+        fx note show-notified             Show all events in the timeline
+                                          marked as notified
         fx note show-pending              Show all events in the timeline
                                           marked as pending
         fx note update-history            Update the cached ticket history used
@@ -173,6 +197,15 @@ User Management
                                           the configured remote
     fx user sync                          Sync the user information at the
                                           configured remote and here
+
+Advanced
+    Armed & Dangerous
+        Shunning
+            fx shun add <uuid>...       Shun artifacts
+            fx shun list                Show the list of all shunned artifacts
+            fx shun remove <uuid>...    Reaccept artifacts which have been
+                                        shunned
+            fx shunned                  Show the list of all shunned artifacts
 
 Miscellaneous
     fx restore [<input>]    Load all fx-managed state of a repository

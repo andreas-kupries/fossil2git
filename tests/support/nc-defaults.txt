@@ -1,15 +1,17 @@
 Checkout @ */fxhome.*/source.fossil
-+---+----------+------------------------------------------------+--------------+
-|   | Key      | Value                                          | Last-Changed |
-+---+----------+------------------------------------------------+--------------+
-| D | debug    | 0                                              |              |
-| D | footer   |                                                |              |
-| D | header   | Automated mail by @cmd@, on behalf of @sender@ |              |
-| D | host     | localhost                                      |              |
-| D | location | \*Undefined\* Please set.                        |              |
-| D | password |                                                |              |
-| D | port     | 25                                             |              |
-| D | sender   | \*Undefined\* Please set.                        |              |
-| D | tls      | 0                                              |              |
-| D | user     |                                                |              |
-+---+----------+------------------------------------------------+--------------+
++---+-----------+------------------------------------------------+--------------+
+|   | Key       | Value                                          | Last-Changed |
++---+-----------+------------------------------------------------+--------------+
+| D | debug     | 0                                              |              |
+| D | footer    |                                                |              |
+| D | header    | Automated mail by @cmd@, on behalf of @sender@ |              |
+| D | host      | localhost                                      |              |
+| D | limit     | 10                                             |              |
+| D | location  | \*Undefined\* Please set.                        |              |
+| D | password  |                                                |              |
+| D | port      | 25                                             |              |
+| D | sender    | \*Undefined\* Please set.                        |              |
+| D | suspended | 0                                              |              |
+| D | tls       | 0                                              |              |
+| D | user      |                                                |              |
++---+-----------+------------------------------------------------+--------------+

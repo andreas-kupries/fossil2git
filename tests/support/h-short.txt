@@ -62,7 +62,7 @@ fx enum help [OPTIONS] [<cmdname>...]
     commands is given. The default format is --full.
 
 fx enum import [OPTIONS] [<input>]
-    Import an enumeration from a save file.
+    Import one or more enumerations from a save file.
 
 fx enum items [OPTIONS] <enum>
     Show the items in the specified enumeration.
@@ -84,6 +84,57 @@ fx exit [OPTIONS]
 fx help [OPTIONS] [<cmdname>...]
     Retrieve help for a command or command set. Without arguments help for all
     commands is given. The default format is --full.
+
+fx history clear [OPTIONS]
+    Clear the saved history.
+
+fx history exit [OPTIONS]
+    Exit the shell. No-op if not in a shell.
+
+fx history help [OPTIONS] [<cmdname>...]
+    Retrieve help for a command or command set. Without arguments help for all
+    commands is given. The default format is --full.
+
+fx history limit [OPTIONS] [<n>]
+    Limit the size of the history. If no limit is specified the current limit
+    is shown.
+
+fx history list [OPTIONS] [<n>]
+    Show the saved history of commands.
+
+fx map add [OPTIONS] <map> <key> <value>
+    Extend the specified mapping with the given key and value.
+
+fx map create [OPTIONS] <newmap>
+    Create a new named mapping.
+
+fx map delete [OPTIONS] <map>
+    Delete the named mapping.
+
+fx map exit [OPTIONS]
+    Exit the shell. No-op if not in a shell.
+
+fx map export [OPTIONS] <output> [<maps>...]
+    Save the specified mapping(s). Defaults to all.
+
+fx map help [OPTIONS] [<cmdname>...]
+    Retrieve help for a command or command set. Without arguments help for all
+    commands is given. The default format is --full.
+
+fx map import [OPTIONS] [<input>]
+    Import one or more mappings from a save file.
+
+fx map list [OPTIONS]
+    List all mappings stored in the repository.
+
+fx map remove [OPTIONS] <map> <items>...
+    Remove the named keys(s) from the specified mapping.
+
+fx map show [OPTIONS] <map>
+    Show the key/value pairs of the specified mapping.
+
+fx maps [OPTIONS]
+    List all mappings stored in the repository.
 
 fx note config exit [OPTIONS]
     Exit the shell. No-op if not in a shell.
@@ -180,6 +231,9 @@ fx note route list [OPTIONS]
 fx note routes [OPTIONS]
     Show all configured mail destinations (per event type).
 
+fx note show-notified [OPTIONS]
+    Show all events in the timeline marked as notified.
+
 fx note show-pending [OPTIONS]
     Show all events in the timeline marked as pending.
 
@@ -233,6 +287,25 @@ fx restore [OPTIONS] [<input>]
 
 fx save [OPTIONS] <output>
     Save all fx-managed state of the repository.
+
+fx shun add [OPTIONS] <uuid>...
+    Shun artifacts.
+
+fx shun exit [OPTIONS]
+    Exit the shell. No-op if not in a shell.
+
+fx shun help [OPTIONS] [<cmdname>...]
+    Retrieve help for a command or command set. Without arguments help for all
+    commands is given. The default format is --full.
+
+fx shun list [OPTIONS]
+    Show the list of all shunned artifacts.
+
+fx shun remove [OPTIONS] <uuid>...
+    Reaccept artifacts which have been shunned.
+
+fx shunned [OPTIONS]
+    Show the list of all shunned artifacts.
 
 fx test branch [OPTIONS] <uuid>
     Determine the branch of a checkin.

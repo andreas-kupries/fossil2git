@@ -12,15 +12,7 @@ kt source support/common.tcl
 
 # # ## ### ##### ######## ############# #####################
 
-test map-import-1.0 {client map import, wrong args, not enough} -setup {
-    stage-open
-} -body {
-    run map import
-} -cleanup {
-    stage-close
-} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
-
-test map-import-1.1 {client map import, wrong args, too many} -setup {
+test map-import-1.0 {client map import, wrong args, too many} -setup {
     stage-open
 } -body {
     run map import I X
