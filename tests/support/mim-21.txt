@@ -1,0 +1,7 @@
+Checkout @ */fxhome.*/source.fossil
++------+
+| Name |
++------+
+| bar  |
+| foo  |
++------+

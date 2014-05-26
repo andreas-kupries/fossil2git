@@ -1,0 +1,7 @@
+Checkout @ */fxhome.*/source.fossil
+Mapping "foo":
++-----+-------+
+| Key | Value |
++-----+-------+
+| k'  | v'    |
++-----+-------+
