@@ -258,7 +258,7 @@ proc ::fx::peer::add-git {config} {
 	return
     }
 
-    map add1 peer@fossil $url {}
+    map add1 peer@git $url {}
     puts [color good OK]
     return
 }
@@ -280,17 +280,9 @@ proc ::fx::peer::remove-git {config} {
 	return
     }
 
-    # NOTE: Having the last-uuid state stored here looks to be bad, as
-    # we cannot re-add a mistakenly removed peer without either having
-    # a command to fix the uuid information, or working from scratch.
-    # OTOH, having it in the git peer state in some temp dir ... Would
-    # be removed as well, so does not really matter.
-    #
-    # Could however ask for confirmation.
+    # TODO: Document the git data structures.
 
-    # TODO: Manage the git peer exchange state (git checkout).
-
-    map remove1 peer@fossil $url
+    map remove1 peer@git $url
     puts [color good OK]
     return
 }

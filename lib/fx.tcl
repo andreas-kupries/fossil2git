@@ -1418,14 +1418,14 @@ cmdr create fx::fx [file tail $::argv0] {
 		Add export to a git peer.
 	    }
 	    use .not-peer-git
-	} [fx::call peer add]
+	} [fx::call peer add-git]
 
 	private remove-git {
 	    description {
 		Remove export to a git peer.
 	    }
 	    use .peer-git
-	} [fx::call peer add]
+	} [fx::call peer remove-git]
 
 	private exchange {
 	    description {
