@@ -1,0 +1,174 @@
+# -*- tcl -*- tcl.tk//DSL tcltest//EN//2.0 tcl.tk//DSL tcltest//EN//2.0
+## (c) 2014 Andreas Kupries
+# # ## ### ##### ######## ############# #####################
+## client peer add - Extend existing peers (fossil).
+
+kt check Tcl     8.5
+kt check tcltest 2
+
+# # ## ### ##### ######## ############# #####################
+
+kt source support/common.tcl
+
+# # ## ### ##### ######## ############# #####################
+
+test peer-add-1.0 {client peer add, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run peer add
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
+
+test peer-add-1.1 {client peer add, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run peer add D
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
+
+test peer-add-1.2 {client peer add, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run peer add D A
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
+
+test peer-add-1.3 {client peer add, wrong args, too many} -setup {
+    stage-open
+} -body {
+    run peer add D A U X
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "* cmdr: wrong#args, too many*"
+
+# # ## ### ##### ######## ############# #####################
+
+test peer-add-1.4 {client peer add, already a git peer} -setup {
+    stage-open
+    on-stage {
+	run peer add-git http://foo
+    }
+} -body {
+    on-stage {
+	run peer add push content http://foo
+    }
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result [fail-expected {an unused fossil repo} input items a]
+
+# # ## ### ##### ######## ############# #####################
+
+test peer-add-2.0 {client peer add, bogus direction} -setup {
+    stage-open
+} -body {
+    on-stage {
+	run peer add up-or-down content http://foo
+    }
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result [fail-expected {an unused fossil repo} input items a]
+
+set n 0
+foreach direction {
+    push pull sync
+} {
+    incr n
+    test peer-add-2.$n "client peer add $direction is ok" -setup {
+	stage-open
+    } -body {
+	on-stage {
+	    run peer add $direction content http://foo
+	}
+    } -cleanup {
+	stage-close
+    } -result {}
+}
+
+# # ## ### ##### ######## ############# #####################
+
+test peer-add-3.0 {client peer add, bogus area} -setup {
+    stage-open
+} -body {
+    on-stage {
+	run peer add push delorean http://foo
+    }
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result [fail-expected {an unused fossil repo} input items a]
+
+set n 0
+foreach area {
+    all content email project shun skin ticket user
+} {
+    incr n
+    test peer-add-3.$n "client peer add $area is ok" -setup {
+	stage-open
+    } -body {
+	on-stage {
+	    run peer add push $area http://foo
+	}
+    } -cleanup {
+	stage-close
+    } -result {}
+}
+
+# # ## ### ##### ######## ############# #####################
+## Cover all possible paths through add
+## - destination is new
+## - area is new
+## - destination|area are known, merge directions.
+
+test peer-add-4.0 {client peer add, new destination} -setup {
+    stage-open
+} -body {
+    on-stage {
+	run peer add push content http://foo
+	run peers
+    }
+} -cleanup {
+    on-stage {
+	run peer remove push content http://foo
+    }
+    stage-close
+} -match glob -result [viewFile support/pa-40.txt]
+
+test peer-add-4.1 {client peer add, known destination, new area} -setup {
+    stage-open
+    on-stage {
+	run peer add push content http://foo
+    }
+} -body {
+    on-stage {
+	run peer add push skin http://foo
+	run peers
+    }
+} -cleanup {
+    on-stage {
+	run peer remove push content http://foo
+	run peer remove push skin    http://foo
+    }
+    stage-close
+} -match glob -result [viewFile support/pa-41.txt]
+
+test peer-add-4.2 {client peer add, known destination, known area, merge directions} -setup {
+    stage-open
+    on-stage {
+	run peer add push content http://foo
+    }
+} -body {
+    on-stage {
+	run peer add pull content http://foo
+	run peers
+    }
+} -cleanup {
+    on-stage {
+	run peer remove sync content http://foo
+    }
+    stage-close
+} -match glob -result [viewFile support/pa-42.txt]
+
+# # ## ### ##### ######## ############# #####################
+cleanupTests

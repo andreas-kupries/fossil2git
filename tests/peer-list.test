@@ -1,0 +1,73 @@
+# -*- tcl -*- tcl.tk//DSL tcltest//EN//2.0 tcl.tk//DSL tcltest//EN//2.0
+## (c) 2014 Andreas Kupries
+# # ## ### ##### ######## ############# #####################
+## client peer list - Show the known peers.
+
+kt check Tcl     8.5
+kt check tcltest 2
+
+# # ## ### ##### ######## ############# #####################
+
+kt source support/common.tcl
+
+# # ## ### ##### ######## ############# #####################
+
+test peer-list-1.0 {client peer list, default = list, initial empty} -setup {
+    stage-open
+} -body {
+    on-stage {
+	run peer
+    }
+} -cleanup {
+    stage-close
+} -match glob -result [viewFile support/p-empty.txt]
+
+test peer-list-1.1 {client peer list alias, initial empty} -setup {
+    stage-open
+} -body {
+    on-stage {
+	run peers
+    }
+} -cleanup {
+    stage-close
+} -match glob -result [viewFile support/p-empty.txt]
+
+test peer-list-1.2 {client peer list, initial empty} -setup {
+    stage-open
+} -body {
+    on-stage {
+	run peer list
+    }
+} -cleanup {
+    stage-close
+} -match glob -result [viewFile support/p-empty.txt]
+
+# # ## ### ##### ######## ############# #####################
+
+test peer-list-2.0 {client peer list, wrong args, too many} -setup {
+    stage-open
+} -body {
+    run peer list X
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "* cmdr: wrong#args, too many*"
+
+
+test peer-list-2.1 {client peer list} -setup {
+    stage-open
+    on-stage {
+	run peer add push content http://foo
+    }
+} -body {
+    on-stage {
+	run peer list
+    }
+} -cleanup {
+    on-stage {
+	run peer remove push content http://foo
+    }
+    stage-close
+} -match glob -result [viewFile support/p-21.txt]
+
+# # ## ### ##### ######## ############# #####################
+cleanupTests

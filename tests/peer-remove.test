@@ -1,0 +1,179 @@
+# -*- tcl -*- tcl.tk//DSL tcltest//EN//2.0 tcl.tk//DSL tcltest//EN//2.0
+## (c) 2014 Andreas Kupries
+# # ## ### ##### ######## ############# #####################
+## client peer remove - Drop existing peers (fossil).
+
+kt check Tcl     8.5
+kt check tcltest 2
+
+# # ## ### ##### ######## ############# #####################
+
+kt source support/common.tcl
+
+# # ## ### ##### ######## ############# #####################
+
+test peer-remove-1.0 {client peer remove, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run peer remove
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
+
+test peer-remove-1.1 {client peer remove, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run peer remove D
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
+
+test peer-remove-1.2 {client peer remove, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run peer remove D A
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
+
+test peer-remove-1.3 {client peer remove, wrong args, too many} -setup {
+    stage-open
+} -body {
+    run peer remove D A U X
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "* cmdr: wrong#args, too many*"
+
+# # ## ### ##### ######## ############# #####################
+
+test peer-remove-1.4 {client peer remove, unknown fossil peer} -setup {
+    stage-open
+} -body {
+    on-stage {
+	run peer remove push content http://foo
+    }
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result [fail-expected {an unused fossil repo} input items a]
+
+# # ## ### ##### ######## ############# #####################
+
+test peer-remove-2.0 {client peer remove, bogus direction} -setup {
+    stage-open
+} -body {
+    on-stage {
+	run peer remove up-or-down content http://foo
+    }
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result [fail-expected {an unused fossil repo} input items a]
+
+set n 0
+foreach direction {
+    push pull sync
+} {
+    incr n
+    test peer-remove-2.$n "client peer remove $direction is ok" -setup {
+	stage-open
+	on-stage {
+	    run peer add $direction content http://foo
+	}
+    } -body {
+	on-stage {
+	    run peer remove $direction content http://foo
+	}
+    } -cleanup {
+	stage-close
+    } -result {}
+}
+
+# # ## ### ##### ######## ############# #####################
+
+test peer-remove-3.0 {client peer remove, bogus area} -setup {
+    stage-open
+} -body {
+    on-stage {
+	run peer remove up-or-down content http://foo
+    }
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result [fail-expected {an unused fossil repo} input items a]
+
+set n 0
+foreach area {
+    all content email project shun skin ticket user
+} {
+    incr n
+    test peer-remove-3.$n "client peer remove $area is ok" -setup {
+	stage-open
+	on-stage {
+	    run peer add push $area http://foo
+	}
+    } -body {
+	on-stage {
+	    run peer remove push $area http://foo
+	}
+    } -cleanup {
+	stage-close
+    } -result {}
+}
+
+# # ## ### ##### ######## ############# #####################
+## Cover all possible paths through remove
+## - unknown destination
+## - unknown area
+## - drop directions
+
+test peer-remove-4.0 {client peer remove, drop direction} -setup {
+    stage-open
+    on-stage {
+	run peer add sync content http://foo
+	run peers
+    }
+} -body {
+    on-stage {
+	run peer remove push content http://foo
+	run peers
+    }
+} -cleanup {
+    on-stage {
+	run peer remove pull content http://foo
+    }
+    stage-close
+} -match glob -result [viewFile support/pr-40.txt]
+
+test peer-remove-4.1 {client peer remove, drop area} -setup {
+    stage-open
+    on-stage {
+	run peer add sync skin    http://foo
+	run peer add sync content http://foo
+	run peers
+    }
+} -body {
+    on-stage {
+	run peer remove sync skin http://foo
+	run peers
+    }
+} -cleanup {
+    on-stage {
+	run peer remove sync content http://foo
+    }
+    stage-close
+} -match glob -result [viewFile support/pr-41.txt]
+
+test peer-remove-4.2 {client peer remove, drop destination} -setup {
+    stage-open
+    on-stage {
+	run peer add push content http://foo
+    }
+} -body {
+    on-stage {
+	run peer remove push content http://foo
+	run peers
+    }
+} -cleanup {
+    stage-close
+} -match glob -result [viewFile support/pr-42.txt]
+
+# # ## ### ##### ######## ############# #####################
+cleanupTests

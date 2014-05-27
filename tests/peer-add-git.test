@@ -1,0 +1,76 @@
+# -*- tcl -*- tcl.tk//DSL tcltest//EN//2.0 tcl.tk//DSL tcltest//EN//2.0
+## (c) 2014 Andreas Kupries
+# # ## ### ##### ######## ############# #####################
+## client peer add-git - Extend existing peers (git).
+
+kt check Tcl     8.5
+kt check tcltest 2
+
+# # ## ### ##### ######## ############# #####################
+
+kt source support/common.tcl
+
+# # ## ### ##### ######## ############# #####################
+
+test peer-add-git-1.0 {client peer add-git, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run peer add-git
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
+
+test peer-add-git-1.1 {client peer add-git, wrong args, too many} -setup {
+    stage-open
+} -body {
+    run peer add-git U X
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "* cmdr: wrong#args, too many*"
+
+# # ## ### ##### ######## ############# #####################
+
+test peer-add-git-1.2 {client peer add-git, already a fossil peer} -setup {
+    stage-open
+    on-stage {
+	run peer add push content http://foo
+    }
+} -body {
+    on-stage {
+	run peer add-git http://foo
+    }
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result [fail-expected {an unused fossil repo} input items a]
+
+test peer-add-git-1.3 {client peer add-git, already a git peer} -setup {
+    stage-open
+    on-stage {
+	run peer add-git http://foo
+    }
+} -body {
+    on-stage {
+	run peer add-git http://foo
+    }
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result [fail-expected {an unused fossil repo} input items a]
+
+# # ## ### ##### ######## ############# #####################
+
+test peer-add-git-4.0 {client peer add-git, new destination} -setup {
+    stage-open
+} -body {
+    on-stage {
+	run peer add-git http://foo
+	run peers
+    }
+} -cleanup {
+    on-stage {
+	run peer remove-git http://foo
+    }
+    stage-close
+} -match glob -result [viewFile support/pag-40.txt]
+
+# # ## ### ##### ######## ############# #####################
+cleanupTests
