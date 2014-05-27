@@ -19,6 +19,7 @@ package require Tcl 8.5
 package require fx::fossil
 package require cmdr::validate::common
 package require fx::mgr::map
+package require fx::peer
 
 # # ## ### ##### ######## ############# ######################
 
@@ -35,6 +36,7 @@ namespace eval ::fx::validate::not-peer-git {
     namespace ensemble create
 
     namespace import ::fx::mgr::map
+    namespace import ::fx::peer
     namespace import ::cmdr::validate::common::fail
     namespace import ::cmdr::validate::common::complete-enum
 }
@@ -44,6 +46,7 @@ proc ::fx::validate::not-peer-git::validate {p x} {
     # Force parameter, validation can happen
     # before the cmdr completion phase.
     $p config @repository-db
+    peer init
 
     # As git peers currently only support 'push content' incremental
     # adding of areas and directions is not possible. Check that the

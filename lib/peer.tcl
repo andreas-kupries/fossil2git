@@ -34,9 +34,13 @@ package require fx::util
 
 # # ## ### ##### ######## ############# ######################
 
+namespace eval ::fx {
+    namespace export peer
+    namespace ensemble create
+}
 namespace eval ::fx::peer {
     namespace export \
-	list add remove add-git remove-git exchange
+	list add remove add-git remove-git exchange init state-dir
     namespace ensemble create
 
     namespace import ::cmdr::color
@@ -59,8 +63,8 @@ debug prefix fx/peer {[debug caller] | }
 
 proc ::fx::peer::list {config} {
     debug.fx/peer {}
-    Init
     fossil show-repository-location
+    init
 
     set map [Get $config]
     # dict: "fossil" + url + area -> direction
@@ -110,7 +114,7 @@ proc ::fx::peer::list {config} {
 proc ::fx::peer::add {config} {
     debug.fx/peer {}
     fossil show-repository-location
-    Init
+    init
 
     set url  [$config @peer]
     set dir  [$config @direction]
@@ -122,7 +126,8 @@ proc ::fx::peer::add {config} {
     set peers [map get peer@fossil]
 
     if {![dict exists $peers $url]} {
-	map add1 peer@fossil $url $direction
+	# New peer
+	map add1 peer@fossil $url [::list $area $dir]
 	puts [color good OK]
 	return
     }
@@ -131,6 +136,7 @@ proc ::fx::peer::add {config} {
     set spec [dict get $peers $url]
 
     if {![dict exists $spec $area]} {
+	# New area in known peer
 	dict set spec $area $dir
 	fossil repository transaction {
 	    map remove1 peer@fossil $url
@@ -140,10 +146,10 @@ proc ::fx::peer::add {config} {
 	return
     }
 
-    # Merge directions ...
+    # Merge directions for known area in known peer ...
     variable dadd
-    set old [dict get spec $area]
-    set new [dict get $dadd $old $direction]
+    set old [dict get $spec $area]
+    set new [dict get $dadd $old $dir]
 
     if {$new eq $old} {
 	puts [color note {No change, ignored}]
@@ -191,8 +197,12 @@ proc ::fx::peer::remove {config} {
 
     # Merge directions ...
     variable dremove
-    set old [dict get spec $area]
-    set new [dict $dremove $old $direction]
+    set old [dict get $spec $area]
+    set new [dict get $dremove $old $dir]
+
+    debug.fx/peer { Have $area => $old}
+    debug.fx/peer { Drop          $dir}
+    debug.fx/peer { Keeping       $new}
 
     if {$new eq $old} {
 	puts [color note {No change, ignored}]
@@ -204,16 +214,18 @@ proc ::fx::peer::remove {config} {
 	dict unset spec $area
     } else {
 	# Change to reduced directions of the area.
-	dict set set spec $new
+	dict set spec $area $new
     }
 
     if {![dict size $spec]} {
 	# Drop entirely...
+	debug.fx/peer {drop entire $area}
 	map remove1 peer@fossil $url
 	puts [color good OK]
     }
 
     # Change stored spec.
+    debug.fx/peer {save changed}
     fossil repository transaction {
 	map remove1 peer@fossil $url
 	map add1    peer@fossil $url $spec
@@ -228,7 +240,7 @@ proc ::fx::peer::remove {config} {
 proc ::fx::peer::add-git {config} {
     debug.fx/peer {}
     fossil show-repository-location
-    Init
+    init
 
     set url [$config @peer]
 
@@ -250,7 +262,7 @@ proc ::fx::peer::add-git {config} {
 proc ::fx::peer::remove-git {config} {
     debug.fx/peer {}
     fossil show-repository-location
-    Init
+    init
 
     set url [$config @peer]
 
@@ -291,7 +303,7 @@ proc ::fx::peer::state-dir {config} {
     }
 
     # Show current value, possibly set above.
-    puts [statedir]
+    puts [Statedir]
     return
 }
 
@@ -322,9 +334,10 @@ proc ::fx::peer::exchange {config} {
 		    dict for {area dir} [util dictsort $espec] {
 			# Exchange data for area, per chosen direction.
 			# Invokes regular fossil to perform the action.
-			puts "Fossil Exchange $url: $dir $area ..."
+			puts "Fossil Exchange [color note $url]: $dir $area ..."
 
-			fossil exchange $url $area $direction
+			fossil exchange $url $area $dir
+			puts [color good OK]
 		    }
 		}
 	    }
@@ -336,7 +349,7 @@ proc ::fx::peer::exchange {config} {
 
 		dict for {url last} [util dictsort $spec] {
 		    # Skip destinations which are uptodate.
-		    puts -nonewline "Git    Exchange $url: push content ... "
+		    puts -nonewline "Git    Exchange [color note $url]: push content ... "
 		    if {$last eq $current} {
 			puts [color note "Up-to-date, skipping"]
 			continue
@@ -347,6 +360,7 @@ proc ::fx::peer::exchange {config} {
 		    # Update the per-destination state, last uuid pushed to it.
 		    map remove1 peer@fossil $url
 		    map add1    peer@fossil $url $current
+		    puts [color good OK]
 		}
 	    }
 	    default {
@@ -570,7 +584,11 @@ proc ::fx::peer::Get {config} {
 
     # I. Fossil peers
     dict for {url dlist} [map get peer@fossil] {
-	foreach {area dir} {
+	debug.fx/peer {$url ==> ($dlist)}
+
+	foreach {area dir} $dlist {
+	    debug.fx/peer {  $area ==> $dir}
+
 	    $config @configarea set $area
 	    $config @syncdir    set $dir
 
@@ -589,10 +607,10 @@ proc ::fx::peer::Get {config} {
     return $map
 }
 
-proc ::fx::peer::Init {} {
+proc ::fx::peer::init {} {
     debug.fx/peer {}
     # Redefine to nothing for all future calls.
-    proc ::fx::peer::Init {} {}
+    proc ::fx::peer::init {} {}
 
     # Create mappings used to store peering information. Note how
     # their names use illegal characters. This makes them inaccessible
