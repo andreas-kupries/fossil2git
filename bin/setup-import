@@ -52,7 +52,7 @@ proc do {statedir url} {
 
     puts "\tSetting up $git ..."
     run git --bare --git-dir=$git init
-    file rename \
+    file rename --force \
 	$git/hooks/post-update.sample \
 	$git/hooks/post-update
 

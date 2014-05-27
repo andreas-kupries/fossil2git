@@ -1339,6 +1339,19 @@ cmdr create fx::fx [file tail $::argv0] {
 	    section Peering
 	}
 
+	private state {
+	    description {
+		Set and query the directory used to store the
+		local state for the git peers of the repository.
+		The default is a directory sibling to the fossil
+		repository file.
+	    }
+	    input dir {
+		optional
+		default {}
+	    } { validate rwdirectory }
+	} [fx::call peer state-dir]
+
 	private list {
 	    description {
 		List all peers stored in the repository, and associated
@@ -1464,8 +1477,14 @@ cmdr create fx::fx [file tail $::argv0] {
 	    Various commands to test the system and its configuration.
 	}
 
-	private mail-address {
+	common *all* -extend {
 	    section Testing
+	    # We do not have use .repository here because the
+	    # 'mail-address' command does not use it contrary
+	    # to all others.
+	}
+
+	private mail-address {
 	    description {
 		Parse the specified address into parts, and determine
 		if it is lexically ok for us, or not, and why not in
@@ -1477,7 +1496,6 @@ cmdr create fx::fx [file tail $::argv0] {
 	} [fx::call mailer test-address]
 
 	private mail-setup {
-	    section Testing
 	    description {
 		Generate a test mail and send it using the current
 		mail configuration.
@@ -1489,7 +1507,6 @@ cmdr create fx::fx [file tail $::argv0] {
 	} [fx::call note test-mail-config]
 
 	private mail-for {
-	    section Testing
 	    description {
 		Generate the notification mail for the specified artifact,
 		and print it to stdout.
@@ -1499,7 +1516,6 @@ cmdr create fx::fx [file tail $::argv0] {
 	} [fx::call note test-mail-gen]
 
 	private mail-receivers {
-	    section Testing
 	    description {
 		Analyse the specified artifact and determine the set
 		of mail addresses to send a notification to, fixed
@@ -1511,7 +1527,6 @@ cmdr create fx::fx [file tail $::argv0] {
 	} [fx::call note test-mail-receivers]
 
 	private manifest-parse {
-	    section Testing
 	    description {
 		Parse the specified artifact as manifest and print the
 		resulting array/dictionary to stdout.
@@ -1521,7 +1536,6 @@ cmdr create fx::fx [file tail $::argv0] {
 	} [fx::call note test-parse]
 
 	private tags {
-	    section Testing
 	    description {
 		Determine the names, types, and values of all tags
 		associated with a checkin.
@@ -1531,13 +1545,21 @@ cmdr create fx::fx [file tail $::argv0] {
 	} [fx::call fossil test-tags]
 
 	private branch {
-	    section Testing
 	    description {
 		Determine the branch of a checkin.
 	    }
 	    use .repository
 	    use .uuid
 	} [fx::call fossil test-branch]
+
+	private last-uuid {
+	    description {
+		Determine the uuid of the last commit (on any branch).
+		In other words, the uuid of the repository tip.
+	    }
+	    use .repository
+	} [fx::call fossil test-last-uuid]
+	alias tip = last-uuid
     }
 
     # # ## ### ##### ######## ############# ######################

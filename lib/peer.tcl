@@ -19,13 +19,16 @@ package require Tcl 8.5
 package require cmdr::color
 package require debug
 package require debug::caller
+package require fileutil
 package require interp
 package require linenoise
 package require textutil::adjust
 package require try
 
 package require fx::fossil
-package require fx::mgr::peer
+package require fx::mailer
+package require fx::mgr::config
+package require fx::mgr::map
 package require fx::table
 package require fx::util
 
@@ -38,8 +41,11 @@ namespace eval ::fx::peer {
 
     namespace import ::cmdr::color
     namespace import ::fx::fossil
-    namespace import ::fx::util
+    namespace import ::fx::mailer
+    namespace import ::fx::mgr::config
     namespace import ::fx::mgr::map
+    namespace import ::fx::util
+
     namespace import ::fx::table::do
     rename do table
 }
@@ -135,8 +141,9 @@ proc ::fx::peer::add {config} {
     }
 
     # Merge directions ...
+    variable dadd
     set old [dict get spec $area]
-    set new [PermAdd $old $direction]
+    set new [dict get $dadd $old $direction]
 
     if {$new eq $old} {
 	puts [color note {No change, ignored}]
@@ -183,8 +190,9 @@ proc ::fx::peer::remove {config} {
     }
 
     # Merge directions ...
+    variable dremove
     set old [dict get spec $area]
-    set new [PermDrop $old $direction]
+    set new [dict $dremove $old $direction]
 
     if {$new eq $old} {
 	puts [color note {No change, ignored}]
@@ -192,8 +200,10 @@ proc ::fx::peer::remove {config} {
     }
 
     if {$new eq {}} {
+	# No directions left for the area, drop entire area.
 	dict unset spec $area
     } else {
+	# Change to reduced directions of the area.
 	dict set set spec $new
     }
 
@@ -271,15 +281,39 @@ proc ::fx::peer::remove-git {config} {
 
 # # ## ### ##### ######## ############# ######################
 
+proc ::fx::peer::state-dir {config} {
+    debug.fx/peer {}
+    fossil show-repository-location
+
+    if {[$config @dir set?]} {
+	# Specified, set value.
+	config set fx-aku-peer-git-state [$config @dir]
+    }
+
+    # Show current value, possibly set above.
+    puts [statedir]
+    return
+}
+
+# # ## ### ##### ######## ############# ######################
+
 proc ::fx::peer::exchange {config} {
     debug.fx/peer {}
     fossil show-repository-location
 
-    set r [fossil repository-location]
+    # See also note.tcl, ProjectInfo.
+    set location [mailer get location]
+    set	project  [mailer get project-name]
 
     set map [Get $config]
     # dict: "fossil" + url + area -> direction
     #       "git" + url           -> last-uuid
+
+    # Note: The dictsort means that fossil peers are handled before
+    # git peers. That is good because it means that any new content
+    # pulled from one or more of the fossil peers will be pushed
+    # immediately to the git peers, instead of getting delayed by one
+    # exchange cycle.
 
     dict for {type spec} [util dictsort $map] {
 	switch -exact -- $type {
@@ -290,20 +324,29 @@ proc ::fx::peer::exchange {config} {
 			# Invokes regular fossil to perform the action.
 			puts "Fossil Exchange $url: $dir $area ..."
 
-			if {$area eq "content"} {
-			    exec 2>@ stderr >@ stdout \
-				fossil $dir $url -R $r --once
-			} else {
-			    exec 2>@ stderr >@ stdout \
-				fossil configuration $dir $area $url -R $r
-			}
+			fossil exchange $url $area $direction
 		    }
 		}
 	    }
 	    git {
+		set state [Statedir]
+
+		GitSetup $state $project $location
+		set current [GitImport $state $project $location
+
 		dict for {url last} [util dictsort $spec] {
-		    # TODO: git export
-		    puts "Git    Exchange $url: push content"
+		    # Skip destinations which are uptodate.
+		    puts -nonewline "Git    Exchange $url: push content ... "
+		    if {$last eq $current} {
+			puts [color note "Up-to-date, skipping"]
+			continue
+		    }
+		    puts "Go"
+		    GitPush $state $url
+
+		    # Update the per-destination state, last uuid pushed to it.
+		    map remove1 peer@fossil $url
+		    map add1    peer@fossil $url $current
 		}
 	    }
 	    default {
@@ -317,65 +360,206 @@ proc ::fx::peer::exchange {config} {
 # # ## ### ##### ######## ############# ######################
 ## Internal import support commands.
 
-proc ::fx::peer::PermAdd {perm bit} {
-    # Current Add  New  Notes
-    # ------- ---- ---- -----
-    # push    push push (a)
-    #         pull sync (d)
-    #         sync sync (c)
-    # ------- ---- ---- -----
-    # pull    push sync (d)
-    #         pull pull (a)
-    #         sync sync (c)
-    # ------- ---- ---- -----
-    # sync    push sync (b)
-    #         pull sync (b)
-    #         sync sync (a)
-    # ------- ---- ---- -----
-
+proc ::fx::peer::Statedir {} {
     debug.fx/peer {}
-    if {$perm eq $bit   } { return $perm } ;# (a)
-    if {$perm eq "sync" } { return $perm } ;# (b)
-    if {$bit  eq "sync" } { return $bit  } ;# (c)
-    # a != b, must push+pull => becomes sync  (d)
-    return "sync"
+    return [config get-with-default \
+		fx-aku-peer-git-state \
+		[fossil repository-location]-git-state]
 }
 
-proc ::fx::peer::PermDrop {perm bit} {
-    # Current Drop New  Notes
-    # ------- ---- ---- -----
-    # push    push {}   (a)
-    #         pull push (d)
-    #         sync {}   (c)
-    # ------- ---- ---- -----
-    # pull    push pull (d)
-    #         pull {}   (a)
-    #         sync {}   (c)
-    # ------- ---- ---- -----
-    # sync    push pull (b)
-    #         pull push (b)
-    #         sync {}   (a)
-    # ------- ---- ---- -----
-
+# taken from old setup-import script.
+proc ::fx::peer::GitSetup {statedir project location} {
     debug.fx/peer {}
-    if {$perm eq $bit   } { return {}          } ;# (a)
-    if {$perm eq "sync" } { return [Anti $bit] } ;# (b)
-    if {$bit  eq "sync" } { return {}          } ;# (c)
-    # perm != bit, must push+pull => keep perm      (d)
-    return $perm
+    if {[file exists $statedir] &&
+	[file isdirectory $statedir] &&
+	[file exists $statedir/.git] &&
+	[file isdirectory $statedir/.git]} {
+	debug.fx/peer {/initialized}
+	return
+    }
+
+    # State directory is not initialized. Do it now.
+    # Drop anything else which may existed in its place.
+    debug.fx/peer {initialize now}
+
+    # The git state is a sub-directory of the main state directory
+    # This allows us to put other (more transient) state as a sibling
+    # of the git directory while not requiring additional path
+    # configuration keys.
+    set git [file join $statedir git]
+
+    file delete -force $statedir
+    file mkdir $git
+
+    set ::env(TZ) UTC
+    puts "\tSetting up $statedir ..."
+    Run git --bare --git-dir=$git init
+    file rename --force \
+	$git/hooks/post-update.sample \
+	$git/hooks/post-update
+
+    fileutil::touch     $git/git-daemon-export-ok
+    fileutil::writeFile $git/description \
+	"Mirror of the $project fossil repository at $location\n"
+
+    debug.fx/peer {/done initialization}
+    return
 }
 
-proc ::fx::peer::Anti {bit} {
-    if {$bit eq "push" } { return "pull" }
-    if {$bit eq "pull" } { return "push" }
-    # sync becomes nothing, although should not be reached
-    # given how it is called (see PermDrop)
-    return {}
+proc ::fx::peer::GitImport {statedir project location} {
+    debug.fx/peer {}
+
+    set git $statedir/git
+    set tmp $statedir/tmp
+
+    GitMakeReadme $git $project $location
+
+    set current [fossil last-uuid]
+    set last    [GitLastImported $git]
+
+    puts "Git    @ $last"
+    puts "Fossil @ $current"
+
+    if {$last eq $current} {
+	puts [color note "no new commits"]
+	return $current
+    }
+
+    file mkdir $tmp
+    try {
+	set first   [expr {$lastid eq {}}]
+	set elapsed [GitPull $tmp $git $first]
+	puts [color note "imported new commits to git mirror in $elapsed min"]
+
+	# Remember how far we imported.
+	GitUpdateImported $git $current
+    } finally {
+	file delete -force $tmp
+    }
+
+    return $current
+}
+
+proc ::fx::peer::GitMakeReadme {git project location} {
+    debug.fx/peer {}
+    set date [Now]
+
+    lappend map @PROJECT $project
+    lappend map @URL     $location
+    lappend map @DATE    $date
+    
+    fileutil::writeFile $git/README.html [string map $map {
+	<p>This repository is a mirror of the
+	<a href="@URL">@PROJECT fossil repository</a>.
+	Last updated on @DATE.</p>
+    }]
+    return
+}
+
+proc ::fx::peer::Now {} {
+    clock format [clock seconds] -format {%Y-%m-%dT%H:%M:%S}
+}
+
+proc ::fx::peer::GitLastImported {git} {
+    set idfile $git/fossil-import-id
+    if {![file exists $idfile]} {
+	return {}
+    }
+    return [string trim [fileutil::cat $idfile]]
+}
+
+proc ::fx::peer::GitUpdateImported {git current} {
+    set idfile $git/fossil-import-id
+	    fileutil::writeFile $idfile $current
+    return
+}
+
+proc ::fx::peer::GitPull {tmp git first} {
+    set begin [clock seconds]
+
+    set src [fossil repository-location]
+
+    file delete -force $tmp
+    file mkdir         $tmp
+
+    Run git --bare  --git-dir $tmp init
+    Run fossil export -R $src --git | git --bare --git-dir $tmp fast-import
+
+    # Ensure that the new repository contains the HEAD of the old
+    # repository.  If something goes wrong in the import then all the
+    # commit ids get peturbed from the point of corruption on up and
+    # this test will fail. If all is ok then this id will be present
+    # in the new repo and we can push the new commits.
+
+    if {!$first} {
+	if {[catch {
+	    set ref [Runx git --bare --git-dir $git rev-parse HEAD]
+	    Run git --bare --git-dir $tmp cat-file -e $ref
+	} msg]} {
+	    puts [color error "review $tmp for errors: $msg"]
+	    return 0
+	}
+    }
+
+    # Rename trunk to master to suit git terminology better.
+    file rename $tmp/refs/heads/trunk $tmp/refs/heads/master
+
+    # Push the new changes from tmp to local destination
+    Run git --bare --git-dir $tmp remote add target $git
+    Run git --bare --git-dir $tmp push --force target --all
+    Run git --bare --git-dir $tmp push --force target --tags
+
+    file delete -force $tmp
+    set elapsed [expr {([clock seconds] - $begin)/60}]
+
+    # Also - after the very first import you need to repack the git
+    # repository using 'git repack -adf --window=50' to avoid an
+    # excessively large repo.  git fast-import is fast, not space
+    # efficient - so always repack.
+
+    if {$first} {
+	Run git --bare  --git-dir $git repack -adf --window=50
+    }
+
+    # Done pulling in changes
+    return $elapsed
+}
+
+proc ::fx::peer::GitPush {statedir remote} {
+    # Perform garbage collect as required
+    set git $statedir/git
+
+    set count [runx git --bare --git-dir $git count-objects | awk {{print $1}}]
+    if {$count > 50} {
+	run git --bare --git-dir $git gc
+    }
+
+    log "push to $remote"
+
+    #return
+
+    run git --bare --git-dir $git push --mirror $remote
+    return
+}
+#-----------------------------------------------------------------------------
+
+proc  ::fx::peer::Silent {args} {
+    debug.fx/peer {}
+    exec 2> /dev/null > /dev/null {*}$args
+}
+
+proc  ::fx::peer::Runx {args} {
+    debug.fx/peer {}
+    exec 2>@ stderr {*}$args
+}
+
+proc ::fx::peer::Run {args} {
+    debug.fx/peer {}
+    exec 2>@ stderr >@ stdout {*}$args
 }
 
 proc ::fx::peer::Get {config} {
     debug.fx/peer {}
-
     # All peering information is loaded, and merged into a single
     # structure.
     #
@@ -428,6 +612,49 @@ proc ::fx::peer::Init {} {
 	map create $map
     }
     return
+}
+
+# # ## ### ##### ######## ############# ######################
+## Tables to manipulate the direction pseudo-bits.
+## The explicit tables are easier to maintain and understand
+## than coding the implied decision table.
+
+namespace eval ::fx::peer {
+    variable dadd {
+	push {
+	    push push
+	    pull sync
+	    sync sync
+	}
+	pull {
+	    push sync
+	    pull pull
+	    sync sync
+	}
+	sync {
+	    push sync
+	    pull sync
+	    sync sync
+	}
+    }
+
+    variable dremove {
+	push {
+	    push {}
+	    pull push
+	    sync {}
+	}
+	pull {
+	    push pull
+	    pull {}
+	    sync {}
+	}
+	sync {
+	    push pull
+	    pull push
+	    sync {}
+	}
+    }
 }
 
 # # ## ### ##### ######## ############# ######################

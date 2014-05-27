@@ -33,13 +33,14 @@ namespace eval ::fx {
 namespace eval ::fx::fossil {
     namespace export \
 	c_show_repository c_set_repository c_reset_repository \
-	c_default_repository test-tags test-branch branch-of changeset \
-	date-of reveal user-info users user-config get-manifest \
-	fx-tables fx-maps fx-map-keys fx-map-get fx-enums fx-enum-items \
-	ticket-title ticket-fields global global-location show-global-location \
+	c_default_repository test-tags test-branch test-last-uuid \
+	branch-of changeset date-of last-uuid reveal user-info \
+	users user-config get-manifest fx-tables fx-maps \
+	fx-map-keys fx-map-get fx-enums fx-enum-items ticket-title \
+	ticket-fields global global-location show-global-location \
 	repository repository-location show-repository-location \
 	set-repository-location repository-find repository-open \
-	global-has has empty global-empty
+	global-has has empty global-empty exchange
 	
     namespace ensemble create
 
@@ -90,6 +91,13 @@ proc ::fx::fossil::test-tags {config} {
 	    $t add $name $type $value
 	}
     }] show puts
+    return
+}
+
+proc ::fx::fossil::test-last-uuid {config} {
+    debug.fx/fossil {}
+    show-repository-location
+    puts [last-uuid]
     return
 }
 
@@ -513,6 +521,22 @@ proc ::fx::fossil::ticket-fields {} {
     return [lsort -unique $columns]
 }
 
+proc ::fx::fossil::exchange {url area direction} {
+    debug.fx/fossil {}
+    variable fossil
+    variable repo_location
+    # dir in (push pull sync) = exchange command.
+
+    if {$area eq "content"} {
+	exec 2>@ stderr >@ stdout \
+	    {*}$fossil $dir $url -R $repo_location --once
+    } else {
+	exec 2>@ stderr >@ stdout \
+	    {*}$fossil configuration $dir $area $url -R $repo_location
+    }
+    return
+}
+
 proc ::fx::fossil::get-manifest {uuid} {
     debug.fx/fossil {}
     variable fossil
@@ -606,6 +630,20 @@ proc ::fx::fossil::branch-of {uuid} {
 	AND   X.tagid = T.tagid
 	AND   T.tagname = 'branch'
     }]
+}
+
+proc ::fx::fossil::last-uuid {} {
+    debug.fx/fossil {}
+    set uuid [repository onecolumn {
+	SELECT   B.uuid
+	FROM     blob  B,
+	         event E
+	WHERE    B.rid = E.objid
+	ORDER BY E.objid DESC
+	LIMIT 1
+    }]
+    debug.fx/fossil {==> $uuid}
+    return $uuid
 }
 
 proc ::fx::fossil::changeset {uuid} {
