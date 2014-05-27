@@ -211,17 +211,21 @@ proc ::fx::peer::remove {config} {
 
     if {$new eq {}} {
 	# No directions left for the area, drop entire area.
+	debug.fx/peer {drop entire $area}
 	dict unset spec $area
     } else {
 	# Change to reduced directions of the area.
 	dict set spec $area $new
     }
 
+    debug.fx/peer {new spec = ($spec)}
+
     if {![dict size $spec]} {
 	# Drop entirely...
-	debug.fx/peer {drop entire $area}
+	debug.fx/peer {drop entire $url}
 	map remove1 peer@fossil $url
 	puts [color good OK]
+	return
     }
 
     # Change stored spec.
