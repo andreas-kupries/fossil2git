@@ -427,7 +427,7 @@ proc ::fx::fossil::fx-enum-items {table} {
     debug.fx/fossil {}
     return [repository eval [subst {
 	SELECT item
-	FROM   $table
+	FROM   "$table"
 	ORDER BY id
     }]]
 }
@@ -460,7 +460,7 @@ proc ::fx::fossil::fx-map-keys {table} {
     debug.fx/fossil {}
     return [repository eval [subst {
 	SELECT key
-	FROM   $table
+	FROM   "$table"
 	ORDER BY key
     }]]
 }
@@ -469,7 +469,7 @@ proc ::fx::fossil::fx-map-get {table} {
     debug.fx/fossil {}
     return [repository eval [subst {
 	SELECT key, value
-	FROM   $table
+	FROM   "$table"
 	ORDER BY key
     }]]
 }
@@ -529,10 +529,10 @@ proc ::fx::fossil::exchange {url area direction} {
 
     if {$area eq "content"} {
 	exec 2>@ stderr >@ stdout \
-	    {*}$fossil $dir $url -R $repo_location --once
+	    {*}$fossil $direction $url -R $repo_location --once
     } else {
 	exec 2>@ stderr >@ stdout \
-	    {*}$fossil configuration $dir $area $url -R $repo_location
+	    {*}$fossil configuration $direction $area $url -R $repo_location
     }
     return
 }
