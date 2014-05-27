@@ -1347,9 +1347,12 @@ cmdr create fx::fx [file tail $::argv0] {
 		repository file.
 	    }
 	    input dir {
+		The directory to use for git state
+	    } {
 		optional
 		default {}
-	    } { validate rwdirectory }
+		validate rwdirectory
+	    }
 	} [fx::call peer state-dir]
 
 	private list {
@@ -1428,6 +1431,7 @@ cmdr create fx::fx [file tail $::argv0] {
 	    description {
 		Run a data exchange with all configured peers
 	    }
+	    use .peermap
 	} [fx::call peer exchange]
     }
     alias peers = peer list
