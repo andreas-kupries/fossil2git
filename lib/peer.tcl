@@ -79,7 +79,7 @@ proc ::fx::peer::list {config} {
 		dict for {url espec} $spec {
 		    set etype $type
 		    dict for {area dir} [util dictsort $espec] {
-			dict lappend tmap $url [::list $etype $dir $area]
+			dict lappend tmap $url [::list $etype $dir $area {}]
 			# Drop type information in multiple rows of the same url
 			set etype {}
 		    }
@@ -87,7 +87,7 @@ proc ::fx::peer::list {config} {
 	    }
 	    git {
 		dict for {url last} $spec {
-		    dict lappend tmap $url [::list $type push content]
+		    dict lappend tmap $url [::list $type push content $last]
 		}
 	    }
 	    default {
@@ -97,7 +97,7 @@ proc ::fx::peer::list {config} {
     }
 
     # Show the table
-    [table t {Url Type Flow Area} {
+    [table t {Url Type Flow Area Last} {
 	foreach {u speclist} [util dictsort $tmap] {
 	    foreach spec [lsort -dict $speclist] {
 		$t add $u {*}$spec
