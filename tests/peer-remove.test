@@ -54,7 +54,7 @@ test peer-remove-1.4 {client peer remove, unknown fossil peer} -setup {
     }
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result [fail-expected {an unused fossil repo} input items a]
+} -match glob -returnCodes error -result [fail-expected {a fossil peer} input peer http://foo]
 
 # # ## ### ##### ######## ############# #####################
 
@@ -66,7 +66,8 @@ test peer-remove-2.0 {client peer remove, bogus direction} -setup {
     }
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result [fail-expected {an unused fossil repo} input items a]
+} -match glob -returnCodes error \
+    -result [fail-expected {a sync direction} input direction up-or-down]
 
 set n 0
 foreach direction {
@@ -84,7 +85,7 @@ foreach direction {
 	}
     } -cleanup {
 	stage-close
-    } -result {}
+    } -match glob -result [map [viewFile support/pr-2x.txt] @dir@ $direction]
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -93,11 +94,12 @@ test peer-remove-3.0 {client peer remove, bogus area} -setup {
     stage-open
 } -body {
     on-stage {
-	run peer remove up-or-down content http://foo
+	run peer remove push delorean http://foo
     }
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result [fail-expected {an unused fossil repo} input items a]
+} -match glob -returnCodes error \
+    -result [fail-expected {a configuration area} input area delorean]
 
 set n 0
 foreach area {
@@ -115,7 +117,7 @@ foreach area {
 	}
     } -cleanup {
 	stage-close
-    } -result {}
+    } -match glob -result [map [viewFile support/pr-3x.txt] @area@ $area]
 }
 
 # # ## ### ##### ######## ############# #####################

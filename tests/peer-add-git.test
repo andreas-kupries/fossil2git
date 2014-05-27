@@ -41,7 +41,7 @@ test peer-add-git-1.2 {client peer add-git, already a fossil peer} -setup {
     }
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result [fail-expected {an unused fossil repo} input items a]
+} -match glob -returnCodes error -result [fail-expected {an unused git peer} input peer http://foo]
 
 test peer-add-git-1.3 {client peer add-git, already a git peer} -setup {
     stage-open
@@ -54,7 +54,7 @@ test peer-add-git-1.3 {client peer add-git, already a git peer} -setup {
     }
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result [fail-expected {an unused fossil repo} input items a]
+} -match glob -returnCodes error -result [fail-expected {an unused git peer} input peer http://foo]
 
 # # ## ### ##### ######## ############# #####################
 

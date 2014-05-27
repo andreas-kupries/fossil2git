@@ -1,0 +1,2 @@
+Checkout @ */fxhome.*/source.fossil
+  Adding fossil "http://foo @dir@ content" ... OK

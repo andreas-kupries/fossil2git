@@ -54,7 +54,7 @@ proc ::fx::validate::not-peer-fossil::validate {p x} {
 
     if {$x ni [map keys peer@git]
     } { return $x }
-    fail $p NOT-PEER-FOSSIL "an possible fossil peer" $x
+    fail $p NOT-PEER-FOSSIL "a possible fossil peer" $x
 }
 
 proc ::fx::validate::not-peer-fossil::default  {p} { return {} }

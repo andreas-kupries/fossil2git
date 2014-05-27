@@ -244,6 +244,41 @@ fx note watched [OPTIONS]
     Show the list of repositories currently watched (i.e. those which have
     active routes). These fall under the purview of 'note deliver --all'.
 
+fx peer add [OPTIONS] <direction> <area> <peer>
+    Add direction and area of exchange for a fossil peer.
+
+fx peer add-git [OPTIONS] <peer>
+    Add export to a git peer.
+
+fx peer exchange [OPTIONS]
+    Run a data exchange with all configured peers
+
+fx peer exit [OPTIONS]
+    Exit the shell. No-op if not in a shell.
+
+fx peer help [OPTIONS] [<cmdname>...]
+    Retrieve help for a command or command set. Without arguments help for all
+    commands is given. The default format is --full.
+
+fx peer list [OPTIONS]
+    List all peers stored in the repository, and associated definitions (what
+    to synchronize, direction, type of peer).
+
+fx peer remove [OPTIONS] <direction> <area> <peer>
+    Add direction and area of exchange for a fossil peer.
+
+fx peer remove-git [OPTIONS] <peer>
+    Remove export to a git peer.
+
+fx peer state [OPTIONS] [<dir>]
+    Set and query the directory used to store the local state for the git
+    peers of the repository. The default is a directory sibling to the fossil
+    repository file.
+
+fx peers [OPTIONS]
+    List all peers stored in the repository, and associated definitions (what
+    to synchronize, direction, type of peer).
+
 fx report add [OPTIONS] <title> [<spec>]
     Add a report definition to the repository.
 
@@ -317,6 +352,10 @@ fx test help [OPTIONS] [<cmdname>...]
     Retrieve help for a command or command set. Without arguments help for all
     commands is given. The default format is --full.
 
+fx test last-uuid [OPTIONS]
+    Determine the uuid of the last commit (on any branch). In other words, the
+    uuid of the repository tip.
+
 fx test mail-address [OPTIONS] <address>
     Parse the specified address into parts, and determine if it is lexically
     ok for us, or not, and why not in case of the latter.
@@ -339,6 +378,10 @@ fx test manifest-parse [OPTIONS] [<uuid>]
 fx test tags [OPTIONS] <uuid>
     Determine the names, types, and values of all tags associated with a
     checkin.
+
+fx test tip [OPTIONS]
+    Determine the uuid of the last commit (on any branch). In other words, the
+    uuid of the repository tip.
 
 fx ticket-fields [OPTIONS]
     Show all available ticket fields (for dynamic routes).

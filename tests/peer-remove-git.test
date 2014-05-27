@@ -38,7 +38,7 @@ test peer-remove-git-1.2 {client peer remove-git, unknown peer} -setup {
     }
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result [fail-expected {an unused fossil repo} input items a]
+} -match glob -returnCodes error -result [fail-expected {a git peer} input peer http://foo]
 
 # # ## ### ##### ######## ############# #####################
 
@@ -54,7 +54,7 @@ test peer-remove-git-4.0 {client peer remove-git, known destination} -setup {
     }
 } -cleanup {
     stage-close
-} -match glob -result [viewFile support/prg-40.txt]
+} -match glob -result [viewFile support/p-empty.txt]
 
 # # ## ### ##### ######## ############# #####################
 cleanupTests
