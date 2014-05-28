@@ -284,6 +284,12 @@ fx_changes
 \fBfiles/fx_devguide\&.n\fR
 fx_devguide
 .TP
+\fBfiles/fx_example_peer_fossil\&.n\fR
+fx_example_peer_fossil
+.TP
+\fBfiles/fx_example_peer_git\&.n\fR
+fx_example_peer_git
+.TP
 \fBfiles/fx_example_tkt_local\&.n\fR
 fx_example_tkt_local
 .TP
@@ -316,6 +322,12 @@ fx_changes
 .TP
 \fBfiles/fx_devguide\&.n\fR
 fx_devguide
+.TP
+\fBfiles/fx_example_peer_fossil\&.n\fR
+fx_example_peer_fossil
+.TP
+\fBfiles/fx_example_peer_git\&.n\fR
+fx_example_peer_git
 .TP
 \fBfiles/fx_example_tkt_local\&.n\fR
 fx_example_tkt_local
