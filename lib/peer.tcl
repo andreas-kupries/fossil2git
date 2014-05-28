@@ -388,6 +388,8 @@ proc ::fx::peer::Statedir {} {
 proc ::fx::peer::GitSetup {statedir project location} {
     debug.fx/peer {}
 
+    set pcode [config get-local project-code]
+
     puts "Exchange [string repeat _ 40]"
     puts "Git State Directory"
 
@@ -398,6 +400,18 @@ proc ::fx::peer::GitSetup {statedir project location} {
     } {
 	debug.fx/peer {/initialized}
 	puts "  Ready at [color note $statedir]."
+
+	# A ready directory may still belong to a different
+	# project. Check this.
+
+	set owner [string trim [fileutil::cat $statedir/owner]]
+	if {$self ne $owner} {
+	    puts [color error "  Error: Claimed by project \"$owner\""]
+	    puts [color error "  Error: Which is not us    \"$pcode\""]
+	    # Abort self, and caller (exchange).
+	    return -code return
+	}
+
 	puts [color good OK]
 	return
     }
@@ -429,6 +443,9 @@ proc ::fx::peer::GitSetup {statedir project location} {
     fileutil::touch     $git/git-daemon-export-ok
     fileutil::writeFile $git/description \
 	"Mirror of the $project fossil repository at $location\n"
+
+    # At last, claim the initialized state directory for the project
+    fileutil::writeFile $statedir/owner $pcode
 
     puts [color good OK]
     debug.fx/peer {/done initialization}
