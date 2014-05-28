@@ -341,7 +341,7 @@ proc ::fx::peer::exchange {config} {
 		set state [Statedir]
 
 		GitSetup $state $project $location
-		set current [GitImport $state $project $location
+		set current [GitImport $state $project $location]
 
 		dict for {url last} [util dictsort $spec] {
 		    # Skip destinations which are uptodate.
@@ -350,12 +350,14 @@ proc ::fx::peer::exchange {config} {
 			puts [color note "Up-to-date, skipping"]
 			continue
 		    }
-		    puts "Go"
+		    puts "Go (\"$last\" <--> \"$current\")"
+		    # TODO: Consider catching errors here, and goign to the next remote, in case of many.
+
 		    GitPush $state $url
 
 		    # Update the per-destination state, last uuid pushed to it.
-		    map remove1 peer@fossil $url
-		    map add1    peer@fossil $url $current
+		    map remove1 peer@git $url
+		    map add1    peer@git $url $current
 		    puts [color good OK]
 		}
 	    }
@@ -374,19 +376,23 @@ proc ::fx::peer::Statedir {} {
     debug.fx/peer {}
     return [config get-with-default \
 		fx-aku-peer-git-state \
-		[fossil repository-location]-git-state]
+		[fossil repository-location].peer-state]
 }
 
 # taken from old setup-import script.
 proc ::fx::peer::GitSetup {statedir project location} {
     debug.fx/peer {}
-    if {[file exists $statedir] &&
+    if {[file exists      $statedir] &&
 	[file isdirectory $statedir] &&
-	[file exists $statedir/.git] &&
-	[file isdirectory $statedir/.git]} {
+	[file exists      $statedir/git/git-daemon-export-ok] &&
+	[file isfile      $statedir/git/git-daemon-export-ok]
+    } {
 	debug.fx/peer {/initialized}
+	puts "  Found ready state directory [color note $statedir]."
 	return
     }
+
+    puts "  Initialize state directory [color note $statedir]."
 
     # State directory is not initialized. Do it now.
     # Drop anything else which may existed in its place.
@@ -404,7 +410,7 @@ proc ::fx::peer::GitSetup {statedir project location} {
     set ::env(TZ) UTC
     puts "\tSetting up $statedir ..."
     Run git --bare --git-dir=$git init
-    file rename --force \
+    file rename -force \
 	$git/hooks/post-update.sample \
 	$git/hooks/post-update
 
@@ -427,19 +433,22 @@ proc ::fx::peer::GitImport {statedir project location} {
     set current [fossil last-uuid]
     set last    [GitLastImported $git]
 
-    puts "Git    @ $last"
-    puts "Fossil @ $current"
+    puts "  Import state:"
+    puts "    Git    @ $last"
+    puts "    Fossil @ $current"
 
     if {$last eq $current} {
-	puts [color note "no new commits"]
+	puts [color note "  No new commits"]
 	return $current
+    } else {
+	puts "  Pull"
     }
 
     file mkdir $tmp
     try {
-	set first   [expr {$lastid eq {}}]
+	set first   [expr {$last eq {}}]
 	set elapsed [GitPull $tmp $git $first]
-	puts [color note "imported new commits to git mirror in $elapsed min"]
+	puts [color note "  Imported new commits to git mirror in $elapsed min"]
 
 	# Remember how far we imported.
 	GitUpdateImported $git $current
@@ -539,16 +548,12 @@ proc ::fx::peer::GitPush {statedir remote} {
     # Perform garbage collect as required
     set git $statedir/git
 
-    set count [runx git --bare --git-dir $git count-objects | awk {{print $1}}]
+    set count [Runx git --bare --git-dir $git count-objects | awk {{print $1}}]
     if {$count > 50} {
-	run git --bare --git-dir $git gc
+	Run git --bare --git-dir $git gc
     }
 
-    log "push to $remote"
-
-    #return
-
-    run git --bare --git-dir $git push --mirror $remote
+    Run git --bare --git-dir $git push --mirror $remote
     return
 }
 #-----------------------------------------------------------------------------
