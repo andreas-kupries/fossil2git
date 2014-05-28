@@ -330,7 +330,9 @@ proc ::fx::peer::exchange {config} {
 		    dict for {area dir} [util dictsort $espec] {
 			# Exchange data for area, per chosen direction.
 			# Invokes regular fossil to perform the action.
-			puts "Fossil Exchange [color note $url]: $dir $area ..."
+			puts "Exchange [string repeat _ 40]"
+			puts "Fossil [color note $url]"
+			puts "[string totitle $dir] $area ..."
 
 			fossil exchange $url $area $dir
 			puts [color good OK]
@@ -339,25 +341,28 @@ proc ::fx::peer::exchange {config} {
 	    }
 	    git {
 		set state [Statedir]
-
 		GitSetup $state $project $location
+
 		set current [GitImport $state $project $location]
 
 		dict for {url last} [util dictsort $spec] {
+		    puts "Exchange [string repeat _ 40]"
+		    puts "Git [color note $url]"
+		    puts "Push content ..."
+		    puts "  State  @ $current"
+		    puts "  Remote @ $last"
+
 		    # Skip destinations which are uptodate.
-		    puts -nonewline "Git    Exchange [color note $url]: push content ... "
 		    if {$last eq $current} {
-			puts [color note "Up-to-date, skipping"]
+			puts [color note "  No new commits"]
+			puts [color good OK]
 			continue
 		    }
-		    puts "Go (\"$last\" <--> \"$current\")"
-		    # TODO: Consider catching errors here, and goign to the next remote, in case of many.
 
-		    GitPush $state $url
+		    # TODO: Consider catching errors here, and going
+		    #       to the next remote, in case of multiple remotes.
 
-		    # Update the per-destination state, last uuid pushed to it.
-		    map remove1 peer@git $url
-		    map add1    peer@git $url $current
+		    GitPush $state $url $current
 		    puts [color good OK]
 		}
 	    }
@@ -382,17 +387,22 @@ proc ::fx::peer::Statedir {} {
 # taken from old setup-import script.
 proc ::fx::peer::GitSetup {statedir project location} {
     debug.fx/peer {}
+
+    puts "Exchange [string repeat _ 40]"
+    puts "Git State Directory"
+
     if {[file exists      $statedir] &&
 	[file isdirectory $statedir] &&
 	[file exists      $statedir/git/git-daemon-export-ok] &&
 	[file isfile      $statedir/git/git-daemon-export-ok]
     } {
 	debug.fx/peer {/initialized}
-	puts "  Found ready state directory [color note $statedir]."
+	puts "  Ready at [color note $statedir]."
+	puts [color good OK]
 	return
     }
 
-    puts "  Initialize state directory [color note $statedir]."
+    puts "  Initialize at [color note $statedir]."
 
     # State directory is not initialized. Do it now.
     # Drop anything else which may existed in its place.
@@ -408,8 +418,10 @@ proc ::fx::peer::GitSetup {statedir project location} {
     file mkdir $git
 
     set ::env(TZ) UTC
-    puts "\tSetting up $statedir ..."
-    Run git --bare --git-dir=$git init
+
+    Run git --bare --git-dir=$git init \
+	|& sed -e "s|\\r|\\n|g" | sed -e {s|^|    |}
+
     file rename -force \
 	$git/hooks/post-update.sample \
 	$git/hooks/post-update
@@ -418,12 +430,16 @@ proc ::fx::peer::GitSetup {statedir project location} {
     fileutil::writeFile $git/description \
 	"Mirror of the $project fossil repository at $location\n"
 
+    puts [color good OK]
     debug.fx/peer {/done initialization}
     return
 }
 
 proc ::fx::peer::GitImport {statedir project location} {
     debug.fx/peer {}
+
+    puts "Exchange [string repeat _ 40]"
+    puts "Git Import $statedir"
 
     set git $statedir/git
     set tmp $statedir/tmp
@@ -433,15 +449,13 @@ proc ::fx::peer::GitImport {statedir project location} {
     set current [fossil last-uuid]
     set last    [GitLastImported $git]
 
-    puts "  Import state:"
-    puts "    Git    @ $last"
-    puts "    Fossil @ $current"
+    puts "  Fossil @ $current"
+    puts "  Git    @ $last"
 
     if {$last eq $current} {
 	puts [color note "  No new commits"]
+	puts [color good OK]
 	return $current
-    } else {
-	puts "  Pull"
     }
 
     file mkdir $tmp
@@ -456,6 +470,7 @@ proc ::fx::peer::GitImport {statedir project location} {
 	file delete -force $tmp
     }
 
+    puts [color good OK]
     return $current
 }
 
@@ -489,33 +504,38 @@ proc ::fx::peer::GitLastImported {git} {
 
 proc ::fx::peer::GitUpdateImported {git current} {
     set idfile $git/fossil-import-id
-	    fileutil::writeFile $idfile $current
+    fileutil::writeFile $idfile $current
     return
 }
 
 proc ::fx::peer::GitPull {tmp git first} {
-    set begin [clock seconds]
+    puts "  Pull"
 
-    set src [fossil repository-location]
+    set begin [clock seconds]
+    set src   [fossil repository-location]
 
     file delete -force $tmp
     file mkdir         $tmp
 
-    Run git --bare  --git-dir $tmp init
-    Run fossil export -R $src --git | git --bare --git-dir $tmp fast-import
+    Run git --bare  --git-dir $tmp init \
+	|& sed -e "s|\\r|\\n|g" | sed -e {s|^|    |}
+    Run fossil export -R $src --git \
+	| git --bare --git-dir $tmp fast-import \
+	|& sed -e "s|\\r|\\n|g" | sed -e {s|^|    |}
 
     # Ensure that the new repository contains the HEAD of the old
     # repository.  If something goes wrong in the import then all the
-    # commit ids get peturbed from the point of corruption on up and
+    # commit ids get perturbed from the point of corruption on up and
     # this test will fail. If all is ok then this id will be present
     # in the new repo and we can push the new commits.
 
     if {!$first} {
 	if {[catch {
 	    set ref [Runx git --bare --git-dir $git rev-parse HEAD]
-	    Run git --bare --git-dir $tmp cat-file -e $ref
+	    Run git --bare --git-dir $tmp cat-file -e $ref \
+		|& sed -e "s|\\r|\\n|g" | sed -e {s|^|    |}
 	} msg]} {
-	    puts [color error "review $tmp for errors: $msg"]
+	    puts [color error "  Review $tmp for errors: $msg"]
 	    return 0
 	}
     }
@@ -524,9 +544,12 @@ proc ::fx::peer::GitPull {tmp git first} {
     file rename $tmp/refs/heads/trunk $tmp/refs/heads/master
 
     # Push the new changes from tmp to local destination
-    Run git --bare --git-dir $tmp remote add target $git
-    Run git --bare --git-dir $tmp push --force target --all
-    Run git --bare --git-dir $tmp push --force target --tags
+    Run git --bare --git-dir $tmp remote add target $git \
+	|& sed -e "s|\\r|\\n|g" | sed -e {s|^|    |}
+    Run git --bare --git-dir $tmp push --force target --all \
+	|& sed -e "s|\\r|\\n|g" | sed -e {s|^|    |}
+    Run git --bare --git-dir $tmp push --force target --tags \
+	|& sed -e "s|\\r|\\n|g" | sed -e {s|^|    |}
 
     file delete -force $tmp
     set elapsed [expr {([clock seconds] - $begin)/60}]
@@ -537,23 +560,31 @@ proc ::fx::peer::GitPull {tmp git first} {
     # efficient - so always repack.
 
     if {$first} {
-	Run git --bare  --git-dir $git repack -adf --window=50
+	Run git --bare  --git-dir $git repack -adf --window=50 \
+	    |& sed -e "s|\\r|\\n|g" | sed -e {s|^|    |}
     }
 
     # Done pulling in changes
     return $elapsed
 }
 
-proc ::fx::peer::GitPush {statedir remote} {
+proc ::fx::peer::GitPush {statedir remote current} {
     # Perform garbage collect as required
     set git $statedir/git
 
     set count [Runx git --bare --git-dir $git count-objects | awk {{print $1}}]
     if {$count > 50} {
-	Run git --bare --git-dir $git gc
+	Run git --bare --git-dir $git gc \
+	    |& sed -e "s|\\r|\\n|g" | sed -e {s|^|    |}
     }
 
-    Run git --bare --git-dir $git push --mirror $remote
+    Run git --bare --git-dir $git push --mirror $remote \
+	|& sed -e "s|\\r|\\n|g" | sed -e {s|^|    |}
+
+    # Update the local per-remote state, record the last uuid which is
+    # now pushed to it.
+    map remove1 peer@git $remote
+    map add1    peer@git $remote $current
     return
 }
 #-----------------------------------------------------------------------------
