@@ -1,0 +1,45 @@
+[comment {-*- tcl -*- doctools manpage}]
+[include include/definitions.inc]
+[manpage_begin [vset M_EX_PEER_FOSSIL] n 1]
+[include include/general.inc]
+[titledesc [vset T_EX_PEER_FOSSIL]]
+[description]
+[include include/welcome_basic.inc]
+
+This is an introductory document to [vset PROJECT], an application
+with supporting packages providing users of the Fossil SCM with
+extended management facilities going beyond the regular command line.
+
+[para] It is one in a set of related examples demonstrating the
+abilities of the system. The interested reader can then go on into to
+reference documentation via [term [vset T_INTRO]].
+
+[section {Background to the Example}]
+[list_begin enumerated]
+
+[enum]	You have to manage multiple fossil mirrors of your repository,
+	of at least their content, and possibly their configuration as
+	well.
+
+[para]	The example assumes [emph multiple], because a single mirror
+	can be handled by [syscmd fossil] itself, setting it as the
+	repository's [term remote].
+
+[enum]	You have (full) access to a repository file of the project.
+
+[enum]	You have (full) web access to the mirrors of the project.
+
+[list_end]
+
+[section {Solution to the Example}]
+[subsection {Setting up}]	[include include/ex_pfossil_setup.inc]
+[subsection {Go}]		[include include/ex_pfossil_go.inc]
+
+[section {More examples}]
+[list_begin enumerated]
+[enum] [term [vset T_EX_PEER_GIT]]
+[list_end]
+
+[include include/feedback.inc]
+[manpage_end]
+
