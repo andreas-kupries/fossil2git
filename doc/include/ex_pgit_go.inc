@@ -7,7 +7,7 @@
 [enum] cron is notoriously fiddly with regard to the environment
        variables provided to the jobs. Make sure that:
 
-[enum] Your [variable PATH] provides access to 
+[enum] Your [var PATH] provides access to 
   [list_begin itemized]
   [item][syscmd fossil],
   [item][syscmd git],
@@ -22,6 +22,6 @@
 	interactively ask for passwords.
   [list_end]
 
-[enum] That a proper [variable USER] variable is set for fossil to
+[enum] That a proper [var USER] variable is set for fossil to
        pick up.
 [list_end]
