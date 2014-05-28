@@ -71,6 +71,16 @@ fx config available [OPTIONS]
     fx note show-pending [OPTIONS]
     fx note update-history [OPTIONS]
     fx note watched [OPTIONS]
+    fx peer add [OPTIONS] <direction> <area> <peer>
+    fx peer add-git [OPTIONS] <peer>
+    fx peer exchange [OPTIONS]
+    fx peer exit [OPTIONS]
+    fx peer help [OPTIONS] [<cmdname>...]
+    fx peer list [OPTIONS]
+    fx peer remove [OPTIONS] <direction> <area> <peer>
+    fx peer remove-git [OPTIONS] <peer>
+    fx peer state [OPTIONS] [<dir>]
+    fx peers [OPTIONS]
     fx report add [OPTIONS] <title> [<spec>]
     fx report delete [OPTIONS] <id>
     fx report exit [OPTIONS]
@@ -94,12 +104,14 @@ fx config available [OPTIONS]
     fx test branch [OPTIONS] <uuid>
     fx test exit [OPTIONS]
     fx test help [OPTIONS] [<cmdname>...]
+    fx test last-uuid [OPTIONS]
     fx test mail-address [OPTIONS] <address>
     fx test mail-for [OPTIONS] [<uuid>]
     fx test mail-receivers [OPTIONS] [<uuid>]
     fx test mail-setup [OPTIONS] <destination>
     fx test manifest-parse [OPTIONS] [<uuid>]
     fx test tags [OPTIONS] <uuid>
+    fx test tip [OPTIONS]
     fx ticket-fields [OPTIONS]
     fx user broadcast [OPTIONS] [<text>]
     fx user contact [OPTIONS] <user> [<contact>]

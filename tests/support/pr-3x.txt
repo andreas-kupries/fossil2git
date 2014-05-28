@@ -1,0 +1,2 @@
+Checkout @ */fxhome.*/source.fossil
+  Removing fossil "http://foo push @area@" ... OK

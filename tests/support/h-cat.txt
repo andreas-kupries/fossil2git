@@ -147,6 +147,30 @@ Notifications
                                             mail setup for notifications to its
                                             default
 
+Peering
+    fx peer add <direction> <area> <peer>       Add direction and area of
+                                                exchange for a fossil peer
+    fx peer add-git <peer>                      Add export to a git peer
+    fx peer exchange                            Run a data exchange with all
+                                                configured peers
+    fx peer list                                List all peers stored in the
+                                                repository, and associated
+                                                definitions (what to
+                                                synchronize, direction, type of
+                                                peer)
+    fx peer remove <direction> <area> <peer>    Add direction and area of
+                                                exchange for a fossil peer
+    fx peer remove-git <peer>                   Remove export to a git peer
+    fx peer state [<dir>]                       Set and query the directory
+                                                used to store the local state
+                                                for the git peers of the
+                                                repository
+    fx peers                                    List all peers stored in the
+                                                repository, and associated
+                                                definitions (what to
+                                                synchronize, direction, type of
+                                                peer)
+
 Reporting
     fx report add <title> [<spec>]    Add a report definition to the repository
     fx report delete <id>             Delete the specified report definition
@@ -165,6 +189,8 @@ Repository Management
 
 Testing
     fx test branch <uuid>               Determine the branch of a checkin
+    fx test last-uuid                   Determine the uuid of the last commit
+                                        (on any branch)
     fx test mail-address <address>      Parse the specified address into parts,
                                         and determine if it is lexically ok for
                                         us, or not, and why not in case of the
@@ -183,6 +209,8 @@ Testing
                                         array/dictionary to stdout
     fx test tags <uuid>                 Determine the names, types, and values
                                         of all tags associated with a checkin
+    fx test tip                         Determine the uuid of the last commit
+                                        (on any branch)
 
 User Management
     fx user broadcast [<text>]            Send a mail to all accounts of the
