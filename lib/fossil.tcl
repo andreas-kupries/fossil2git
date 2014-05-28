@@ -529,10 +529,12 @@ proc ::fx::fossil::exchange {url area direction} {
 
     if {$area eq "content"} {
 	exec 2>@ stderr >@ stdout \
-	    {*}$fossil $direction $url -R $repo_location --once
+	    {*}$fossil $direction $url -R $repo_location --once \
+	    | sed -e "s|\\r|\\n|g" | sed -e {s|^|    |}
     } else {
 	exec 2>@ stderr >@ stdout \
-	    {*}$fossil configuration $direction $area $url -R $repo_location
+	    {*}$fossil configuration $direction $area $url -R $repo_location \
+	    | sed -e "s|\\r|\\n|g" | sed -e {s|^|    |}
     }
     return
 }
