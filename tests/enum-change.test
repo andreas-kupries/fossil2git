@@ -10,8 +10,6 @@ kt check tcltest 2
 
 kt source support/common.tcl
 
-# TODO: Prevent --global for unshareable per-repo settings! --> location
-
 # # ## ### ##### ######## ############# #####################
 
 test enum-change-1.0 {client enum change, wrong args, not enough} -setup {

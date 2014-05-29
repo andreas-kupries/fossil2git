@@ -10,8 +10,6 @@ kt check tcltest 2
 
 kt source support/common.tcl
 
-# TODO: Prevent --global for unshareable per-repo settings! --> location
-
 # # ## ### ##### ######## ############# #####################
 
 test enum-create-1.0 {client enum create, wrong args, not enough} -setup {
@@ -30,7 +28,8 @@ test enum-create-1.1 {client enum create, duplicate definition} -setup {
 } -cleanup {
     run enum delete foo
     stage-close
-} -match glob -returnCodes error -result [fail-known-thing input newenum {An enumeration} foo]
+} -match glob -returnCodes error \
+    -result [fail-known-thing input newenum {An enumeration} foo]
 
 test enum-create-1.2 {client enum create, bad name (illegal character)} -setup {
     stage-open
@@ -38,8 +37,9 @@ test enum-create-1.2 {client enum create, bad name (illegal character)} -setup {
     run enum create foo!
 } -cleanup {
     stage-close
-} -match glob -returnCodes error -result [fail-expected {an enumeration name} input newenum foo! \
-					      " (Not allowed: *)"]
+} -match glob -returnCodes error \
+    -result [fail-expected {an enumeration name} input newenum foo! \
+		 " (Not allowed: *)"]
 
 # # ## ### ##### ######## ############# #####################
 

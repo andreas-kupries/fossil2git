@@ -1,0 +1,92 @@
+# -*- tcl -*- tcl.tk//DSL tcltest//EN//2.0 tcl.tk//DSL tcltest//EN//2.0
+## (c) 2014 Andreas Kupries
+# # ## ### ##### ######## ############# #####################
+## client enum rename - Rename enumerations.
+
+kt check Tcl     8.5
+kt check tcltest 2
+
+# # ## ### ##### ######## ############# #####################
+
+kt source support/common.tcl
+
+# # ## ### ##### ######## ############# #####################
+
+test enum-rename-1.0 {client enum rename, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run enum rename
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
+
+test enum-rename-1.1 {client enum rename, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run enum rename E
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
+
+test enum-rename-1.2 {client enum rename, wrong args, too many} -setup {
+    stage-open
+} -body {
+    run enum rename E N X
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "* cmdr: wrong#args, too many*"
+
+test enum-rename-1.3 {client enum rename, unknown source} -setup {
+    stage-open
+} -body {
+    run enum rename foo N
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error \
+    -result [fail-expected {an enumeration} input enum foo]
+
+test enum-rename-1.4 {client enum rename, existing destination} -setup {
+    stage-open
+    run enum create foo
+    run enum create bar
+} -body {
+    run enum rename foo bar
+} -cleanup {
+    run enum delete foo
+    stage-close
+} -match glob -returnCodes error \
+    -result [fail-expected {an enumeration name} input newenum bar]
+
+test enum-rename-1.5 {client enum rename, bad destination name} -setup {
+    stage-open
+    run enum create foo a b
+} -body {
+    run enum rename foo foo!
+} -cleanup {
+    run enum delete foo
+    stage-close
+} -match glob -returnCodes error
+    -result [fail-expected {an enumeration name} input newenum foo! \
+		 " (Not allowed: *)"]
+
+# # ## ### ##### ######## ############# #####################
+
+test enum-rename-2.0 {client enum rename} -setup {
+    stage-open
+    on-stage {
+	run enum create foo a
+    }
+} -body {
+    on-stage {
+	run enum rename foo bar
+	run enums
+    }
+} -cleanup {
+    on-stage {
+	run enum delete bar
+    }
+    stage-close
+} -match glob -result [viewFile support/ere-20.txt]
+
+# # ## ### ##### ######## ############# #####################
+cleanupTests

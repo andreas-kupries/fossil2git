@@ -1,0 +1,92 @@
+# -*- tcl -*- tcl.tk//DSL tcltest//EN//2.0 tcl.tk//DSL tcltest//EN//2.0
+## (c) 2014 Andreas Kupries
+# # ## ### ##### ######## ############# #####################
+## client map rename - Rename mappings
+
+kt check Tcl     8.5
+kt check tcltest 2
+
+# # ## ### ##### ######## ############# #####################
+
+kt source support/common.tcl
+
+# # ## ### ##### ######## ############# #####################
+
+test map-rename-1.0 {client map rename, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run map rename
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
+
+test map-rename-1.1 {client map rename, wrong args, not enough} -setup {
+    stage-open
+} -body {
+    run map rename E
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
+
+test map-rename-1.2 {client map rename, wrong args, too many} -setup {
+    stage-open
+} -body {
+    run map rename E N X
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error -result "* cmdr: wrong#args, too many*"
+
+test map-rename-1.3 {client map rename, unknown source} -setup {
+    stage-open
+} -body {
+    run map rename foo N
+} -cleanup {
+    stage-close
+} -match glob -returnCodes error \
+    -result [fail-expected {A mapping} input map foo]
+
+test map-rename-1.4 {client map rename, existing destination} -setup {
+    stage-open
+    run map create foo
+    run map create bar
+} -body {
+    run map rename foo bar
+} -cleanup {
+    run map delete foo
+    stage-close
+} -match glob -returnCodes error \
+    -result [fail-expected {a mapping name} input newmap bar]
+
+test map-rename-1.5 {client map rename, bad destination name} -setup {
+    stage-open
+    run map create foo a b
+} -body {
+    run map rename foo foo!
+} -cleanup {
+    run map delete foo
+    stage-close
+} -match glob -returnCodes error
+    -result [fail-expected {a mapping name} input newmap foo! \
+		 " (Not allowed: *)"]
+
+# # ## ### ##### ######## ############# #####################
+
+test map-rename-2.0 {client map rename} -setup {
+    stage-open
+    on-stage {
+	run map create foo
+    }
+} -body {
+    on-stage {
+	run map rename foo bar
+	run maps
+    }
+} -cleanup {
+    on-stage {
+	run map delete bar
+    }
+    stage-close
+} -match glob -result [viewFile support/mre-20.txt]
+
+# # ## ### ##### ######## ############# #####################
+cleanupTests

@@ -34,7 +34,8 @@ package require fx::validate::map
 
 namespace eval ::fx::map {
     namespace export \
-	list create delete export import add remove show
+	list create delete rename export import \
+	add remove show
     namespace ensemble create
 
     namespace import ::cmdr::color
@@ -93,6 +94,30 @@ proc ::fx::map::delete {config} {
 
     puts -nonewline "Deleting mapping \"[color note $map]\" ..."
     mgr delete $map
+    puts [color good OK]
+    return
+}
+
+proc ::fx::map::rename {config} {
+    debug.fx/map {}
+    fossil show-repository-location
+
+    $config @map
+    set old [$config @map string]
+
+    $config @newmap
+    set new [$config @newmap string]
+
+    puts -nonewline "Renaming mapping \"[color note $old]\" to \"[color note $new]\" ..."
+    fossil transaction {
+	set items [mgr get $old]
+	mgr delete $old
+	mgr create $new
+	if {[llength $items]} {
+	    puts ""
+	    AddBulk $new $items
+	}
+    }
     puts [color good OK]
     return
 }
@@ -201,9 +226,8 @@ proc ::fx::map::import {config} {
 
     # Run the import script in a safe interpreter with just the import
     # commands. This generates internal data structures from which we
-    # then create the mappings by looping back through the cmdr
-    # hierarchy. This automatically gives us all the validation needed.
-    # We catch issues and report them, but do not abort importing.
+    # then create the mappings again. We catch issues and report them,
+    # but do not abort importing.
 
     set i [interp::createEmpty]
     $i alias map  ::fx::map::IMap

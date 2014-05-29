@@ -1,7 +1,7 @@
 # -*- tcl -*- tcl.tk//DSL tcltest//EN//2.0 tcl.tk//DSL tcltest//EN//2.0
 ## (c) 2014 Andreas Kupries
 # # ## ### ##### ######## ############# #####################
-## client enum items - Show enumeration content.
+## client peer export - Export the peering information.
 
 kt check Tcl     8.5
 kt check tcltest 2
@@ -12,63 +12,52 @@ kt source support/common.tcl
 
 # # ## ### ##### ######## ############# #####################
 
-test enum-items-1.0 {client enum items, wrong args, not enough} -setup {
+test peer-export-1.0 {client peer export, wrong args, not enough} -setup {
     stage-open
 } -body {
-    run enum items
+    run peer export
 } -cleanup {
     stage-close
 } -match glob -returnCodes error -result "* cmdr: wrong#args, not enough*"
 
-test enum-items-1.1 {client enum items, wrong args, too many} -setup {
+test peer-export-1.1 {client peer export, wrong args, too many} -setup {
     stage-open
 } -body {
-    run enum items E X
+    run peer export E X
 } -cleanup {
     stage-close
 } -match glob -returnCodes error -result "* cmdr: wrong#args, too many*"
 
-test enum-items-1.2 {client enum items, unknown enumeration} -setup {
-    stage-open
-} -body {
-    run enum items foo
-} -cleanup {
-    stage-close
-} -match glob -returnCodes error -result [fail-expected {an enumeration} input enum foo]
-
 # # ## ### ##### ######## ############# #####################
 
-test enum-items-2.0 {client enum items, empty enum} -setup {
+test peer-export-2.0 {client peer export, nothing} -setup {
     stage-open
-    on-stage {
-	run enum create foo
-    }
 } -body {
     on-stage {
-	run enum items foo
+	run peer export E
+	viewFile [pwd]/E
     }
 } -cleanup {
-    on-stage {
-	run enum delete foo
-    }
+    removeFile [pwd]/E
     stage-close
-} -match glob -result [viewFile support/ei-20.txt]
+} -match glob -result [viewFile support/pe-empty.txt]
 
-test enum-items-2.1 {client enum items} -setup {
+test peer-export-2.1 {client peer export} -setup {
     stage-open
     on-stage {
-	run enum create foo a b c d e f
+	run peer add-git          http://git-foo
+	run peer add push content http://foo
+	run peer add sync email   http://foo-backup
     }
 } -body {
     on-stage {
-	run enum items foo
+	run peer export E
+	viewFile [pwd]/E
     }
 } -cleanup {
-    on-stage {
-	run enum delete foo
-    }
+    removeFile [pwd]/E
     stage-close
-} -match glob -result [viewFile support/ei-21.txt]
+} -match glob -result [viewFile support/pe-21.txt]
 
 # # ## ### ##### ######## ############# #####################
 cleanupTests

@@ -778,6 +778,19 @@ cmdr create fx::fx [file tail $::argv0] {
 	    use .map
 	} [fx::call map delete]
 
+	private rename {
+	    section Mappings
+	    description {
+		Rename the named mapping.
+	    }
+	    use .map
+	    input newmap {
+		New name for the mapping
+	    } {
+		validate [fx::vt not-map]
+	    }
+	} [fx::call map rename]
+
 	private export {
 	    description {
 		Save the specified mapping(s).
@@ -899,6 +912,19 @@ cmdr create fx::fx [file tail $::argv0] {
 	    }
 	    use .enum
 	} [fx::call enum delete]
+
+	private rename {
+	    section Enumerations
+	    description {
+		Rename the named enumeration.
+	    }
+	    use .enum
+	    input newenum {
+		New name for the enumeration.
+	    } {
+		validate [fx::vt not-enum]
+	    }
+	} [fx::call enum rename]
 
 	private export {
 	    section Enumerations
@@ -1363,6 +1389,23 @@ cmdr create fx::fx [file tail $::argv0] {
 	    use .peermap
 	} [fx::call peer list]
 	default
+
+	private export {
+	    section Peering Save/Restore
+	    description {
+		Save the peering information.
+	    }
+	    use .export
+	} [fx::call peer export]
+
+	private import {
+	    section Peering Save/Restore
+	    description {
+		Import the peering information from a save file.
+	    }
+	    use .extend
+	    use .import
+	} [fx::call peer import]
 
 	common .direction {
 	    input direction {

@@ -40,7 +40,8 @@ namespace eval ::fx {
 }
 namespace eval ::fx::peer {
     namespace export \
-	list add remove add-git remove-git exchange init state-dir
+	list add remove add-git remove-git \
+	exchange state-dir export import init
     namespace ensemble create
 
     namespace import ::cmdr::color
@@ -123,49 +124,7 @@ proc ::fx::peer::add {config} {
     puts -nonewline "  Adding fossil \"$url $dir $area\" ... "
     flush stdout
 
-    set peers [map get fx@peer@fossil]
-
-    if {![dict exists $peers $url]} {
-	# New peer
-	map add1 fx@peer@fossil $url [::list $area $dir]
-	puts [color good OK]
-	return
-    }
-
-    # Merge areas ...
-    set spec [dict get $peers $url]
-
-    if {![dict exists $spec $area]} {
-	# New area in known peer
-	dict set spec $area $dir
-	fossil repository transaction {
-	    map remove1 fx@peer@fossil $url
-	    map add1    fx@peer@fossil $url $spec
-	}
-	puts [color good OK]
-	return
-    }
-
-    # Merge directions for known area in known peer ...
-    variable dadd
-    set old [dict get $spec $area]
-    set new [dict get $dadd $old $dir]
-
-    if {$new eq $old} {
-	puts [color note {No change, ignored}]
-	return
-    }
-
-    puts -nonewline [color note "upgraded to $new "]
-    flush stdout
-
-    dict set spec $area $new
-    fossil repository transaction {
-	map remove1 fx@peer@fossil $url
-	map add1    fx@peer@fossil $url $spec
-    }
-
-    puts [color good OK]
+    AddFossil $url $dir $area
     return
 }
 
@@ -251,15 +210,7 @@ proc ::fx::peer::add-git {config} {
     puts -nonewline "  Adding git \"$url push content\" ... "
     flush stdout
 
-    set peers [map get fx@peer@git]
-
-    if {[dict exists $peers $url]} {
-	puts [color note {No change, ignored}]
-	return
-    }
-
-    map add1 fx@peer@git $url {}
-    puts [color good OK]
+    AddGit $url {}
     return
 }
 
@@ -371,6 +322,162 @@ proc ::fx::peer::exchange {config} {
 	    }
 	}
     }
+    return
+}
+
+# # ## ### ##### ######## ############# ######################
+
+proc ::fx::peer::export {config} {
+    debug.fx/peer {}
+    fossil show-repository-location
+    init
+
+    lappend data "\# fx peer export @ [clock format [clock seconds]]"
+    dict for {url dlist} [map get fx@peer@fossil] {
+	foreach {area dir} $dlist {
+	    lappend data [::list fossil $area $dir $url]
+	}
+    }
+    dict for {url last} [map get fx@peer@git] {
+	lappend data [::list git $url $last]
+    }
+
+    set    chan [open [$config @output] w]
+    puts  $chan [join $data \n]
+    close $chan
+    return
+}
+
+proc ::fx::peer::import {config} {
+    debug.fx/peer {}
+    fossil show-repository-location
+    init
+
+    set extend [$config @extend]
+
+    set input [$config @input]
+    set data [read $input]
+    $config @input forget
+
+    # Run the import script in a safe interpreter with just the import
+    # commands. This generates internal data structures from which we
+    # then create the peering links again.
+
+    set i [interp::createEmpty]
+    $i alias fossil ::fx::map::IFossil
+    $i alias git    ::fx::map::IGit
+    $i eval $data
+    interp delete $i
+
+    if {!$extend} {
+	puts [color warning "Import replaces all existing peers ..."]
+	# Inlined delete of all peers
+	map delete fx@peer@fossil
+	map delete fx@peer@git
+	init
+    } else {
+	puts [color note "Import keeps the existing peers ..."]
+    }
+
+    variable imported
+    if {![llength $imported]} {
+	puts [color note {No peers}]
+	return
+    }
+
+    puts "New peers ..."
+    foreach {type url details} $imported {
+	puts -nonewline "  Importing $type $url ($details) ... "
+	flush stdout
+
+	switch -exact -- $type {
+	    fossil { AddFossil $url {*}$details }
+	    git    { AddGit    $url $details }
+	    default {
+		error "Bad peer type \"$type\", expected one of fossil, or git"
+	    }
+	}
+    }
+    return
+}
+
+proc ::fx::map::IFossil {dir area url} {
+    debug.fx/peer {}
+    variable imported
+    lappend  imported fossil $url [::list $dir $area]
+    return
+}
+
+proc ::fx::map::IGit {url last} {
+    debug.fx/peer {}
+    variable imported
+    lappend  imported git $url $last
+    return
+}
+
+# # ## ### ##### ######## ############# ######################
+
+proc ::fx::peer::AddFossil {url dir area} {
+    debug.fx/peer {}
+
+    set peers [map get fx@peer@fossil]
+
+    if {![dict exists $peers $url]} {
+	# New peer
+	map add1 fx@peer@fossil $url [::list $area $dir]
+	puts [color good OK]
+	return
+    }
+
+    # Merge areas ...
+    set spec [dict get $peers $url]
+
+    if {![dict exists $spec $area]} {
+	# New area in known peer
+	dict set spec $area $dir
+	fossil repository transaction {
+	    map remove1 fx@peer@fossil $url
+	    map add1    fx@peer@fossil $url $spec
+	}
+	puts [color good OK]
+	return
+    }
+
+    # Merge directions for known area in known peer ...
+    variable dadd
+    set old [dict get $spec $area]
+    set new [dict get $dadd $old $dir]
+
+    if {$new eq $old} {
+	puts [color note {No change, ignored}]
+	return
+    }
+
+    puts -nonewline [color note "upgraded to $new "]
+    flush stdout
+
+    dict set spec $area $new
+    fossil repository transaction {
+	map remove1 fx@peer@fossil $url
+	map add1    fx@peer@fossil $url $spec
+    }
+
+    puts [color good OK]
+    return
+}
+
+proc ::fx::peer::AddGit {url last} {
+    debug.fx/peer {}
+
+    set peers [map get fx@peer@git]
+
+    if {[dict exists $peers $url]} {
+	puts [color note {No change, ignored}]
+	return
+    }
+
+    map add1 fx@peer@git $url {}
+    puts [color good OK]
     return
 }
 
