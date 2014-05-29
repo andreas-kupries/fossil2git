@@ -38,7 +38,7 @@ test peer-import-2.0 {client peer import, replace, default} -setup {
     stage-close
 } -match glob -result [viewFile support/pim-20.txt]
 
-test peer-import-2.1 {client peer import, keep} -setup {
+test peer-import-2.1 {client peer import, keep and merge} -setup {
     stage-open
     on-stage {
 	run peer add-git          http://git-foo-beta

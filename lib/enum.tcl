@@ -122,7 +122,7 @@ proc ::fx::enum::rename {config} {
     set new [$config @newenum string]
 
     puts -nonewline "Renaming enumeration \"[color note $old]\" to \"[color note $new]\" ..."
-    fossil transaction {
+    fossil repository transaction {
 	set items [mgr items $old]
 	mgr delete $old
 	mgr create $new

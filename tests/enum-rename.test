@@ -39,7 +39,9 @@ test enum-rename-1.2 {client enum rename, wrong args, too many} -setup {
 test enum-rename-1.3 {client enum rename, unknown source} -setup {
     stage-open
 } -body {
-    run enum rename foo N
+    on-stage {
+	run enum rename foo N
+    }
 } -cleanup {
     stage-close
 } -match glob -returnCodes error \
@@ -47,25 +49,37 @@ test enum-rename-1.3 {client enum rename, unknown source} -setup {
 
 test enum-rename-1.4 {client enum rename, existing destination} -setup {
     stage-open
-    run enum create foo
-    run enum create bar
+    on-stage {
+	run enum create foo
+	run enum create bar
+    }
 } -body {
-    run enum rename foo bar
+    on-stage {
+	run enum rename foo bar
+    }
 } -cleanup {
-    run enum delete foo
+    on-stage {
+	run enum delete foo
+    }
     stage-close
 } -match glob -returnCodes error \
-    -result [fail-expected {an enumeration name} input newenum bar]
+    -result [fail-known-thing input newenum {An enumeration} bar]
 
 test enum-rename-1.5 {client enum rename, bad destination name} -setup {
     stage-open
-    run enum create foo a b
+    on-stage {
+	run enum create foo a b
+    }
 } -body {
-    run enum rename foo foo!
+    on-stage {
+	run enum rename foo foo!
+    }
 } -cleanup {
-    run enum delete foo
+    on-stage {
+	run enum delete foo
+    }
     stage-close
-} -match glob -returnCodes error
+} -match glob -returnCodes error \
     -result [fail-expected {an enumeration name} input newenum foo! \
 		 " (Not allowed: *)"]
 

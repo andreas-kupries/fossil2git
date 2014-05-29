@@ -351,7 +351,6 @@ proc ::fx::peer::export {config} {
 proc ::fx::peer::import {config} {
     debug.fx/peer {}
     fossil show-repository-location
-    init
 
     set extend [$config @extend]
 
@@ -364,8 +363,8 @@ proc ::fx::peer::import {config} {
     # then create the peering links again.
 
     set i [interp::createEmpty]
-    $i alias fossil ::fx::map::IFossil
-    $i alias git    ::fx::map::IGit
+    $i alias fossil ::fx::peer::IFossil
+    $i alias git    ::fx::peer::IGit
     $i eval $data
     interp delete $i
 
@@ -374,7 +373,6 @@ proc ::fx::peer::import {config} {
 	# Inlined delete of all peers
 	map delete fx@peer@fossil
 	map delete fx@peer@git
-	init
     } else {
 	puts [color note "Import keeps the existing peers ..."]
     }
@@ -386,6 +384,7 @@ proc ::fx::peer::import {config} {
     }
 
     puts "New peers ..."
+    init
     foreach {type url details} $imported {
 	puts -nonewline "  Importing $type $url ($details) ... "
 	flush stdout
@@ -401,14 +400,14 @@ proc ::fx::peer::import {config} {
     return
 }
 
-proc ::fx::map::IFossil {dir area url} {
+proc ::fx::peer::IFossil {area dir url} {
     debug.fx/peer {}
     variable imported
     lappend  imported fossil $url [::list $dir $area]
     return
 }
 
-proc ::fx::map::IGit {url last} {
+proc ::fx::peer::IGit {url last} {
     debug.fx/peer {}
     variable imported
     lappend  imported git $url $last

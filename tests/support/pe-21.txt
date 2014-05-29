@@ -1,0 +1,4 @@
+# fx peer export @ *
+fossil content push http://foo
+fossil email sync http://foo-backup
+git http://git-foo {}

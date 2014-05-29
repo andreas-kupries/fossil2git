@@ -1,0 +1,9 @@
+Checkout @ */fxhome.*/source.fossil
++---------------------+--------+------+---------+------+
+| Url                 | Type   | Flow | Area    | Last |
++---------------------+--------+------+---------+------+
+| http://foo          | fossil | sync | content |      |
+| http://foo-backup   | fossil | sync | email   |      |
+| http://git-foo      | git    | push | content |      |
+| http://git-foo-beta | git    | push | content |      |
++---------------------+--------+------+---------+------+

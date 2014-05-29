@@ -109,7 +109,7 @@ proc ::fx::map::rename {config} {
     set new [$config @newmap string]
 
     puts -nonewline "Renaming mapping \"[color note $old]\" to \"[color note $new]\" ..."
-    fossil transaction {
+    fossil repository transaction {
 	set items [mgr get $old]
 	mgr delete $old
 	mgr create $new
