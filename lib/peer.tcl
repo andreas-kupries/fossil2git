@@ -246,7 +246,7 @@ proc ::fx::peer::state-dir {config} {
 
     if {[$config @dir set?]} {
 	# Specified, set value.
-	config set fx-aku-peer-git-state [$config @dir]
+	config set-local fx-aku-peer-git-state [$config @dir]
     }
 
     # Show current value, possibly set above.
@@ -259,6 +259,7 @@ proc ::fx::peer::state-dir {config} {
 proc ::fx::peer::exchange {config} {
     debug.fx/peer {}
     fossil show-repository-location
+    init
 
     # See also note.tcl, ProjectInfo.
     set location [mailer get location]
