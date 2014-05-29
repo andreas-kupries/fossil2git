@@ -405,7 +405,7 @@ proc ::fx::peer::GitSetup {statedir project location} {
 	# project. Check this.
 
 	set owner [string trim [fileutil::cat $statedir/owner]]
-	if {$self ne $owner} {
+	if {$pcode ne $owner} {
 	    puts [color error "  Error: Claimed by project \"$owner\""]
 	    puts [color error "  Error: Which is not us    \"$pcode\""]
 	    # Abort self, and caller (exchange).
