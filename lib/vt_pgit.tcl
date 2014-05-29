@@ -57,7 +57,7 @@ proc ::fx::validate::peer-git::Values {p} {
     # before the cmdr completion phase.
     $p config @repository-db
     peer init
-    return [map keys peer@git]
+    return [map keys fx@peer@git]
 }
 
 # # ## ### ##### ######## ############# ######################

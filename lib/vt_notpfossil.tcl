@@ -52,7 +52,7 @@ proc ::fx::validate::not-peer-fossil::validate {p x} {
     # to exist to be able to handle the possibility of incrementally
     # adding areas and directions for a peer.
 
-    if {$x ni [map keys peer@git]
+    if {$x ni [map keys fx@peer@git]
     } { return $x }
     fail $p NOT-PEER-FOSSIL "a possible fossil peer" $x
 }

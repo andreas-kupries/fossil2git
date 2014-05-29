@@ -57,7 +57,7 @@ proc ::fx::validate::peer-fossil::Values {p} {
     # before the cmdr completion phase.
     $p config @repository-db
     peer init
-    return [map keys peer@fossil]
+    return [map keys fx@peer@fossil]
 }
 
 # # ## ### ##### ######## ############# ######################

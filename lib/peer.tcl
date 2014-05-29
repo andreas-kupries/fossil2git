@@ -123,11 +123,11 @@ proc ::fx::peer::add {config} {
     puts -nonewline "  Adding fossil \"$url $dir $area\" ... "
     flush stdout
 
-    set peers [map get peer@fossil]
+    set peers [map get fx@peer@fossil]
 
     if {![dict exists $peers $url]} {
 	# New peer
-	map add1 peer@fossil $url [::list $area $dir]
+	map add1 fx@peer@fossil $url [::list $area $dir]
 	puts [color good OK]
 	return
     }
@@ -139,8 +139,8 @@ proc ::fx::peer::add {config} {
 	# New area in known peer
 	dict set spec $area $dir
 	fossil repository transaction {
-	    map remove1 peer@fossil $url
-	    map add1    peer@fossil $url $spec
+	    map remove1 fx@peer@fossil $url
+	    map add1    fx@peer@fossil $url $spec
 	}
 	puts [color good OK]
 	return
@@ -161,8 +161,8 @@ proc ::fx::peer::add {config} {
 
     dict set spec $area $new
     fossil repository transaction {
-	map remove1 peer@fossil $url
-	map add1    peer@fossil $url $spec
+	map remove1 fx@peer@fossil $url
+	map add1    fx@peer@fossil $url $spec
     }
 
     puts [color good OK]
@@ -180,7 +180,7 @@ proc ::fx::peer::remove {config} {
     puts -nonewline "  Removing fossil \"$url $dir $area\" ... "
     flush stdout
 
-    set peers [map get peer@fossil]
+    set peers [map get fx@peer@fossil]
 
     if {![dict exists $peers $url]} {
 	puts [color note {No change, ignored}]
@@ -223,7 +223,7 @@ proc ::fx::peer::remove {config} {
     if {![dict size $spec]} {
 	# Drop entirely...
 	debug.fx/peer {drop entire $url}
-	map remove1 peer@fossil $url
+	map remove1 fx@peer@fossil $url
 	puts [color good OK]
 	return
     }
@@ -231,8 +231,8 @@ proc ::fx::peer::remove {config} {
     # Change stored spec.
     debug.fx/peer {save changed}
     fossil repository transaction {
-	map remove1 peer@fossil $url
-	map add1    peer@fossil $url $spec
+	map remove1 fx@peer@fossil $url
+	map add1    fx@peer@fossil $url $spec
     }
 
     puts [color good OK]
@@ -251,14 +251,14 @@ proc ::fx::peer::add-git {config} {
     puts -nonewline "  Adding git \"$url push content\" ... "
     flush stdout
 
-    set peers [map get peer@git]
+    set peers [map get fx@peer@git]
 
     if {[dict exists $peers $url]} {
 	puts [color note {No change, ignored}]
 	return
     }
 
-    map add1 peer@git $url {}
+    map add1 fx@peer@git $url {}
     puts [color good OK]
     return
 }
@@ -273,7 +273,7 @@ proc ::fx::peer::remove-git {config} {
     puts -nonewline "  Removing git \"$url push content\" ... "
     flush stdout
 
-    set peers [map get peer@git]
+    set peers [map get fx@peer@git]
 
     if {![dict exists $peers $url]} {
 	puts [color note {No change, ignored}]
@@ -282,7 +282,7 @@ proc ::fx::peer::remove-git {config} {
 
     # TODO: Document the git data structures.
 
-    map remove1 peer@git $url
+    map remove1 fx@peer@git $url
     puts [color good OK]
     return
 }
@@ -600,8 +600,8 @@ proc ::fx::peer::GitPush {statedir remote current} {
 
     # Update the local per-remote state, record the last uuid which is
     # now pushed to it.
-    map remove1 peer@git $remote
-    map add1    peer@git $remote $current
+    map remove1 fx@peer@git $remote
+    map add1    fx@peer@git $remote $current
     return
 }
 #-----------------------------------------------------------------------------
@@ -632,7 +632,7 @@ proc ::fx::peer::Get {config} {
     set map {}
 
     # I. Fossil peers
-    dict for {url dlist} [map get peer@fossil] {
+    dict for {url dlist} [map get fx@peer@fossil] {
 	debug.fx/peer {$url ==> ($dlist)}
 
 	foreach {area dir} $dlist {
@@ -650,7 +650,7 @@ proc ::fx::peer::Get {config} {
     # II. Git peers.
     # Note how the configuration contains state information.
     # (Last uuid pushed to git mirror).
-    dict for {url last} [map get peer@git] {
+    dict for {url last} [map get fx@peer@git] {
 	dict set map git $url $last
     }
     return $map
@@ -668,12 +668,12 @@ proc ::fx::peer::init {} {
     # via direct database access and sql commands, so the commands
     # above will still validate the data they get from the repository
 
-    # peer@fossil: repo url -> dict (area dir ...)
-    # peer@git   : repo url -> last uuid sync'd so far.
+    # fx@peer@fossil: repo url -> dict (area dir ...)
+    # fx@peer@git   : repo url -> last uuid sync'd so far.
 
     foreach map {
-	peer@fossil
-	peer@git
+	fx@peer@fossil
+	fx@peer@git
     } {
 	if {[map has $map]} continue
 	map create $map

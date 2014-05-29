@@ -53,8 +53,8 @@ proc ::fx::validate::not-peer-git::validate {p x} {
     # git peer is not used already, and not a fossil peer either.
 
     if {
-	($x ni [map keys peer@git]) &&
-	($x ni [map keys peer@fossil])
+	($x ni [map keys fx@peer@git]) &&
+	($x ni [map keys fx@peer@fossil])
     } { return $x }
     fail $p NOT-PEER-GIT "an unused git peer" $x
 }
